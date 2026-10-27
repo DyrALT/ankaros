@@ -39,3 +39,9 @@ git clone --recursive <repo-adresi> && cd ankaros
 
 Dal stratejisi, commit kuralları ve kod stili için [CONTRIBUTING.md](CONTRIBUTING.md).
 Değişiklikler [CHANGELOG.md](CHANGELOG.md) dosyasında.
+
+## Lisans
+
+ankaros'un kendi kodu ve belgeleri [MIT lisansıyla](LICENSE) yayınlanır. Buildroot (`buildroot/`) ve
+derlenen imajdaki paketler (Linux, Qt, glibc, BusyBox vb.) kendi lisanslarına tabidir.
+Ayrıntılar: [docs/kararlar/0005-mit-lisansi.md](docs/kararlar/0005-mit-lisansi.md)
