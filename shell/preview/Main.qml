@@ -8,7 +8,7 @@
 //
 // Geliştirici seçenekleri:
 //   --dark               koyu modda aç
-//   --launcher           başlatıcı açık olarak başla
+//   --launcher           başlat paneli açık olarak başla
 //   --screenshot <dosya> açılıştan kısa süre sonra pencerenin görüntüsünü PNG olarak kaydet ve çık
 import QtQuick
 import Ankaros.Shell
@@ -18,15 +18,15 @@ Window {
 
     readonly property list<string> args: Qt.application.arguments
 
-    color: "black"
+    width: 1440
     height: 900
-    maximumHeight: 900
+    minimumWidth: 1440
     maximumWidth: 1440
     minimumHeight: 900
-    minimumWidth: 1440
-    title: qsTr("ankaros: kabuk önizlemesi")
+    maximumHeight: 900
     visible: true
-    width: 1440
+    title: qsTr("ankaros: kabuk önizlemesi")
+    color: "black"
 
     Component.onCompleted: Theme.dark = args.includes("--dark")
 
@@ -34,79 +34,43 @@ Window {
         id: desktop
 
         anchors.fill: parent
-        // Sahte uygulama listesi. ankaros'ta sistemdeki uygulamalardan gelecek.
-        apps: [
-            {
-                name: "Terminal",
-                color: "#2d3436"
-            },
-            {
-                name: "Dosyalar",
-                color: "#0984e3"
-            },
-            {
-                name: "Tarayıcı",
-                color: "#e17055"
-            },
-            {
-                name: "Ayarlar",
-                color: "#636e72"
-            },
-            {
-                name: "Metin Düzenleyici",
-                color: "#00b894"
-            },
-            {
-                name: "Müzik",
-                color: "#e84393"
-            },
-            {
-                name: "Fotoğraflar",
-                color: "#fdcb6e"
-            },
-            {
-                name: "Takvim",
-                color: "#d63031"
-            },
-            {
-                name: "Hesap Makinesi",
-                color: "#6c5ce7"
-            },
-            {
-                name: "Sistem İzleyici",
-                color: "#00cec9"
-            },
-            {
-                name: "Notlar",
-                color: "#ffeaa7"
-            },
-            {
-                name: "Paket Merkezi",
-                color: "#a29bfe"
-            }
+        startMenuOpen: window.args.includes("--launcher")
+
+        // Sahte veriler. ankaros'ta compositor ve sistem servislerinden gelecek.
+        apps: ["Terminal", "Dosyalar", "Tarayıcı", "Ayarlar", "Metin Düzenleyici", "Müzik",
+            "Fotoğraflar", "Takvim", "Hesap Makinesi", "Sistem İzleyici", "Notlar", "Paket Merkezi"]
+        taskBarApps: ["Dosyalar", "Terminal", "Tarayıcı", "Metin Düzenleyici", "Müzik", "Fotoğraflar"]
+        running: ["Dosyalar", "Terminal"]
+        activeApp: "Dosyalar"
+        recommended: [
+            { app: "Metin Düzenleyici", title: "rapor.md", subtitle: qsTr("2 dakika önce") },
+            { app: "Dosyalar", title: "ankaros", subtitle: qsTr("Dün") },
+            { app: "Terminal", title: "build.sh", subtitle: qsTr("Dün") },
+            { app: "Takvim", title: "Ekim 2026", subtitle: qsTr("3 gün önce") }
         ]
-        launcherOpen: window.args.includes("--launcher")
+        userName: "Diyar"
+        onAppLaunched: app => console.log("Başlatılacak uygulama:", app)
     }
+
     Shortcut {
         sequence: "Ctrl+R"
-
         onActivated: Qt.exit(Theme.dark ? 43 : 42)
     }
+
     Shortcut {
         sequence: "Ctrl+D"
-
         onActivated: Theme.dark = !Theme.dark
     }
+
     Shortcut {
         sequences: [StandardKey.Quit]
-
         onActivated: Qt.quit()
     }
+
     Timer {
-        interval: 800
         // Açılış animasyonlarının bitmesi için kısa bir bekleme.
         running: window.args.includes("--screenshot")
-
+        interval: 800
         onTriggered: {
             const path = window.args[window.args.indexOf("--screenshot") + 1];
             desktop.grabToImage(result => {
