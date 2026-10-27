@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
+# 6.9: RectangularShadow (QtQuick.Effects)
+find_package(Qt6 6.9 REQUIRED COMPONENTS Quick)
 qt_standard_project_setup(REQUIRES 6.5)
 
 # Tüm QML modülleri tek bir klasörde toplanır, qmllint ve qmlls modülleri buradan bulur.

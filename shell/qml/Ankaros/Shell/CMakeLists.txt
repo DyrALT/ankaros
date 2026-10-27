@@ -7,14 +7,26 @@ qt_add_qml_module(ankaros_shell
     VERSION 1.0
     QML_FILES
         Theme.qml
-        Desktop.qml
+        IconData.js
+        Label.qml
+        Icon.qml
+        AppIcon.qml
+        GlassPanel.qml
+        HoverButton.qml
         Wallpaper.qml
-        Panel.qml
-        PanelButton.qml
-        LauncherIcon.qml
+        Desktop.qml
+        TaskBar.qml
+        TaskItem.qml
         Clock.qml
-        Launcher.qml
+        StartMenu.qml
         AppTile.qml
+        RecommendedItem.qml
+    RESOURCES
+        fonts/Inter-Regular.ttf
+        fonts/Inter-Medium.ttf
+        fonts/Inter-SemiBold.ttf
+        fonts/Inter-Bold.ttf
+        fonts/Inter-LICENSE.txt
 )
 
 target_link_libraries(ankaros_shell PRIVATE Qt6::Quick)

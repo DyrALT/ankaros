@@ -41,7 +41,9 @@ WaylandCompositor {
         window: Window {
             Desktop {                       // Ankaros.Shell: Mac önizlemesindekiyle aynı bileşen
                 anchors.fill: parent
-                windows: compositor.surfaces   // uygulama pencereleri compositor'dan gelir
+                running: compositor.runningApps // penceresi açık uygulamalar compositor'dan gelir
+                activeApp: compositor.focusedApp
+                onAppLaunched: app => launcher.start(app)
             }
         }
     }
@@ -49,8 +51,9 @@ WaylandCompositor {
 }
 ```
 
-Kural şu: **kabuk modülü Wayland'e özgü hiçbir türü doğrudan import etmez.** Pencere listesi gibi
-veriler dışarıdan property olarak verilir. Mac önizlemesi bu verileri sahte (mock) verilerle doldurur.
+Kural şu: **kabuk modülü Wayland'e özgü hiçbir türü doğrudan import etmez.** Uygulama listesi, çalışan
+uygulamalar ve öneriler gibi veriler dışarıdan property olarak verilir, kullanıcının istekleri
+(`appLaunched` gibi) sinyal olarak dışarı çıkar. Mac önizlemesi bu verileri sahte (mock) verilerle doldurur.
 
 ## Açılış sırası
 

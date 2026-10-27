@@ -1,4 +1,4 @@
-// Paneldeki saat ve tarih, sistem diline göre biçimlenir.
+// Alt çubuktaki saat ve tarih, sistem diline göre biçimlenir.
 import QtQuick
 
 Column {
@@ -6,25 +6,26 @@ Column {
 
     property date now: new Date()
 
-    Text {
+    spacing: 1
+
+    Label {
         anchors.right: parent.right
-        color: Theme.color.textPrimary
-        font.pixelSize: Theme.font.body
-        font.weight: Font.DemiBold
         text: root.now.toLocaleTimeString(Qt.locale(), "HH:mm")
+        font.weight: Font.DemiBold
     }
-    Text {
+
+    Label {
         anchors.right: parent.right
-        color: Theme.color.textSecondary
-        font.pixelSize: Theme.font.small
         text: root.now.toLocaleDateString(Qt.locale(), "d MMMM ddd")
+        color: Theme.color.textSecondary
+        font.pixelSize: Theme.font.caption
     }
+
     Timer {
         // Dakika değişimini kaçırmamak için saniyede bir güncellenir.
         interval: 1000
-        repeat: true
         running: true
-
+        repeat: true
         onTriggered: root.now = new Date()
     }
 }
