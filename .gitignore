@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Buildroot çıktıları (derleme makinesinde ~/ankaros-output altında tutulur,
+# yine de repo içinde yanlışlıkla oluşursa diye)
+output/
+dl/
+
+# CMake / Qt derlemeleri
+build/
+build-*/
+CMakeLists.txt.user*
+*.qmlc
+*.jsc
+.qmlls.ini
+
+# Editörler
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+compile_commands.json
+.cache/
