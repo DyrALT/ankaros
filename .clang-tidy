@@ -1,0 +1,30 @@
+# ankaros statik analiz kuralları. CI'da ve editörde (clangd) kullanılır.
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-type-static-cast-downcast,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  performance-*,
+  readability-*,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -readability-redundant-access-specifiers
+# cppcoreguidelines-owning-memory kapalı: Qt'nin parent-child sahiplik modeliyle
+# (new QObject(parent)) çakışıyor. Sahipliği parent ya da std::unique_ptr belirler.
+# readability-redundant-access-specifiers kapalı: Qt'nin "public slots:" gibi bölümleriyle çakışıyor.
+WarningsAsErrors: ''
+HeaderFilterRegex: '^(shell|compositor|system)/.*'
+CheckOptions:
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.VariableCase
+    value: camelBack
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: m_

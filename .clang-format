@@ -1,0 +1,31 @@
+# ankaros C++ kod stili. Qt/KDE stiline yakın, 100 sütun.
+# Uygulamak için: clang-format -i <dosya>
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++20
+IndentWidth: 4
+ColumnLimit: 100
+AccessModifierOffset: -4
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: true
+  AfterEnum: true
+  SplitEmptyFunction: false
+PointerAlignment: Right
+ReferenceAlignment: Right
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+BreakConstructorInitializers: BeforeComma
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<Q'          # Qt başlıkları
+    Priority: 2
+  - Regex: '^<.*>'        # standart kütüphane ve diğer sistem başlıkları
+    Priority: 3
+  - Regex: '.*'           # proje içi başlıklar
+    Priority: 1
+SortIncludes: CaseSensitive
