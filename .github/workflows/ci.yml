@@ -1,0 +1,55 @@
+# ankaros CI: kod stili denetimi ve aarch64 imaj derlemesi.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  style:
+    name: Kod stili
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: clang-format
+        run: |
+          files=$(git ls-files '*.cpp' '*.h' '*.hpp')
+          [ -z "$files" ] || clang-format --dry-run --Werror $files
+      - name: shellcheck
+        run: shellcheck scripts/*.sh external/board/*/*.sh
+
+  image:
+    name: İmaj (aarch64)
+    # Derleme makinemiz gibi arm64: Buildroot kendi araç zincirini yerel olarak derler.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Bağımlılıklar
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential file wget cpio unzip rsync bc python3 libncurses-dev
+      - name: Önbellek (kaynak paketleri ve ccache)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/ankaros-dl
+            ~/.buildroot-ccache
+          key: buildroot-${{ hashFiles('external/configs/*_defconfig', '.gitmodules') }}-${{ github.sha }}
+          restore-keys: buildroot-${{ hashFiles('external/configs/*_defconfig', '.gitmodules') }}-
+      - name: Derle
+        run: ./scripts/build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ankaros-qemu-aarch64
+          path: |
+            ~/ankaros-output/images/Image
+            ~/ankaros-output/images/rootfs.ext4
+          retention-days: 14
