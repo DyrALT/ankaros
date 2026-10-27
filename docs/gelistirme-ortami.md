@@ -1,9 +1,11 @@
 # Geliştirme ortamı
 
-ankaros macOS (Apple Silicon) üzerinde geliştirilir.
+ankaros macOS (Apple Silicon) üzerinde geliştirilir. İki ayrı iş akışı var:
 
 1. **İşletim sistemi imajı:** Buildroot, Linux üzerinde derleme yapar. Bu yüzden derleme OrbStack'teki
    bir Linux makinesinde yapılır, imaj Mac'te QEMU ile açılır.
+2. **Masaüstü kabuğu:** QML arayüzü doğrudan Mac'te, yerel bir pencerede çalıştırılarak geliştirilir.
+   İmaj derlemeye gerek yoktur.
 
 ## Gereksinimler
 
@@ -68,6 +70,20 @@ Mac'ten bu dosyalara `~/OrbStack/ankaros-build/home/<kullanıcı>/ankaros-output
 
 `run-qemu.sh` QEMU'yu Apple'ın donanım hızlandırmasıyla (`-accel hvf`) çalıştırır. Bu yüzden misafir
 sistem neredeyse yerel hızda açılır. Ek QEMU argümanları betiğe eklenebilir.
+
+## 5. Masaüstü kabuğunu Mac'te çalıştırmak
+
+Kabuk (QML arayüzü) imaj derlemeden, doğrudan Mac'te bir pencerede geliştirilir:
+
+```bash
+./scripts/shell-preview.sh
+```
+
+Betik ilk seferde CMake ile yapılandırır, kabuğu derler ve önizleme penceresini açar. Pencerede
+`Cmd+R` kabuğu yeniden derleyip yeniden açar, `Cmd+D` açık/koyu mod arasında geçiş yapar.
+Derleme çıktısı repo içinde `build/shell` altındadır (git'e girmez).
+
+Ayrıntılar ve tasarım akışı için [tasarim-akisi.md](tasarim-akisi.md).
 
 ## Sık karşılaşılan sorunlar
 

@@ -1,4 +1,4 @@
-# ankaros CI: kod stili denetimi ve aarch64 imaj derlemesi.
+# ankaros CI: kod stili denetimi, kabuğun derlenip qmllint'ten geçmesi ve aarch64 imaj derlemesi.
 name: CI
 
 on:
@@ -22,6 +22,23 @@ jobs:
           [ -z "$files" ] || clang-format --dry-run --Werror $files
       - name: shellcheck
         run: shellcheck scripts/*.sh external/board/*/*.sh
+
+  shell:
+    name: Kabuk (Qt 6)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.*'
+          cache: true
+      - name: Derle
+        run: |
+          sudo apt-get install -y ninja-build
+          cmake -S shell -B build/shell -G Ninja
+          cmake --build build/shell
+      - name: qmllint
+        run: cmake --build build/shell --target all_qmllint
 
   image:
     name: İmaj (aarch64)
