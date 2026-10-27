@@ -20,7 +20,10 @@ git clone --recursive <repo-adresi> && cd ankaros
 ./scripts/build.sh        # ilk derleme uzun sürer (araç zinciri dahil)
 ./scripts/progress.sh     # derleme ilerlemesi (canlı: watch -n 5 ./scripts/progress.sh)
 ./scripts/run-qemu.sh     # kullanıcı: root, şifre yok. Çıkış: Ctrl-a x
+./scripts/shell-preview.sh  # masaüstü kabuğunu Mac'te bir pencerede açar
 ```
+
+![Kabuk önizlemesi](docs/gorseller/kabuk-acik.png)
 
 ## Repo yapısı
 
@@ -28,6 +31,7 @@ git clone --recursive <repo-adresi> && cd ankaros
 |---|---|
 | `buildroot/` | Buildroot (git submodule, sürüme sabitli) |
 | `external/` | ankaros'a özel her şey (BR2_EXTERNAL ağacı): defconfig, kart dosyaları, paketler |
+| `shell/` | Masaüstü kabuğu: `Ankaros.Shell` QML modülü ve Mac önizleme uygulaması |
 | `scripts/` | Derleme, ilerleme ve çalıştırma betikleri |
 | `docs/` | Belgeler: [mimari](docs/mimari.md), [karar kayıtları](docs/kararlar/), [tümü](docs/README.md) |
 

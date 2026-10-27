@@ -11,7 +11,7 @@ ankaros'un hedefi: **hızlı** ve **kendine özel bir masaüstü deneyimi** suna
 - [x] Kod stili ayarları ve ekip belgeleri
 - [ ] İmajın QEMU'da açılıp giriş istemi göstermesi
 - [ ] CI'da imaj derlemesi
-- [ ] Kabuk prototipi Mac'te çalışıyor (`shell/preview`)
+- [x] Kabuk prototipi Mac'te çalışıyor (`shell/preview`)
 
 ## Faz 1: Grafik masaüstü (`v0.2.0`)
 
