@@ -2,7 +2,7 @@
 
 ankaros'un hedefi: **hızlı** ve **kendine özel bir masaüstü deneyimi** sunan bir sistem.
 
-## Faz 0: Açılan en küçük sistem (`v0.1.0`), devam ediyor
+## Faz 0: Açılan en küçük sistem (`v0.1.0`), tamamlandı
 
 - [x] Derleme ortamı: OrbStack'te Debian arm64 makinesi
 - [x] Buildroot 2026.02 LTS, BR2_EXTERNAL yapısı
@@ -10,13 +10,13 @@ ankaros'un hedefi: **hızlı** ve **kendine özel bir masaüstü deneyimi** suna
 - [x] Derleme, ilerleme ve QEMU betikleri
 - [x] Kod stili ayarları ve ekip belgeleri
 - [x] İmajın QEMU'da açılıp giriş istemi göstermesi (açılıştan girişe ~10 sn, 34 MB RAM, 18 MB disk)
-- [ ] CI'da imaj derlemesi
+- [x] CI'da imaj derlemesi (GitHub'ın arm64 makinesinde, ilk derleme ~40 dk)
 - [x] Kabuk prototipi Mac'te çalışıyor (`shell/preview`)
 
-## Faz 1: Grafik masaüstü (`v0.2.0`)
+## Faz 1: Grafik masaüstü (`v0.2.0`), sıradaki
 
-- [ ] Figma'da masaüstü tasarımı: panel, başlatıcı, renkler, tipografi
-- [ ] Kabuğun QML ile tasarıma göre yazılması (Mac önizlemesinde)
+- [x] Figma'da masaüstü tasarımı: dört varyasyon çizildi, B · Ankara Taşı seçildi
+- [x] Kabuğun QML ile tasarıma göre yazılması (Mac önizlemesinde)
 - [ ] Buildroot'a Qt 6 (qtbase, qtdeclarative, qtwayland), Mesa (virgl), libinput eklenmesi
 - [ ] Qt Wayland Compositor ile compositor: pencere açma, taşıma, kapatma
 - [ ] Açılışta giriş istemi yerine doğrudan masaüstü
