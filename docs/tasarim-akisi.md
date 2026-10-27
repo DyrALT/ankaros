@@ -59,29 +59,50 @@ $APP --dark --launcher --screenshot ekran.png   # koyu mod, başlatıcı açık,
 | Seçenek | Ne yapar |
 |---|---|
 | `--dark` | Koyu modda açar |
-| `--launcher` | Başlatıcı açık olarak başlar |
+| `--launcher` | Başlat paneli açık olarak başlar |
 | `--screenshot <dosya>` | Masaüstünün görüntüsünü PNG olarak kaydeder ve çıkar |
 
-## Şu anki prototip
+## Şu anki tasarım: B · Ankara Taşı
 
-Figma tasarımı gelene kadar yer tutucu bir tasarım var: duvar kağıdı, altta yüzen bir panel (başlatıcı
-düğmesi ve saat) ve tam ekran uygulama başlatıcı (arama ile).
+Figma dosyası: [ankaros: Masaüstü Tasarımı](https://www.figma.com/design/i51xbYLOkRyD5Qc5PhgFDv).
+Dört varyasyon çizildi (A Kehribar, B Ankara Taşı, C Bozkır, D Anka), **B seçildi**: ekranın altında
+yüzen tek bir çubuk (başlat düğmesi, arama, uygulamalar, durum simgeleri, saat) ve ortada açılan bir
+başlat paneli (arama, sabitlenmiş uygulamalar, önerilenler, kullanıcı).
 
-| Açık mod | Koyu mod, başlatıcı açık |
+| Açık mod | Koyu mod, başlat paneli açık |
 |---|---|
-| ![Açık mod](gorseller/kabuk-acik.png) | ![Koyu mod, başlatıcı](gorseller/kabuk-koyu-baslatici.png) |
+| ![Açık mod](gorseller/kabuk-acik.png) | ![Koyu mod, başlat paneli](gorseller/kabuk-koyu-baslatici.png) |
+
+Figma'daki masaüstü ekranında görünen Dosyalar penceresi kabuğun parçası değildir. Pencereler Faz 1'de
+compositor'dan gelecek.
 
 Bileşenler (`shell/qml/Ankaros/Shell/`):
 
-| Dosya | Bileşen |
-|---|---|
-| `Theme.qml` | Tüm tasarım değerleri (tekil nesne). Figma değişkenlerinin karşılığı |
-| `Desktop.qml` | Masaüstünün kökü. Önizleme ve compositor bunu yükler |
-| `Wallpaper.qml` | Duvar kağıdı |
-| `Panel.qml`, `PanelButton.qml` | Alttaki panel ve düğmeleri |
-| `LauncherIcon.qml` | Başlatıcı simgesi (geçici) |
-| `Clock.qml` | Saat ve tarih |
-| `Launcher.qml`, `AppTile.qml` | Uygulama başlatıcı ve uygulama kutucuğu |
+| Dosya | Bileşen | Figma karşılığı |
+|---|---|---|
+| `Theme.qml` | Tüm tasarım değerleri (tekil nesne) | `Theme` ve `Vurgu` değişken koleksiyonları |
+| `IconData.js` | Simge yolları ve uygulama simgesi renkleri | Bileşenler sayfası |
+| `Label.qml` | Inter yazı tipli metin | |
+| `Icon.qml` | Çizgi simge (Qt Shapes ile çizilir) | `Icon/*` |
+| `AppIcon.qml` | Degrade uygulama simgesi | `AppIcon/*` |
+| `GlassPanel.qml` | Arkasını bulanıklaştıran buzlu cam yüzey | panel dolgusu + arka plan bulanıklığı |
+| `HoverButton.qml` | Üzerine gelince arka planı beliren düğme | `color/surface/hover`, `pressed` |
+| `Wallpaper.qml` | Renk geçişi ve yumuşak renk lekeleri | Duvar kağıdı |
+| `Desktop.qml` | Masaüstünün kökü. Önizleme ve compositor bunu yükler | Ekran çerçevesi |
+| `TaskBar.qml`, `TaskItem.qml`, `Clock.qml` | Alt çubuk, uygulama öğesi, saat | Alt çubuk |
+| `StartMenu.qml`, `AppTile.qml`, `RecommendedItem.qml` | Başlat paneli ve öğeleri | Başlat paneli |
+
+### Uygulama notları
+
+- **Yazı tipi:** Inter 4.1 modülün içine gömülüdür (`fonts/`, SIL Open Font License). Böylece kabuk
+  Mac'te ve ankaros'ta aynı görünür. Metinler için `Text` yerine `Label` kullanın.
+- **Simgeler:** SVG dosyası yerine yol verisi olarak tutulur ve Qt Shapes ile GPU'da çizilir. Rengi
+  temaya bağlanabilir ve Qt Svg modülüne ihtiyaç duyulmaz. Figma'ya yeni simge eklendiğinde yol
+  verisi `IconData.js`'e eklenir (`<circle>`, `<rect>` gibi öğeler yola çevrilerek).
+- **Buzlu cam:** `GlassPanel`, `backdrop` olarak verilen öğenin (duvar kağıdı) arkasında kalan
+  bölümünü `MultiEffect` ile bulanıklaştırır. Faz 1'de backdrop, pencereleri de içeren sahne olacak.
+- **Duvar kağıdı lekeleri:** Figma'daki bulanık elipsler yerine radyal degrade kullanılır. Görünüm
+  aynıdır, çizim maliyeti çok düşüktür.
 
 Yeni bir QML dosyası eklerken `shell/qml/Ankaros/Shell/CMakeLists.txt` içindeki `QML_FILES` listesine
 de ekleyin.
