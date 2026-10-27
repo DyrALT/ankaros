@@ -5,6 +5,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+## [0.1.0] - 2026-10-28
+
+Faz 0: QEMU'da açılan en küçük ankaros sistemi ve Mac'te çalışan masaüstü kabuğu.
+
 ### Eklendi
 
 - Buildroot 2026.02 LTS tabanlı derleme sistemi ve `ankaros_qemu_aarch64_defconfig`
@@ -21,3 +25,6 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 ### Düzeltildi
 
 - `run-qemu.sh`: OrbStack klasöründeki imaj açılırken çıkan disk kilidi hatası
+
+[Yayınlanmamış]: https://github.com/DyrALT/ankaros/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/DyrALT/ankaros/releases/tag/v0.1.0
