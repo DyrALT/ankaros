@@ -69,7 +69,8 @@ Mac'ten bu dosyalara `~/OrbStack/ankaros-build/home/<kullanıcı>/ankaros-output
 | `./scripts/build.sh clean` | Çıktıyı siler (araç zinciri de yeniden derlenir!) |
 
 `run-qemu.sh` QEMU'yu Apple'ın donanım hızlandırmasıyla (`-accel hvf`) çalıştırır. Bu yüzden misafir
-sistem neredeyse yerel hızda açılır. Ek QEMU argümanları betiğe eklenebilir.
+sistem neredeyse yerel hızda açılır. Ek QEMU argümanları betiğe eklenebilir. Örneğin
+`./scripts/run-qemu.sh -snapshot` imajda yapılan değişiklikleri kapanışta atar, deneme için kullanışlıdır.
 
 ## 5. Masaüstü kabuğunu Mac'te çalıştırmak
 
@@ -90,4 +91,7 @@ Ayrıntılar ve tasarım akışı için [tasarim-akisi.md](tasarim-akisi.md).
 - **`orb: machine not found`**: Derleme makinesi oluşturulmamış ya da adı farklı. `orb list` ile kontrol edin.
 - **Derleme "No space left on device" ile duruyor**: Mac'te disk dolmuştur. OrbStack makinesinin diski
   Mac'in diskinden yer kullanır.
+- **QEMU'da `Failed to lock byte 100`**: İmaj OrbStack'in paylaşılan klasöründen okunuyor ve bu klasör
+  dosya kilitlerini desteklemiyor. `run-qemu.sh` kilitlemeyi bu yüzden kapatır (`file.locking=off`).
+  QEMU'yu elle çalıştırıyorsanız aynı seçeneği ekleyin.
 - **QEMU'da `hvf` hatası**: Intel Mac'te çalışmaz. `-accel hvf` yerine `-accel tcg` kullanın (çok yavaş).

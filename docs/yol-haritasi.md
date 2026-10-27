@@ -9,7 +9,7 @@ ankaros'un hedefi: **hızlı** ve **kendine özel bir masaüstü deneyimi** suna
 - [x] Linux 6.18 + glibc + BusyBox + eudev yapılandırması
 - [x] Derleme, ilerleme ve QEMU betikleri
 - [x] Kod stili ayarları ve ekip belgeleri
-- [ ] İmajın QEMU'da açılıp giriş istemi göstermesi
+- [x] İmajın QEMU'da açılıp giriş istemi göstermesi (açılıştan girişe ~10 sn, 34 MB RAM, 18 MB disk)
 - [ ] CI'da imaj derlemesi
 - [x] Kabuk prototipi Mac'te çalışıyor (`shell/preview`)
 
