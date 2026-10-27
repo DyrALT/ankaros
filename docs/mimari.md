@@ -1,0 +1,98 @@
+# Mimari
+
+ankaros, Linux çekirdeğinin üzerine kurulmuş, kendi masaüstü kabuğu ve compositor'ı olan bir sistemdir.
+Çekirdeği yazmıyoruz. Çekirdeğin üstünde kalan her şeyi biz tasarlıyoruz.
+
+## Katmanlar
+
+```
+┌───────────────────────────────────────────────────────────┐
+│ Uygulamalar (Wayland istemcileri)                         │  Faz 3+
+├───────────────────────────────────────────────────────────┤
+│ Masaüstü kabuğu  ·  QML (Ankaros.Shell modülü)            │  Faz 1
+│ panel, başlatıcı, bildirimler, kilit ekranı               │
+├───────────────────────────────────────────────────────────┤
+│ Compositor  ·  C++ + Qt Wayland Compositor                │  Faz 1
+│ pencere yönetimi, girdi, ekrana çizim                     │
+├───────────────────────────────────────────────────────────┤
+│ Grafik yığını  ·  Mesa (virgl), DRM/KMS, libinput         │  Faz 1
+├───────────────────────────────────────────────────────────┤
+│ Sistem servisleri  ·  init, ağ, oturum                    │  Faz 0: BusyBox init
+│                                                           │  Faz 2: kendi init'imiz (C++)
+├───────────────────────────────────────────────────────────┤
+│ C kütüphanesi ve temel araçlar  ·  glibc, BusyBox, eudev  │  Faz 0
+├───────────────────────────────────────────────────────────┤
+│ Linux çekirdeği 6.18  ·  aarch64, virtio aygıtları        │  Faz 0
+└───────────────────────────────────────────────────────────┘
+```
+
+## Kabuk ve compositor ilişkisi
+
+Kabuk bir QML modülüdür (`Ankaros.Shell`), compositor'dan bağımsız yazılır. Bu sayede:
+
+- **Mac'te geliştirme:** `shell/preview` uygulaması kabuğu sıradan bir pencerede gösterir. Tasarım ve
+  animasyon işleri imaj derlemeden yapılır.
+- **ankaros'ta çalışma:** Compositor aynı `Desktop` bileşenini ekranın kendisi olarak yükler, uygulama
+  pencerelerini de onun içine yerleştirir. Taslak olarak:
+
+```qml
+WaylandCompositor {
+    WaylandOutput {
+        window: Window {
+            Desktop {                       // Ankaros.Shell: Mac önizlemesindekiyle aynı bileşen
+                anchors.fill: parent
+                windows: compositor.surfaces   // uygulama pencereleri compositor'dan gelir
+            }
+        }
+    }
+    XdgShell { onToplevelCreated: ... }
+}
+```
+
+Kural şu: **kabuk modülü Wayland'e özgü hiçbir türü doğrudan import etmez.** Pencere listesi gibi
+veriler dışarıdan property olarak verilir. Mac önizlemesi bu verileri sahte (mock) verilerle doldurur.
+
+## Açılış sırası
+
+Faz 0'daki durum:
+
+1. QEMU, çekirdeği (`Image`) ve kök dosya sistemini (`rootfs.ext4`, virtio-blk) yükler.
+2. Çekirdek `/dev/vda`'yı kök olarak bağlar, `/sbin/init`'i (BusyBox) başlatır.
+3. `/etc/init.d/` betikleri: eudev, ağ (DHCP, `eth0`), rastgele sayı tohumu.
+4. Seri konsolda (`ttyAMA0`) giriş istemi.
+
+Faz 1 hedefi: 3. adımdan sonra compositor doğrudan başlar, giriş istemi yerine masaüstü gelir.
+
+## Repo yapısı
+
+| Yol | İçerik |
+|---|---|
+| `buildroot/` | Buildroot, git submodule, LTS sürümüne sabitli. **İçinde değişiklik yapılmaz.** |
+| `external/` | Buildroot'a dışarıdan eklenen ankaros ağacı (BR2_EXTERNAL) |
+| `external/configs/` | `ankaros_qemu_aarch64_defconfig`: sistemin tüm yapılandırması |
+| `external/board/qemu-aarch64/` | Karta özel dosyalar: rootfs overlay, post-build betiği |
+| `external/package/` | ankaros'un kendi paketleri (Faz 1'de: `ankaros-shell`, `ankaros-compositor`) |
+| `shell/` | Masaüstü kabuğu: QML modülü ve Mac önizleme uygulaması |
+| `compositor/` | Wayland compositor (Faz 1) |
+| `scripts/` | Derleme, çalıştırma ve ilerleme betikleri |
+| `docs/` | Belgeler |
+
+Buildroot'ta bir şeyi değiştirmek gerekirse ya `external/` içinde bir ayarla ya da
+`external/patches/` altında bir yamayla yapılır, submodule'ün içi elle düzenlenmez.
+
+## Derleme ortamı
+
+```
+ macOS (Apple Silicon)                       OrbStack: ankaros-build (Debian arm64)
+ ┌────────────────────────────┐              ┌──────────────────────────────────┐
+ │ ~/Desktop/ankaros  (repo)  │ ── paylaşım ─▶│ ~/Desktop/ankaros  (aynı yol)    │
+ │                            │              │ ~/ankaros-output   (Buildroot)   │
+ │ scripts/build.sh ──────────┼── orb ──────▶│ make O=~/ankaros-output          │
+ │                            │              │ ~/ankaros-dl, ~/.buildroot-ccache│
+ │ scripts/run-qemu.sh        │◀── images ───┤ ~/ankaros-output/images          │
+ │ QEMU (-accel hvf)          │              └──────────────────────────────────┘
+ │ shell/preview (Qt, yerel)  │
+ └────────────────────────────┘
+```
+
+Neden bu düzen seçildi: [kararlar/0003-aarch64-orbstack-qemu.md](kararlar/0003-aarch64-orbstack-qemu.md)
