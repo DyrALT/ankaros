@@ -14,6 +14,7 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   açık/koyu tema
 - Kabuğu Mac'te gösteren önizleme uygulaması ve `scripts/shell-preview.sh`
 - Kod stili ayarları (clang-format, clang-tidy, qmlformat, EditorConfig)
+- MIT lisansı
 - Ekip belgeleri: katkı rehberi, mimari, geliştirme ortamı, yol haritası, karar kayıtları
 
 ### Düzeltildi

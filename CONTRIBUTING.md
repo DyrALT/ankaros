@@ -119,3 +119,9 @@ git add buildroot && git commit -m "chore(buildroot): 2026.02.4 sürümüne gün
 ```
 
 Bu PR'da imajın temiz bir derlemeden sonra açıldığını doğrulayın.
+
+## Lisans
+
+ankaros'a gönderdiğiniz katkılar projenin [MIT lisansıyla](LICENSE) yayınlanır. Başka bir projeden kod
+alıyorsanız lisansının MIT ile uyumlu olduğundan emin olun ve kaynağını PR açıklamasında belirtin. GPL
+lisanslı kodu `shell/`, `compositor/` gibi kendi bileşenlerimize kopyalamayın.

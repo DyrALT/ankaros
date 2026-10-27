@@ -13,3 +13,4 @@ kayıt değiştirilmez. Karar değişirse yeni bir kayıt yazılır ve eskisinin
 | [0002](0002-cpp-ve-qml.md) | Tek dil olarak C++20, arayüz için QML | Kabul edildi |
 | [0003](0003-aarch64-orbstack-qemu.md) | aarch64 hedefi, OrbStack ile derleme, QEMU ile test | Kabul edildi |
 | [0004](0004-glibc.md) | C kütüphanesi olarak glibc | Kabul edildi |
+| [0005](0005-mit-lisansi.md) | Proje lisansı olarak MIT | Kabul edildi |
