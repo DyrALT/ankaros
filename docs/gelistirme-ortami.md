@@ -81,7 +81,8 @@ Kabuk (QML arayüzü) imaj derlemeden, doğrudan Mac'te bir pencerede geliştiri
 ```
 
 Betik ilk seferde CMake ile yapılandırır, kabuğu derler ve önizleme penceresini açar. Pencerede
-`Cmd+R` kabuğu yeniden derleyip yeniden açar, `Cmd+D` açık/koyu mod arasında geçiş yapar.
+`Cmd+R` kabuğu yeniden derleyip yeniden açar, `Cmd+D` açık/koyu mod arasında geçiş yapar,
+`Ctrl+Cmd+F` tam ekrana geçer.
 Derleme çıktısı repo içinde `build/shell` altındadır (git'e girmez).
 
 Ayrıntılar ve tasarım akışı için [tasarim-akisi.md](tasarim-akisi.md).

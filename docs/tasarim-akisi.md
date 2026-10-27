@@ -39,7 +39,8 @@ Aktarma kuralları:
 ```
 
 Betik kabuğu derler (birkaç saniye) ve önizleme penceresini açar. Pencere Figma çerçevesiyle aynı
-boyutta olduğu için ekran görüntüsünü Figma'daki tasarımla yan yana karşılaştırabilirsiniz.
+boyutta (1440x900) açılır, yeniden boyutlandırılabilir ve tam ekran yapılabilir. En küçük boyut
+1024x720'dir. Figma ile karşılaştırmak için `--screenshot` ile alınan görüntüleri kullanın.
 
 Önizleme penceresinde:
 
@@ -47,6 +48,7 @@ boyutta olduğu için ekran görüntüsünü Figma'daki tasarımla yan yana kar�
 |---|---|
 | `Cmd+R` | QML'i yeniden yükler (C++ değişikliklerinde yeniden derleyin) |
 | `Cmd+D` | Açık/koyu mod arasında geçiş yapar |
+| `Ctrl+Cmd+F` ya da `F11` | Tam ekran |
 | `Cmd+Q` | Kapatır |
 
 Geliştirici seçenekleri (Figma ile karşılaştırma ya da ekran görüntüsü için):
@@ -60,7 +62,8 @@ $APP --dark --launcher --screenshot ekran.png   # koyu mod, başlatıcı açık,
 |---|---|
 | `--dark` | Koyu modda açar |
 | `--launcher` | Başlat paneli açık olarak başlar |
-| `--screenshot <dosya>` | Masaüstünün görüntüsünü PNG olarak kaydeder ve çıkar |
+| `--screenshot <dosya>` | Masaüstünün görüntüsünü PNG olarak kaydeder ve çıkar. Pencere boyutundan bağımsız olarak 1440x900 çizilir |
+| `--size <GxY>` | Ekran görüntüsünün boyutu, ör. `--size 1024x720` |
 
 ## Şu anki tasarım: B · Ankara Taşı
 

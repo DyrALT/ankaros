@@ -1,15 +1,19 @@
-// Önizleme penceresi. Boyutu Figma'daki masaüstü çerçeveleriyle aynıdır (1440x900).
+// Önizleme penceresi. Açılış boyutu Figma'daki masaüstü çerçeveleriyle aynıdır (1440x900),
+// pencere yeniden boyutlandırılabilir ve tam ekran yapılabilir. Kabuk her boyuta uyum sağlar.
 //
 // Kısayollar (macOS'ta Ctrl yerine Cmd):
 //   Ctrl+R  yeniden derleyip yeniden aç: uygulama 42 (açık mod) ya da 43 (koyu mod) koduyla çıkar,
 //           scripts/shell-preview.sh bunu görünce derleyip uygulamayı yeniden başlatır
 //   Ctrl+D  açık/koyu mod
+//   F11 ya da sistemin tam ekran kısayolu (macOS'ta Ctrl+Cmd+F)  tam ekran
 //   Ctrl+Q  kapat
 //
 // Geliştirici seçenekleri:
 //   --dark               koyu modda aç
 //   --launcher           başlat paneli açık olarak başla
-//   --screenshot <dosya> açılıştan kısa süre sonra pencerenin görüntüsünü PNG olarak kaydet ve çık
+//   --screenshot <dosya> açılıştan kısa süre sonra masaüstünün görüntüsünü PNG olarak kaydet ve çık.
+//                        Görüntü pencere boyutundan bağımsız olarak 1440x900 çizilir.
+//   --size <GxY>         ekran görüntüsünün boyutu, ör. --size 1024x720
 import QtQuick
 import Ankaros.Shell
 
@@ -17,13 +21,18 @@ Window {
     id: window
 
     readonly property list<string> args: Qt.application.arguments
+    readonly property bool screenshotMode: args.includes("--screenshot")
+    readonly property var screenshotSize: {
+        const i = args.indexOf("--size");
+        const parts = i >= 0 ? args[i + 1].split("x").map(Number) : [1440, 900];
+        return Qt.size(parts[0], parts[1]);
+    }
 
     width: 1440
     height: 900
-    minimumWidth: 1440
-    maximumWidth: 1440
-    minimumHeight: 900
-    maximumHeight: 900
+    // Alt çubuk ve başlat paneli bu boyutun altında sığmaz.
+    minimumWidth: 1024
+    minimumHeight: 720
     visible: true
     title: qsTr("ankaros: kabuk önizlemesi")
     color: "black"
@@ -33,7 +42,9 @@ Window {
     Desktop {
         id: desktop
 
-        anchors.fill: parent
+        // Ekran görüntüsü modunda pencere ekrana sığmak için küçülse bile görüntü aynı boyutta çıksın.
+        width: window.screenshotMode ? window.screenshotSize.width : window.width
+        height: window.screenshotMode ? window.screenshotSize.height : window.height
         startMenuOpen: window.args.includes("--launcher")
 
         // Sahte veriler. ankaros'ta compositor ve sistem servislerinden gelecek.
@@ -63,13 +74,19 @@ Window {
     }
 
     Shortcut {
+        sequences: [StandardKey.FullScreen, "F11"]
+        onActivated: window.visibility = window.visibility === Window.FullScreen ? Window.Windowed
+                                                                                 : Window.FullScreen
+    }
+
+    Shortcut {
         sequences: [StandardKey.Quit]
         onActivated: Qt.quit()
     }
 
     Timer {
         // Açılış animasyonlarının bitmesi için kısa bir bekleme.
-        running: window.args.includes("--screenshot")
+        running: window.screenshotMode
         interval: 800
         onTriggered: {
             const path = window.args[window.args.indexOf("--screenshot") + 1];
