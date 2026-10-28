@@ -41,9 +41,9 @@ Betiğin kurduğu ayarlar. Elle kurulum yapılırsa ya da bir şey ters giderse 
 | Arka uç | QEMU (Apple Virtualization değil) | GPU hızlandırması yalnızca QEMU arka ucunda var |
 | Mimari, makine | aarch64, `virt`, hipervizör açık, UEFI kapalı | Kernel doğrudan açılır, önyükleyici yok |
 | Bellek, işlemci | 2048 MB, 4 çekirdek | |
-| Display | `virtio-gpu-gl-pci` | 3B hızlandırmalı sanal GPU |
+| Display | `virtio-gpu-gl-pci`, Retina modu açık, dinamik çözünürlük kapalı | 3B hızlandırmalı sanal GPU. Retina modunda ekran Mac'in gerçek çözünürlüğünde gösterilir, ankaros arayüzü 2 kat ölçekle çizer. Kapalıyken yarı çözünürlükteki görüntü büyütülür, yazılar ve simgeler bulanık görünür. Dinamik çözünürlük açıkken sanal makine açıldığı andaki pencere boyutunu alıyor; compositor sonradan değişen çözünürlüğe uymadığı için kapalı. |
 | Drives | Linux Kernel: `Image`. Disk: kök dosya sistemi, arayüz VirtIO | Disk ankaros'ta `/dev/vda` olur |
-| QEMU › Arguments | `-append "rootwait root=/dev/vda console=ttyAMA0"`, `-device virtio-keyboard-pci`, `-device virtio-tablet-pci` | Çekirdekte USB girdi sürücüsü yok, klavye ve fare virtio aygıtlarıdır |
+| QEMU › Arguments | `-append "rootwait root=/dev/vda console=ttyAMA0"`, `-device virtio-keyboard-pci`, `-device virtio-tablet-pci`, `-global virtio-gpu-gl-pci.xres=2880`, `-global virtio-gpu-gl-pci.yres=1800` | Çekirdekte USB girdi sürücüsü yok, klavye ve fare virtio aygıtlarıdır. Ekran sabit 2880×1800 (Retina'da 1440×900 noktalık pencere). |
 
 UTM, Arguments'taki her satırı boşluklardan böler. Birden çok kelimelik değerler tırnak içinde
 yazılmalıdır, yoksa QEMU `root=/dev/vda`'yı dosya adı sanıp açılmaz.

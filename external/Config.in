@@ -1,3 +1,4 @@
+source "$BR2_EXTERNAL_ANKAROS_PATH/package/libvterm/Config.in"
 source "$BR2_EXTERNAL_ANKAROS_PATH/package/ankaros-shell/Config.in"
 source "$BR2_EXTERNAL_ANKAROS_PATH/package/ankaros-compositor/Config.in"
 source "$BR2_EXTERNAL_ANKAROS_PATH/package/ankaros-system/Config.in"

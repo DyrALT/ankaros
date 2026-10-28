@@ -1,0 +1,8 @@
+config BR2_PACKAGE_LIBVTERM
+	bool "libvterm"
+	help
+	  VT220/xterm terminal öykünücüsü kütüphanesi. Ekran durumunu
+	  tutar, çizimi kullanan uygulama yapar (ankaros Terminal,
+	  karar 0014).
+
+	  https://www.leonerd.org.uk/code/libvterm/

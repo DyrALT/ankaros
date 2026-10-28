@@ -61,12 +61,16 @@ WaylandCompositor {
 
     WaylandOutput {
         sizeFollowsWindow: true
+        // Retina ekranlarda 2 (oturum yöneticisi QT_SCALE_FACTOR=2 verir). Uygulamalar bu ölçeği
+        // Wayland çıktısından öğrenir ve pencerelerini 2 kat çözünürlükle çizer.
+        scaleFactor: Math.max(1, Math.round(screen.pixelRatio))
 
         window: Window {
             id: screen
 
             // Açılış süresi ölçümü: ilk kare çizilince init'e bildirilir (ankarosctl boot, docs/acilis-suresi.md)
             property bool firstFrameReported: false
+            readonly property real pixelRatio: Screen.devicePixelRatio
 
             visible: true
             visibility: Window.FullScreen

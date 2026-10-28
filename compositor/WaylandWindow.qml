@@ -63,7 +63,7 @@ WindowChrome {
     }
 
     app: appName
-    // Uygulama sunucu tarafı kenarlığı kabul etmediyse (ör. weston-terminal) çerçeveyi o çizer.
+    // Uygulama sunucu tarafı kenarlığı kabul etmediyse (kendi kenarlığını çizen uygulamalar) çerçeveyi o çizer.
     decorated: toplevel ? toplevel.decorationMode === XdgToplevel.ServerSideDecoration : true
     title: toplevel && toplevel.title.length > 0 ? toplevel.title : appName
     active: toplevel ? toplevel.activated : false
@@ -92,6 +92,31 @@ WindowChrome {
         onSurfaceDestroyed: {
             root.gone();
             root.destroy();
+        }
+    }
+
+    // Uygulamaya "kare çizildi" bildirimi (frame callback). Qt bunu compositor'ın ekran karesinden
+    // sonra gönderiyor, ama uygulamanın yeni karesi ekran çizilirken gelirse bildirim bir sonraki ekran
+    // karesine kalıyor. Qt uygulamaları bildirimi 100 ms içinde alamazsa pencereyi gizli sayıp çizmeyi
+    // bırakıyor, ekran bir sonraki girdi olayına kadar eski kalıyordu (yazılımsal çizimde, ör. QEMU).
+    // Bu yüzden uygulama yeni kare gönderdikten kısa süre sonra bildirim ayrıca gönderilir.
+    Connections {
+        target: surfaceItem.surface
+
+        function onRedraw() {
+            frameCallbackTimer.restart();
+        }
+    }
+
+    Timer {
+        id: frameCallbackTimer
+
+        interval: 16
+        onTriggered: {
+            if (surfaceItem.surface) {
+                surfaceItem.surface.frameStarted();
+                surfaceItem.surface.sendFrameCallbacks();
+            }
         }
     }
 }

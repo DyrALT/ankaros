@@ -29,6 +29,21 @@ utm() {
   osascript -e "with timeout of 900 seconds" -e "tell application \"UTM\" to $1" -e "end timeout"
 }
 
+# Çekirdeğin açılış argümanları ve girdi aygıtları. UTM her satırı boşluklardan böler, birden çok
+# kelimelik değerler tırnak içinde yazılır. Çekirdekte USB girdi sürücüsü yok, klavye ve fare virtio
+# aygıtlarıdır. Son ikisi ekranı sabit 2880x1800 yapar (set_display).
+ARGUMENTS='["-append \"rootwait root=/dev/vda console=ttyAMA0\"","-device virtio-keyboard-pci","-device virtio-tablet-pci","-global virtio-gpu-gl-pci.xres=2880","-global virtio-gpu-gl-pci.yres=1800"]'
+
+# Ekran: Retina modu açık, çözünürlük sabit 2880x1800. Retina modunda görüntü Mac'in gerçek
+# çözünürlüğünde gösterilir (1440x900 noktalık pencere), ankaros 2560 pikselden geniş ekranda
+# arayüzü 2 kat ölçekle çizer. Dinamik çözünürlük kapalı: açık olunca sanal makine açıldığı andaki
+# pencere boyutunu alıyor (küçük pencerede ölçek 1, her şey minicik) ve compositor sonradan değişen
+# çözünürlüğe uymuyor. Retina modu kapalıyken yarı çözünürlükteki görüntü büyütülür, bulanık görünür.
+set_display() {
+  plutil -replace Display.0.NativeResolution -bool YES "$BUNDLE/config.plist"
+  plutil -replace Display.0.DynamicResolution -bool NO "$BUNDLE/config.plist"
+}
+
 [ -d /Applications/UTM.app ] || fail "UTM kurulu değil: https://mac.getutm.app"
 if [ ! -f "$IMAGES/Image" ] || [ ! -f "$IMAGES/rootfs.ext4" ]; then
   fail "İmaj bulunamadı: $IMAGES"
@@ -47,6 +62,14 @@ if [ "$UPDATE" = 1 ]; then
     "driver=raw,file.driver=file,file.filename=$IMAGES/rootfs.ext4,file.locking=off" \
     "$BUNDLE/Data/$DISK"
   cp "$IMAGES/Image" "$BUNDLE/Data/Image"
+  # Eski sanal makinelerin ekran ayarları ve argümanları da güncellenir. UTM açıkken yapılandırmayı
+  # kendi kopyasıyla ezer, bu yüzden yalnızca UTM kapalıyken değiştirilir.
+  if pgrep -xq UTM; then
+    echo "Not: UTM açık olduğu için ekran ayarları güncellenmedi. UTM'yi kapatıp betiği yeniden çalıştır."
+  else
+    plutil -replace QEMU.AdditionalArguments -json "$ARGUMENTS" "$BUNDLE/config.plist"
+    set_display
+  fi
   echo "Hazır: UTM'de \"$NAME\" sanal makinesini başlat."
   exit 0
 fi
@@ -74,11 +97,8 @@ cp "$IMAGES/Image" "$BUNDLE/Data/Image"
 plutil -insert Drive.0 -json \
   '{"Identifier":"'"$(uuidgen)"'","ImageName":"Image","ImageType":"LinuxKernel","Interface":"None","InterfaceVersion":1,"ReadOnly":true}' \
   "$BUNDLE/config.plist"
-# UTM her satırı boşluklardan böler, birden çok kelimelik değerler tırnak içinde yazılır.
-# Çekirdekte USB girdi sürücüsü yok, klavye ve fare virtio aygıtlarıdır.
-plutil -replace QEMU.AdditionalArguments -json \
-  '["-append \"rootwait root=/dev/vda console=ttyAMA0\"","-device virtio-keyboard-pci","-device virtio-tablet-pci"]' \
-  "$BUNDLE/config.plist"
+plutil -replace QEMU.AdditionalArguments -json "$ARGUMENTS" "$BUNDLE/config.plist"
+set_display
 
 open -g -a UTM
 echo "Hazır: UTM'de \"$NAME\" sanal makinesini başlat."

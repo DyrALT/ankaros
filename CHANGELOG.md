@@ -16,11 +16,21 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Düzeltildi
 
+- Uygulama pencereleri bazen bir sonraki tıklamaya kadar eski görüntüde kalıyordu (ör. Terminal'de komut
+  çıktısı, Ayarlar'da tıklamanın gecikmesi). Compositor "kare çizildi" bildirimini geç gönderiyordu, Qt
+  uygulamaları da 100 ms'de alamayınca çizmeyi bırakıyordu. Bildirim artık hemen gönderiliyor,
+  uygulamalara 1 saniye süre tanınıyor.
 - Simgeler UTM'de (virgl, Mac'in GPU'su) kesik kesik çiziliyordu. Qt Shapes'in CurveRenderer'ı yerine
   klasik çizici kullanılıyor, kenarlar süper örneklemeyle yumuşatılıyor.
 
 ### Eklendi
 
+- Terminal (`ankaros-terminal`, `docs/terminal.md`): ankaros'un kendi terminali. libvterm ile xterm
+  öykünmesi, sekmeler, kopyala-yapıştır, kaydırma geçmişi, JetBrains Mono yazı tipi, temayla uyumlu
+  renkler. `weston-terminal` ve Weston imajdan çıktı.
+- Retina ekran desteği: 2560 piksel ve daha geniş ekranlarda arayüz 2 kat ölçekle, keskin çiziliyor.
+  `utm-olustur.sh` sanal makineyi Retina modunda kuruyor.
+- Kabuk istemi renkli ve klasörü gösteriyor (`kullanıcı@makine:~$`), `ls` renkli
 - Ayarlar'ın yeni sayfaları:
   - **Duvar kağıdı:** dört palet (Ankara Taşı, Bozkır, Kehribar, Gece), her birinin açık ve koyu tonu var.
     İstenirse kilit ve giriş ekranında da kullanılır.

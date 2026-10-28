@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <dirent.h>
 #include <fcntl.h>
 #include <grp.h>
 #include <pwd.h>
@@ -162,6 +163,28 @@ void SessionManager::startSession(const std::string &user)
     }
 }
 
+// Bağlı ekranın tercih edilen çözünürlüğü ("3680x2300"): DRM'in ilk modu. Bulunamazsa boş.
+std::string preferredMode()
+{
+    DIR *drm = opendir("/sys/class/drm");
+    if (!drm)
+        return {};
+    std::string mode;
+    while (const dirent *entry = readdir(drm)) {
+        const std::string base = std::string("/sys/class/drm/") + entry->d_name;
+        std::string status;
+        if (!readFile(base + "/status", status) || status.rfind("connected", 0) != 0)
+            continue;
+        std::string modes;
+        if (readFile(base + "/modes", modes) && !modes.empty()) {
+            mode = modes.substr(0, modes.find('\n'));
+            break;
+        }
+    }
+    closedir(drm);
+    return mode;
+}
+
 bool SessionManager::spawn(Mode mode, const std::string &user)
 {
     const passwd *account = getpwnam(user.c_str());
@@ -183,6 +206,12 @@ bool SessionManager::spawn(Mode mode, const std::string &user)
         std::string("SHELL=") + account->pw_shell,
         "XDG_RUNTIME_DIR=" + runtime,
     };
+    // Retina ekranlarda arayüz 2 kat büyüklükte çizilir (sessionconfig.h, displayScale)
+    const std::string screenMode = preferredMode();
+    const int scale = displayScale(screenMode, readConfig().scale);
+    if (scale == 2)
+        environment.push_back("QT_SCALE_FACTOR=2");
+    say("ekran: %s, ölçek %d", screenMode.empty() ? "?" : screenMode.c_str(), scale);
     if (mode == Mode::Greeter) {
         // Giriş ekranında gösterilen kullanıcının tema ve duvar kağıdı tercihi (karar 0015)
         std::string conf;
@@ -415,7 +444,9 @@ ControlServer::Reply SessionManager::handle(const std::vector<std::string> &comm
             reply.error =
                 "otomatik giriş yalnızca oturumdaki kullanıcı tarafından değiştirilebilir";
         } else {
-            const SessionConfig config{command[1] == "on" ? sessionUser() : ""};
+            // Diğer ayarlar (ölçek) korunur
+            SessionConfig config = readConfig();
+            config.autologin = command[1] == "on" ? sessionUser() : "";
             const std::string text = formatSessionConfig(config);
             FILE *file = fopen(configPath, "w");
             if (!file || fputs(text.c_str(), file) < 0 || fclose(file) != 0)
