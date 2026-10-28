@@ -1,8 +1,10 @@
-// Ayarlar uygulaması (karar 0013): Görünüm, Ağ, Kullanıcı... Kabuktan ayrı bir süreç, Wayland istemcisi.
+// Ayarlar uygulaması (karar 0013): Görünüm, Ağ, Kullanıcı... Kabuktan ayrı bir süreç, Wayland
+// istemcisi.
 //
 //   ankaros-settings                 Görünüm sayfasıyla açılır
 //   ankaros-settings --page network  belirli bir sayfayla (alt çubuktaki ağ simgesi böyle açar)
-//   ankaros-settings --screenshot d  açılıştan kısa süre sonra pencerenin görüntüsünü kaydedip çıkar (CI)
+//   ankaros-settings --screenshot d  açılıştan kısa süre sonra pencerenin görüntüsünü kaydedip
+//   çıkar (CI)
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QtQml/QQmlExtensionPlugin>
@@ -30,7 +32,8 @@ int main(int argc, char *argv[])
         &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
         [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
     engine.setInitialProperties({
-        {QStringLiteral("page"), pageIndex >= 0 ? arguments.value(pageIndex + 1) : QStringLiteral("appearance")},
+        {QStringLiteral("page"),
+         pageIndex >= 0 ? arguments.value(pageIndex + 1) : QStringLiteral("appearance")},
         {QStringLiteral("screenshot"), shotIndex >= 0 ? arguments.value(shotIndex + 1) : QString()},
     });
     engine.loadFromModule("Ankaros.Apps.Settings", "Main");
