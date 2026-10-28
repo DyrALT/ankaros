@@ -1,14 +1,10 @@
 // ankarosctl: ankaros-init'i denetler. Kullanım: ankarosctl help
 #include "protocol.h"
 
-#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <unistd.h>
 #include <vector>
 
 namespace {
@@ -33,38 +29,6 @@ std::vector<std::string> split(const std::string &line, char separator)
             return fields;
         start = end + 1;
     }
-}
-
-// Komutu gönderir, veri satırlarını lines'a koyar. Hata mesajını döner (başarılıysa boş).
-std::string request(const std::string &command, std::vector<std::string> &lines)
-{
-    const int fd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
-    sockaddr_un address{};
-    address.sun_family = AF_UNIX;
-    strncpy(address.sun_path, ankaros::initSocketPath, sizeof address.sun_path - 1);
-    if (fd < 0 || connect(fd, reinterpret_cast<sockaddr *>(&address), sizeof address) != 0)
-        return std::string("ankaros-init'e bağlanılamadı: ") + strerror(errno);
-
-    const std::string line = command + "\n";
-    if (write(fd, line.data(), line.size()) != static_cast<ssize_t>(line.size()))
-        return "komut gönderilemedi";
-    std::string response;
-    char buffer[4096];
-    ssize_t n;
-    while ((n = read(fd, buffer, sizeof buffer)) > 0)
-        response.append(buffer, static_cast<size_t>(n));
-    close(fd);
-
-    lines = split(response, '\n');
-    while (!lines.empty() && lines.back().empty())
-        lines.pop_back();
-    if (lines.empty())
-        return "cevap yok";
-    const std::string last = lines.back();
-    lines.pop_back();
-    if (last == "ok")
-        return {};
-    return last.starts_with("hata ") ? last.substr(5) : "beklenmeyen cevap: " + last;
 }
 
 // printf'in genişliği bayt sayar, Türkçe harfler iki bayt: genişlik karakter sayısına göre
@@ -137,19 +101,23 @@ int main(int argc, char *argv[])
         fputs(usage, argc < 2 ? stderr : stdout);
         return argc < 2 ? 2 : 0;
     }
-    std::string command = argv[1];
-    for (int i = 2; i < argc; ++i)
-        command += std::string(" ") + argv[i];
+    const bool session = strcmp(argv[1], "session") == 0;
+    std::vector<std::string> command(argv + (session ? 2 : 1), argv + argc);
+    if (command.empty()) {
+        fputs(usage, stderr);
+        return 2;
+    }
 
     std::vector<std::string> lines;
-    const std::string error = request(command, lines);
+    const std::string error = ankaros::request(
+        session ? ankaros::sessionSocketPath : ankaros::initSocketPath, command, lines);
     if (!error.empty()) {
         fprintf(stderr, "ankarosctl: %s\n", error.c_str());
         return 1;
     }
-    if (command == "status")
+    if (!session && command[0] == "status")
         printStatus(lines);
-    else if (command == "boot")
+    else if (!session && command[0] == "boot")
         printBoot(lines);
     else
         for (const std::string &line : lines)

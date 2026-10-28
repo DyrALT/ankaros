@@ -80,9 +80,10 @@ uygulamalar ve öneriler gibi veriler dışarıdan property olarak verilir, kull
 3. `ankaros-init` dosya sistemlerini bağlar ve `/etc/ankaros/services/` altındaki servisleri bağımlılık
    sırasıyla, birbirini beklemeyenleri aynı anda başlatır: günlük, rastgele sayı tohumu, udev, ağ (DHCP),
    seri konsolda (`ttyAMA0`) giriş istemi. Ayrıntılar: [init.md](init.md).
-4. udev hazır olunca `ankaros-compositor` servisi başlar. Ortam değişkenleri
-   `/etc/profile.d/ankaros-grafik.sh`'den gelir, çıktı `/var/log/ankaros-compositor.log`'a yazılır.
-5. Ekranda masaüstü açılır. Seri konsoldaki giriş istemi kurtarma ve geliştirme için durur.
+4. udev hazır olunca oturum yöneticisi `ankaros-session` başlar. Otomatik giriş açıksa compositor'ı
+   doğrudan kullanıcının hesabıyla, değilse giriş ekranı olarak başlatır ([oturum.md](oturum.md)).
+5. Ekranda masaüstü ya da giriş ekranı açılır. Seri konsoldaki giriş istemi kurtarma ve geliştirme
+   için durur.
 
 `ankarosctl boot` her adımın ne zaman başlayıp bittiğini gösterir.
 
@@ -100,7 +101,7 @@ Kullanıcı hesabı ve giriş ekranı Faz 2'de.
 | `external/provides/` | Buildroot'un init seçeneklerine eklenen `ankaros-init` |
 | `shell/` | Masaüstü kabuğu: QML modülü ve Mac önizleme uygulaması |
 | `compositor/` | Wayland compositor: `Main.qml` (sunucu ve pencere yönetimi), `WaylandWindow.qml`, `AppLauncher` |
-| `system/` | Sistem servisleri (C++, Qt'siz): `ankaros-init`, `ankarosctl`, servis dosyaları, birim testleri |
+| `system/` | Sistem servisleri (C++, Qt'siz): `ankaros-init`, `ankaros-session`, `ankarosctl`, servis dosyaları, birim testleri |
 | `scripts/` | Derleme, çalıştırma ve ilerleme betikleri |
 | `docs/` | Belgeler |
 

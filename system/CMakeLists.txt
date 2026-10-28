@@ -1,6 +1,6 @@
-# ankaros sistem servisleri: init (PID 1), ankarosctl ve ortak kod.
+# ankaros sistem servisleri: init (PID 1), oturum yöneticisi, ankarosctl ve ortak kod.
 # Qt kullanılmaz, açılışta Qt'nin yüklenmesi beklenmez (bkz. docs/kararlar/0009-kendi-init-sistemimiz.md).
-# Birim testleri Mac'te de derlenir, init ve ankarosctl yalnızca Linux'ta.
+# Birim testleri Mac'te de derlenir, servisler ve ankarosctl yalnızca Linux'ta.
 cmake_minimum_required(VERSION 3.21)
 project(ankaros-system VERSION 0.1.0 LANGUAGES CXX)
 
@@ -26,29 +26,45 @@ add_library(ankaros-services STATIC
 target_include_directories(ankaros-services PUBLIC init)
 target_link_libraries(ankaros-services PUBLIC ankaros-common)
 
+add_library(ankaros-session-core STATIC
+    session/accounts.cpp
+    session/sessionconfig.cpp
+)
+target_include_directories(ankaros-session-core PUBLIC session)
+target_link_libraries(ankaros-session-core PUBLIC ankaros-common)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # crypt(3): glibc'den ayrılan libxcrypt
+    target_link_libraries(ankaros-session-core PUBLIC crypt)
+endif()
+
 option(ANKAROS_SYSTEM_TESTS "Birim testlerini derle" ON)
 if(ANKAROS_SYSTEM_TESTS)
     enable_testing()
-    foreach(test config_test service_test)
+    foreach(test config_test service_test session_test)
         add_executable(${test} tests/${test}.cpp)
-        target_link_libraries(${test} PRIVATE ankaros-services)
+        target_link_libraries(${test} PRIVATE ankaros-services ankaros-session-core)
         add_test(NAME ${test} COMMAND ${test})
     endforeach()
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # Unix soketleri (SOCK_CLOEXEC, SO_PEERCRED) Linux'a özgü
+    target_sources(ankaros-common PRIVATE common/control.cpp common/protocol.cpp)
+
     add_executable(ankaros-init
         init/main.cpp
-        init/control.cpp
         init/log.cpp
         init/supervisor.cpp
         init/system.cpp
     )
     target_link_libraries(ankaros-init PRIVATE ankaros-services)
 
+    add_executable(ankaros-session session/main.cpp)
+    target_link_libraries(ankaros-session PRIVATE ankaros-session-core)
+
     add_executable(ankarosctl ctl/main.cpp)
     target_link_libraries(ankarosctl PRIVATE ankaros-common)
 
-    install(TARGETS ankaros-init RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
+    install(TARGETS ankaros-init ankaros-session RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
     install(TARGETS ankarosctl RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

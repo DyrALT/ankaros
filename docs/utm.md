@@ -46,8 +46,8 @@ Seri konsolda (UTM'de sanal makinenin Serial penceresi) ya da Terminal'de:
 
 ```bash
 dmesg | grep virgl                            # "[drm] features: +virgl ..." görünmeli
-export QSG_INFO=1
-ankarosctl restart ankaros-compositor
+echo 'export QSG_INFO=1' > /etc/profile.d/qsg-info.sh
+ankarosctl restart ankaros-session
 grep RENDERER /var/log/ankaros-compositor.log
 ```
 
