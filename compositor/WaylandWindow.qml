@@ -24,9 +24,25 @@ WindowChrome {
 
     // Büyütmeden önceki konum ve boyut
     property rect restoreGeometry
+    // Pencere ilk boyutunu aldığında bir kez yerleştirilir
+    property bool placed: false
 
     signal raiseRequested
     signal gone
+
+    // İlk boyut belli olunca pencereyi ekrana sığdır: kullanılabilir alandan büyükse büyüt,
+    // değilse taşmayacak şekilde konumunu düzelt.
+    function place() {
+        if (placed || surfaceItem.width <= 0 || surfaceItem.height <= 0)
+            return;
+        placed = true;
+        if (width > workArea.width || height > workArea.height) {
+            toggleMaximize();
+            return;
+        }
+        x = Math.max(workArea.x, Math.min(x, workArea.x + workArea.width - width));
+        y = Math.max(workArea.y, Math.min(y, workArea.y + workArea.height - height));
+    }
 
     function takeFocus() {
         surfaceItem.takeFocus();
@@ -54,6 +70,8 @@ WindowChrome {
     width: surfaceItem.width + 2
     height: titleBarHeight + surfaceItem.height + 2
 
+    onWidthChanged: place()
+    onHeightChanged: place()
     onPressed: {
         raiseRequested();
         takeFocus();

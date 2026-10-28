@@ -13,10 +13,11 @@ WaylandCompositor {
     // Uygulama adı -> çalıştırılacak komut ve Wayland app_id -> uygulama adı.
     // Faz 1 C'de /etc/ankaros/apps.json'dan okunacak.
     readonly property var commands: ({
-            "Terminal": "foot"
+            "Terminal": "weston-terminal"
         })
     readonly property var appNames: ({
-            "foot": "Terminal"
+            "org.freedesktop.weston.wayland-terminal": "Terminal",
+            "weston-terminal": "Terminal"
         })
 
     // Açık pencereler (WaylandWindow), açılış sırasıyla
