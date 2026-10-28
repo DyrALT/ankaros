@@ -23,7 +23,9 @@ utm() {
 }
 
 [ -d /Applications/UTM.app ] || fail "UTM kurulu değil: https://mac.getutm.app"
-[ -f "$IMAGES/Image" ] && [ -f "$IMAGES/rootfs.ext4" ] || fail "İmaj bulunamadı: $IMAGES"
+if [ ! -f "$IMAGES/Image" ] || [ ! -f "$IMAGES/rootfs.ext4" ]; then
+  fail "İmaj bulunamadı: $IMAGES"
+fi
 [ ! -e "$BUNDLE" ] || fail "\"$NAME\" adında bir sanal makine zaten var. UTM'den sil ya da başka bir ad ver."
 if pgrep -xq UTM && utm "get status of every virtual machine" | grep -qv stopped; then
   fail "UTM'de çalışan bir sanal makine var. Betik UTM'yi yeniden başlatacak, önce onları kapat."
