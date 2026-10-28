@@ -21,3 +21,6 @@ CMakeLists.txt.user*
 *.swp
 compile_commands.json
 .cache/
+
+# Python
+__pycache__/

@@ -26,6 +26,10 @@ Ayrıntılı plan: [faz-1-plani.md](faz-1-plani.md)
   - [ ] Uygulama listesinin `/etc/ankaros/apps.json`'dan okunması (şimdilik compositor'da sabit liste)
 - [x] D: Açılışta giriş istemi yerine doğrudan masaüstü
 - [ ] E: QEMU'da otomatik açılış testi, UTM'de GPU hızlandırmalı test
+  - [x] CI'da açılış testi (`qemu-test.py --expect-desktop`)
+  - [x] UTM rehberi ([utm.md](utm.md))
+  - [ ] UTM rehberinin denenmesi ve virgl ile hızın doğrulanması
+  - [ ] `v0.2.0`
 
 ## Faz 2: Sistem servisleri (`v0.3.0`)
 
