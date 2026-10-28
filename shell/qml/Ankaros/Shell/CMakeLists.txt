@@ -25,6 +25,8 @@ qt_add_qml_module(ankaros_shell
         StartMenu.qml
         AppTile.qml
         RecommendedItem.qml
+        WindowTitleBar.qml
+        WindowChrome.qml
     RESOURCES
         fonts/Inter-Regular.ttf
         fonts/Inter-Medium.ttf

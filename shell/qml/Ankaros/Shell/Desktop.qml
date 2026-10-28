@@ -19,14 +19,31 @@ Item {
 
     // Başlat panelinin açık olup olmadığı. Compositor'da Super tuşu bunu değiştirecek.
     property alias startMenuOpen: startMenu.open
+    // Uygulama pencerelerinin yerleştiği katman: duvar kağıdının üstünde, alt çubuğun altında.
+    // Compositor pencere çerçevelerini bu öğenin çocuğu olarak oluşturur.
+    readonly property alias windowLayer: windowLayer
+    // Pencerelerin kullanabileceği alan (alt çubuk hariç)
+    readonly property rect workArea: Qt.rect(0, 0, width, taskBar.y - Theme.size.taskBarMargin)
 
     // Kullanıcı bir uygulamayı başlattığında. Compositor bunu dinleyip uygulamayı çalıştıracak.
     signal appLaunched(string app)
 
-    Wallpaper {
-        id: wallpaper
+    // Duvar kağıdı ve pencereler. Alt çubuk ve başlat paneli buzlu cam efekti için bu öğenin
+    // görüntüsünü bulanıklaştırır, böylece arkalarındaki pencereler de bulanık görünür.
+    Item {
+        id: scene
 
         anchors.fill: parent
+
+        Wallpaper {
+            anchors.fill: parent
+        }
+
+        Item {
+            id: windowLayer
+
+            anchors.fill: parent
+        }
     }
 
     // Başlat paneli açıkken dışarı tıklamak paneli kapatır.
@@ -42,7 +59,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: taskBar.top
         anchors.bottomMargin: Theme.size.taskBarMargin
-        backdrop: wallpaper
+        backdrop: scene
         apps: root.apps
         recommended: root.recommended
         userName: root.userName
@@ -59,7 +76,7 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.margins: Theme.size.taskBarMargin
-        backdrop: wallpaper
+        backdrop: scene
         apps: root.taskBarApps
         running: root.running
         activeApp: root.activeApp
