@@ -5,6 +5,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+## [0.2.0] - 2026-10-28
+
+Faz 1: Açılışta gelen grafik masaüstü. ankaros'un kendi Wayland compositor'ı, pencereler ve Görünüm ayarları.
+
 ### Eklendi
 
 - Grafik yığını: Qt 6.9 (eglfs, QML, Wayland compositor), Mesa (virgl, softpipe), libinput, weston-terminal
@@ -48,5 +52,6 @@ Faz 0: QEMU'da açılan en küçük ankaros sistemi ve Mac'te çalışan masaüs
 
 - `run-qemu.sh`: OrbStack klasöründeki imaj açılırken çıkan disk kilidi hatası
 
-[Yayınlanmamış]: https://github.com/DyrALT/ankaros/compare/v0.1.0...HEAD
+[Yayınlanmamış]: https://github.com/DyrALT/ankaros/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/DyrALT/ankaros/releases/tag/v0.2.0
 [0.1.0]: https://github.com/DyrALT/ankaros/releases/tag/v0.1.0
