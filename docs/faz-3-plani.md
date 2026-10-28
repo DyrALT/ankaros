@@ -4,6 +4,10 @@
 > uygulamaların kendi sitelerinden indirdiği `.deb` ve `.rpm` paketlerini çalıştırabilmeli. Bunun yerine
 > Faz 4'te uyumluluk katmanları geliyor: [karar 0016](kararlar/0016-uyumluluk-katmanlari.md),
 > [faz-4-plani.md](faz-4-plani.md). Aşağıdaki "Uygulama paketi" bölümü tarihçe olarak duruyor.
+>
+> **Eklendi (2026-10-29):** `v0.4.0`'dan önce masaüstü cilalanıyor: pencere yönetimi, alt çubuk ve
+> başlat paneli, Ayarlar'a Klavye ve dil sayfası. Yeni E–H adımları ve [Masaüstü cilası](#masaüstü-cilası)
+> bölümü.
 
 **Hedef:**
 - Uygulamalar imajı yeniden derlemeden kurulup kaldırılabilir. Paket herhangi bir dilde yazılmış bir
@@ -47,9 +51,19 @@ Her adım ayrı bir PR'dır. PR'lar üst üste dizilmez.
 | **D** `feat(apps)` | Terminal: libvterm ile terminal öykünmesi, sekmeler, kopyala-yapıştır, tema ve yazı tipi ayarı. `weston-terminal` kalkar. |
 | ~~**E**~~ `feat(system)` | Paket biçimi (`.ankpkg`), `ankaros-packages` servisi, `ank` komutu, imzalı paket deposu, örnek paket ve paketleri üreten CI hattı |
 | ~~**F**~~ `feat(apps)` | Paket Merkezi: arama, kurma, kaldırma, güncelleme |
-| **G** `chore` | `v0.4.0` |
 
-A, B ile aynı anda yürüyebilir (tasarım onayını beklemez). C, D ve F tasarım onayından sonra başlar.
+Masaüstü cilası (eski E ve F'nin yerine):
+
+| PR | İçerik |
+|---|---|
+| **E** `design` | Figma: Alt+Tab, pencere yaslama önizlemesi, hızlı ayarlar paneli, takvim, "Tüm uygulamalar" görünümü, Ayarlar › Klavye ve dil. **Onayın alınır.** |
+| **F** `feat(compositor)` | Pencere yönetimi: kenardan ve köşeden boyutlandırma, yaslama, Alt+Tab, açılma ve kapanma animasyonları, klavye kısayolları |
+| **G** `feat(shell)` | Alt çubuk ve başlat paneli: tüm uygulamalar, son kullanılanlar, Ayarlar sayfalarında arama, takvim, hızlı ayarlar, sahte simgelerin kalkması |
+| **H** `feat(apps)` | Ayarlar › Klavye ve dil: klavye düzeni seçimi, anında uygulanır, giriş ekranında da geçerli |
+| **I** `chore` | `v0.4.0` |
+
+A, B ile aynı anda yürüyebilir (tasarım onayını beklemez). C ve D tasarım onayından sonra başlar.
+F, G ve H, E'nin onayından sonra başlar ve birbirinden bağımsızdır.
 
 ## Uygulama paketi
 
@@ -111,6 +125,48 @@ Bildirimler sayfası Faz 4'e kalır, çünkü henüz bildirim sistemi yok.
 - Sekmeler, kopyala-yapıştır (pano compositor üzerinden diğer uygulamalarla paylaşılır), kaydırma geçmişi
 - Yazı tipi: JetBrains Mono (SIL OFL, imaja eklenir), boyutu ayarlanabilir
 - Renkler temayla uyumlu, açık ve koyu temada ayrı
+
+## Masaüstü cilası
+
+### Pencere yönetimi (F)
+
+- **Boyutlandırma:** Pencere kenarlarından ve köşelerinden sürüklenerek. İmleç kenarda boyutlandırma
+  okuna döner. Uygulamanın en küçük boyutu (`xdg_toplevel.min_size`) korunur.
+- **Yaslama:** Pencere ekranın sol ya da sağ kenarına sürüklenince yarım ekrana, üst kenara sürüklenince
+  tam ekrana yaslanır. Bırakmadan önce yerini gösteren yarı saydam bir önizleme çıkar. Yaslanmış pencere
+  sürüklenince eski boyutuna döner.
+- **Alt+Tab:** Açık pencerelerin küçük görüntüleri ortada bir şeritte, son kullanılandan başlayarak.
+  Alt bırakılınca seçilen pencere öne gelir.
+- **Animasyonlar:** Açılma, kapanma, küçültme (alt çubuktaki simgesine doğru) ve büyütme. Kısa
+  (150–200 ms) ve sade.
+- **Kısayollar:**
+
+| Kısayol | İş |
+|---|---|
+| Süper | Başlat panelini aç ve kapat |
+| Süper+D | Masaüstünü göster |
+| Süper+←, → | Pencereyi sola ya da sağa yasla |
+| Süper+↑, ↓ | Büyüt, eski boyutuna döndür ya da küçült |
+| Alt+Tab, Alt+Shift+Tab | Pencereler arasında geçiş |
+| Alt+F4 | Pencereyi kapat |
+| Süper+L | Kilitle (var) |
+
+### Alt çubuk ve başlat paneli (G)
+
+- Komutu olmayan uygulamalar listeden kalkar.
+- **Tüm uygulamalar:** Başlat panelindeki "Tümü" düğmesi alfabetik tam listeyi açar.
+- **Son kullanılanlar:** Boş kalan "Önerilenler" yerine son açılan uygulamalar.
+- **Arama:** Uygulamaların yanında Ayarlar sayfalarını da bulur ("koyu tema" → Görünüm).
+- **Takvim:** Saate tıklanınca ay görünümü açılır.
+- **Hızlı ayarlar:** Sağdaki simgelere tıklanınca açılan panel: ağ, tema, Ayarlar'a kısayol, oturumu
+  kapat. Ses ve bildirim Faz 4'te eklenir.
+- Gerçek karşılığı olmayan simgeler (ses, bildirim, pil) kalkar. Pil yalnızca sistemde pil varsa görünür.
+
+### Klavye ve dil (H)
+
+- Klavye düzeni: Türkçe Q, Türkçe F, İngilizce (ABD). Seçim anında uygulanır.
+- Seçim oturum ayarlarına yazılır, giriş ekranında ve kilit ekranında da aynı düzen kullanılır.
+- Sistem dili şimdilik yalnızca Türkçe, sayfada yalnızca gösterilir.
 
 ## Test yöntemi
 
