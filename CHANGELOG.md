@@ -18,6 +18,9 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   başlat, Kapat) ve Ayarlar › Kullanıcı (otomatik giriş, şifre değiştirme)
 - Ayarlarda bilgi balonları: açıklamalar sayfaya yazılmıyor, ayar adının yanındaki ⓘ simgesinde
 - `qemu-test.py`'ye tuş, yazı, seri konsol komutu, ağ kablosu ve ara ekran görüntüsü eylemleri
+- Açılış süresi raporu (`docs/acilis-suresi.md`): `ankarosctl boot` çekirdeği, servisleri ve
+  masaüstünün ilk karesini gösteriyor, `qemu-test.py` ve CI raporu yazdırıyor. Mac'te (QEMU, hvf)
+  masaüstü yaklaşık 1,1 saniyede geliyor.
 - Kablolu ağ servisi `ankaros-network` (`docs/ag.md`): DHCP ya da statik IP, durum değişince
   abonelere bildirim. Ayarlar › Ağ ve alt çubukta gerçek durumu gösteren kablolu ağ simgesi
 

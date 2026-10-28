@@ -50,9 +50,20 @@ WaylandCompositor {
         sizeFollowsWindow: true
 
         window: Window {
+            id: screen
+
+            // Açılış süresi ölçümü: ilk kare çizilince init'e bildirilir (ankarosctl boot, docs/acilis-suresi.md)
+            property bool firstFrameReported: false
+
             visible: true
             visibility: Window.FullScreen
             color: "black"
+            onFrameSwapped: {
+                if (!firstFrameReported) {
+                    firstFrameReported = true;
+                    Session.markBoot(Session.greeter ? "giriş ekranı" : "masaüstü");
+                }
+            }
 
             Desktop {
                 id: desktop

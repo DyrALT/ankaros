@@ -101,7 +101,8 @@ Qt uygulamaları Wayland istemcisi olarak açılabilir: `QT_QPA_PLATFORM=wayland
 ```
 
 Açılış testi: imajı ekransız açar, masaüstü ekrana gelene kadar birkaç saniyede bir ekran görüntüsü
-alır. Masaüstü `--wait` saniye içinde gelmezse 1 ile çıkar. CI her imaj derlemesinden sonra bunu
+alır, masaüstü gelince açılış süresi raporunu ([acilis-suresi.md](acilis-suresi.md)) yazdırır.
+Masaüstü `--wait` saniye içinde gelmezse 1 ile çıkar. CI her imaj derlemesinden sonra bunu
 çalıştırır, ekran görüntüsünü ve günlüğü `acilis-testi` adıyla yükler. Ölçüt piksel karşılaştırması
 değildir: siyah konsol ekranı ile renkli duvar kâğıdı birbirinden ayrılır, saat ya da tasarım değişince
 test bozulmaz.

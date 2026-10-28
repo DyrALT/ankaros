@@ -63,6 +63,8 @@ public:
     void stopAll(double timeout);
 
     void mark(const std::string &name);
+    // init'in başladığı an: çekirdeğin açılış süresi (açılış raporu için)
+    void setKernelTime(double seconds) { m_kernelTime = seconds; }
 
     // Denetim soketi için sekmeyle ayrılmış satırlar (bkz. control.cpp)
     std::vector<std::string> statusLines() const;
@@ -77,6 +79,7 @@ private:
 
     std::vector<Service> m_services; // başlatma sırasıyla
     std::vector<std::pair<std::string, double>> m_marks;
+    double m_kernelTime = -1;
 };
 
 } // namespace ankaros

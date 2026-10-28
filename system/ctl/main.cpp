@@ -57,26 +57,28 @@ void printStatus(const std::vector<std::string> &lines)
     }
 }
 
+// Açılış raporu. Zamanlar çekirdeğin saati başladığından beri geçen saniyedir. Son satır makinece
+// de okunur (qemu-test.py, CI): "Toplam: çekirdek X sn, servisler Y sn, masaüstü Z sn".
 void printBoot(const std::vector<std::string> &lines)
 {
     double kernel = -1;
-    double last = 0;
+    double servicesReady = 0;
+    double desktop = -1;
     printf("%s %9s %9s %9s\n", pad("ADIM", 24).c_str(), "BAŞLADI", "HAZIR", "SÜRE");
     for (const std::string &line : lines) {
         const auto f = split(line, '\t');
-        if (f[0] == "service" && f.size() >= 5) {
+        if (f[0] == "kernel" && f.size() >= 2) {
+            kernel = atof(f[1].c_str());
+            printf("%s %9.3f %9.3f %9.3f\n", pad("çekirdek", 24).c_str(), 0.0, kernel, kernel);
+        } else if (f[0] == "service" && f.size() >= 5) {
             const double started = atof(f[2].c_str());
             const double ready = atof(f[3].c_str());
             if (started < 0) {
                 printf("%s %9s %9s %9s  %s\n", pad(f[1], 24).c_str(), "-", "-", "-", f[4].c_str());
-                continue;
-            }
-            if (kernel < 0 || started < kernel)
-                kernel = started;
-            if (ready >= 0) {
+            } else if (ready >= 0) {
                 printf("%s %9.3f %9.3f %9.3f\n", pad(f[1], 24).c_str(), started, ready,
                        ready - started);
-                last = std::max(last, ready);
+                servicesReady = std::max(servicesReady, ready);
             } else {
                 printf("%s %9.3f %9s %9s  %s\n", pad(f[1], 24).c_str(), started, "-", "-",
                        f[4].c_str());
@@ -84,13 +86,15 @@ void printBoot(const std::vector<std::string> &lines)
         } else if (f[0] == "mark" && f.size() >= 3) {
             const double at = atof(f[2].c_str());
             printf("%s %9s %9.3f\n", pad("◆ " + f[1], 24).c_str(), "", at);
-            last = std::max(last, at);
+            if (desktop < 0 && (f[1] == "masaüstü" || f[1] == "giriş ekranı"))
+                desktop = at;
         }
     }
-    if (kernel >= 0)
-        printf("\nİlk servis %.3f sn'de başladı (çekirdek ve init hazırlığı), son adım %.3f sn'de "
-               "bitti.\n",
-               kernel, last);
+    printf("\nToplam: çekirdek %.2f sn, servisler %.2f sn, ", kernel, servicesReady);
+    if (desktop >= 0)
+        printf("masaüstü %.2f sn\n", desktop);
+    else
+        printf("masaüstü henüz çizilmedi\n");
 }
 
 } // namespace

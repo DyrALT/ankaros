@@ -437,6 +437,8 @@ std::vector<std::string> Supervisor::bootLines() const
 {
     char buffer[128];
     std::vector<std::string> lines;
+    snprintf(buffer, sizeof buffer, "kernel\t%.3f", m_kernelTime);
+    lines.emplace_back(buffer);
     for (const Service &service : m_services) {
         snprintf(buffer, sizeof buffer, "\t%.3f\t%.3f\t", service.startedAt, service.readyAt);
         lines.push_back("service\t" + service.definition.name + buffer + toString(service.state));
