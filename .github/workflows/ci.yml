@@ -44,7 +44,8 @@ jobs:
     name: İmaj (aarch64)
     # Derleme makinemiz gibi arm64: Buildroot kendi araç zincirini yerel olarak derler.
     runs-on: ubuntu-24.04-arm
-    timeout-minutes: 240
+    # İlk derleme Qt 6 ve Mesa ile birlikte birkaç saat sürer, sonrakiler önbellekten hızlanır.
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
         with:

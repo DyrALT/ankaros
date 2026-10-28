@@ -19,8 +19,8 @@ ankaros'un hedefi: **hızlı** ve **kendine özel bir masaüstü deneyimi** suna
 - [x] Kabuğun QML ile tasarıma göre yazılması (Mac önizlemesinde)
 Ayrıntılı plan: [faz-1-plani.md](faz-1-plani.md)
 
-- [ ] Figma'da pencere başlık çubuğu (düğme konumu ve stili varyantları) ve Görünüm ayarları ekranı
-- [ ] A: Buildroot'a Qt 6 (qtbase, qtdeclarative, qtwayland), Mesa (virgl, softpipe), libinput, foot eklenmesi
+- [x] Figma'da pencere başlık çubuğu (düğme konumu ve stili varyantları) ve Görünüm ayarları ekranı
+- [x] A: Buildroot'a Qt 6 (qtbase, qtdeclarative, qtwayland), Mesa (virgl, softpipe), libinput, weston-terminal eklenmesi
 - [ ] B: Qt Wayland Compositor ile compositor: pencere açma, taşıma, odak, kapatma, ankaros başlık çubuğu
 - [ ] C: Pencere katmanı, gerçek çalışma göstergeleri, uygulama açma, küçültme/büyütme, Görünüm ayarları
 - [ ] D: Açılışta giriş istemi yerine doğrudan masaüstü

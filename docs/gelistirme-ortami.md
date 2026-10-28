@@ -68,6 +68,27 @@ Mac'ten bu dosyalara `~/OrbStack/ankaros-build/home/<kullanıcı>/ankaros-output
 | `./scripts/build.sh <paket>-rebuild` | Tek bir paketi yeniden derler |
 | `./scripts/build.sh clean` | Çıktıyı siler (araç zinciri de yeniden derlenir!) |
 
+### Grafik mod
+
+```bash
+./scripts/run-qemu.sh --gui -snapshot
+```
+
+Seri konsolun yanında bir ekran penceresi açılır. Giriş yaptıktan sonra `ankaros-shell-preview` komutu
+kabuğu tam ekran başlatır. `weston-terminal` Wayland terminalidir, compositor içinde çalışır. Bu modda
+sanal GPU 2D'dir ve Mesa yazılımsal çizer (softpipe): çalışır ama yavaştır. GPU hızlandırmalı test
+UTM ile yapılır.
+
+### Otomatik test
+
+```bash
+./scripts/qemu-test.py --command "ankaros-shell-preview" --wait 25 --screenshot ekran.ppm
+```
+
+İmajı ekransız açar, root olarak girer, komutu çalıştırır, bekler, ekran görüntüsü alır ve kapatır.
+Seri konsol çıktısı `ekran.log` dosyasına yazılır. PPM'i PNG'ye çevirmek için:
+`sips -s format png ekran.ppm --out ekran.png`.
+
 `run-qemu.sh` QEMU'yu Apple'ın donanım hızlandırmasıyla (`-accel hvf`) çalıştırır. Bu yüzden misafir
 sistem neredeyse yerel hızda açılır. Ek QEMU argümanları betiğe eklenebilir. Örneğin
 `./scripts/run-qemu.sh -snapshot` imajda yapılan değişiklikleri kapanışta atar, deneme için kullanışlıdır.

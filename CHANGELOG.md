@@ -5,6 +5,13 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+### Eklendi
+
+- Grafik yığını: Qt 6.9 (eglfs, QML, Wayland compositor), Mesa (virgl, softpipe), libinput, weston-terminal
+- `ankaros-shell` paketi: kabuk ankaros'ta tam ekran çalışıyor
+- Türkçe dil ayarı (tr_TR.UTF-8) ve İstanbul saat dilimi
+- `run-qemu.sh --gui` ve ekran görüntüsü alan otomatik test betiği `scripts/qemu-test.py`
+
 ## [0.1.0] - 2026-10-28
 
 Faz 0: QEMU'da açılan en küçük ankaros sistemi ve Mac'te çalışan masaüstü kabuğu.

@@ -1,0 +1,17 @@
+config BR2_PACKAGE_ANKAROS_SHELL
+	bool "ankaros-shell"
+	depends on BR2_PACKAGE_QT6
+	depends on BR2_PACKAGE_QT6_GL_SUPPORTS
+	select BR2_PACKAGE_QT6BASE_GUI
+	select BR2_PACKAGE_QT6BASE_OPENGL
+	select BR2_PACKAGE_QT6DECLARATIVE
+	select BR2_PACKAGE_QT6DECLARATIVE_QUICK
+	select BR2_PACKAGE_QT6SHADERTOOLS
+	help
+	  ankaros masaüstü kabuğu (Ankaros.Shell QML modülü) ve onu
+	  tam ekran gösteren önizleme uygulaması
+	  (ankaros-shell-preview). Faz 1'de compositor gelene kadar
+	  grafik yığınının test uygulaması olarak kullanılır.
+
+comment "ankaros-shell needs Qt 6 with OpenGL support"
+	depends on !BR2_PACKAGE_QT6 || !BR2_PACKAGE_QT6_GL_SUPPORTS

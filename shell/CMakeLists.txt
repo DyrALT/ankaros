@@ -9,6 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # 6.9: RectangularShadow (QtQuick.Effects)
 find_package(Qt6 6.9 REQUIRED COMPONENTS Quick)
+include(GNUInstallDirs)
 qt_standard_project_setup(REQUIRES 6.5)
 
 # Tüm QML modülleri tek bir klasörde toplanır, qmllint ve qmlls modülleri buradan bulur.
