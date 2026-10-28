@@ -21,6 +21,10 @@ Item {
     // userName, autologin, unlock(), logout(), reboot(), poweroff(), setAutologin(), changePassword()
     // ve unlocked, unlockFailed, passwordUpdated, passwordUpdateFailed sinyalleri.
     property var session: null
+    // Kablolu ağın durumu ve ayarı (docs/ag.md). Compositor'da C++ Network nesnesi, önizlemede sahtesi.
+    // Beklenen üyeler: available, interfaceName, carrier, connected, mode, address, gateway, dns, mac,
+    // configAddress, configGateway, configDns, apply() ve applied, applyFailed sinyalleri.
+    property var network: null
     // Ekran kilitli mi. lock() kilitler, kilidi doğru şifre açar.
     property bool locked: false
 
@@ -117,6 +121,7 @@ Item {
 
                     anchors.fill: parent
                     session: root.session
+                    network: root.network
                 }
             }
         }
@@ -167,7 +172,13 @@ Item {
             startMenu.open = true;
             startMenu.focusSearch();
         }
+        network: root.network
         onAppClicked: app => root.launch(app)
+        onNetworkClicked: {
+            root.settingsPanelPage = "network";
+            if (!root.settingsOpen || !root.settingsFocused)
+                root.launch("Ayarlar");
+        }
     }
 
     // Kilit ekranı her şeyin üstünde. Arkasındaki sahne bulanık görünür.

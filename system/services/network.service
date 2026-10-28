@@ -1,4 +1,0 @@
-# Kablolu ağ, DHCP. Faz 2 E'de ankaros-network servisine geçecek.
-description = Kablolu ağ (DHCP)
-exec = udhcpc -f -S -i eth0
-after = loopback udev

@@ -153,10 +153,15 @@ def send_key(path, combo):
     time.sleep(0.08)
 
 
+# Fiziksel tuşlar gönderilir, ankaros'ta Türkçe Q düzeni etkindir (XKB_DEFAULT_LAYOUT=tr):
+# "." sağ Shift'in solundaki tuş, "/" Shift+7, "-" ve "," Türkçe Q'daki yerleri.
+KEY_NAMES = {" ": "spc", ".": "slash", "/": "shift-7", "-": "equal", ",": "backslash"}
+
+
 def type_text(path, text):
-    """Küçük harf, rakam ve boşluktan oluşan metni tuş tuş yazar."""
+    """Küçük harf, rakam, boşluk ve . / - , karakterlerinden oluşan metni tuş tuş yazar."""
     for char in text:
-        send_key(path, "spc" if char == " " else char)
+        send_key(path, KEY_NAMES.get(char, char))
 
 
 def run_actions(actions, qmp_path, console, log, screenshot):
@@ -164,8 +169,9 @@ def run_actions(actions, qmp_path, console, log, screenshot):
     click X Y      sol tıklama (1440x900 koordinatları)
     sleep SANIYE   bekle
     key TUŞLAR     tuş kombinasyonu, QEMU adlarıyla: ret, esc, meta_l-l
-    type METİN     küçük harf ve rakamları yaz
+    type METİN     küçük harf, rakam ve . / - , yaz (ör. IP adresi)
     run KOMUT      seri konsolda (root) komut çalıştır
+    link on|off    sanal ağ kablosunu tak ya da çıkar
     shot DOSYA     o anki ekranın görüntüsünü kaydet (yol --screenshot'a göre)
     """
     for action in filter(None, (a.strip() for a in actions.split(";"))):
@@ -179,6 +185,8 @@ def run_actions(actions, qmp_path, console, log, screenshot):
             send_key(qmp_path, values[0])
         elif name == "type":
             type_text(qmp_path, rest)
+        elif name == "link":
+            qmp(qmp_path, "set_link", {"name": "nic0", "up": values[0] == "on"})
         elif name == "run":
             console.sendall(f"{rest}\n".encode())
         elif name == "shot":
@@ -231,7 +239,7 @@ def main():
         "-append", "rootwait root=/dev/vda console=ttyAMA0",
         "-drive", f"file={os.path.join(args.images, 'rootfs.ext4')},if=none,format=raw,id=hd0,file.locking=off",
         "-device", "virtio-blk-device,drive=hd0",
-        "-netdev", "user,id=eth0", "-device", "virtio-net-device,netdev=eth0",
+        "-netdev", "user,id=eth0", "-device", "virtio-net-device,netdev=eth0,id=nic0",
         "-serial", f"unix:{serial_path},server=on,wait=off",
         "-qmp", f"unix:{qmp_path},server=on,wait=off",
     ])

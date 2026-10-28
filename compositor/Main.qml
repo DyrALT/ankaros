@@ -70,6 +70,7 @@ WaylandCompositor {
                 activeApp: compositor.activeApp
                 userName: Session.userName
                 session: Session
+                network: Network
                 visible: !Session.greeter
                 onAppLaunched: app => compositor.activate(app)
             }

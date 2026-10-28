@@ -1,0 +1,4 @@
+# Kablolu ağ: DHCP ya da statik IP, durum bilgisi (docs/ag.md)
+description = Ağ servisi
+exec = /usr/sbin/ankaros-network
+after = udev

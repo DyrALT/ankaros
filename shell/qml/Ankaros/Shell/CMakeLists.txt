@@ -39,6 +39,7 @@ qt_add_qml_module(ankaros_shell
         LockBackground.qml
         LockScreen.qml
         LoginScreen.qml
+        NetworkSettings.qml
         PasswordField.qml
         PowerMenu.qml
         PushButton.qml

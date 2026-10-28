@@ -24,8 +24,12 @@ qt_add_qml_module(ankaros-compositor
         appcatalog.cpp
         applauncher.h
         applauncher.cpp
+        network.h
+        network.cpp
         session.h
         session.cpp
+        socketrequest.h
+        socketrequest.cpp
 )
 
 target_link_libraries(ankaros-compositor PRIVATE Qt6::Quick Qt6::WaylandCompositor)

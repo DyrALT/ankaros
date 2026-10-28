@@ -1,4 +1,4 @@
-# ankaros sistem servisleri: init (PID 1), oturum yöneticisi, ankarosctl ve ortak kod.
+# ankaros sistem servisleri: init (PID 1), oturum yöneticisi, ağ servisi, ankarosctl ve ortak kod.
 # Qt kullanılmaz, açılışta Qt'nin yüklenmesi beklenmez (bkz. docs/kararlar/0009-kendi-init-sistemimiz.md).
 # Birim testleri Mac'te de derlenir, servisler ve ankarosctl yalnızca Linux'ta.
 cmake_minimum_required(VERSION 3.21)
@@ -37,12 +37,16 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(ankaros-session-core PUBLIC crypt)
 endif()
 
+add_library(ankaros-network-core STATIC network/netconfig.cpp)
+target_include_directories(ankaros-network-core PUBLIC network)
+target_link_libraries(ankaros-network-core PUBLIC ankaros-common)
+
 option(ANKAROS_SYSTEM_TESTS "Birim testlerini derle" ON)
 if(ANKAROS_SYSTEM_TESTS)
     enable_testing()
-    foreach(test config_test service_test session_test)
+    foreach(test config_test service_test session_test network_test)
         add_executable(${test} tests/${test}.cpp)
-        target_link_libraries(${test} PRIVATE ankaros-services ankaros-session-core)
+        target_link_libraries(${test} PRIVATE ankaros-services ankaros-session-core ankaros-network-core)
         add_test(NAME ${test} COMMAND ${test})
     endforeach()
 endif()
@@ -62,9 +66,12 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_executable(ankaros-session session/main.cpp)
     target_link_libraries(ankaros-session PRIVATE ankaros-session-core)
 
+    add_executable(ankaros-network network/main.cpp)
+    target_link_libraries(ankaros-network PRIVATE ankaros-network-core)
+
     add_executable(ankarosctl ctl/main.cpp)
     target_link_libraries(ankarosctl PRIVATE ankaros-common)
 
-    install(TARGETS ankaros-init ankaros-session RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
+    install(TARGETS ankaros-init ankaros-session ankaros-network RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
     install(TARGETS ankarosctl RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

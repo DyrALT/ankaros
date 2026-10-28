@@ -108,8 +108,8 @@ test bozulmaz.
 
 Komut çalıştırıp fare tıklaması ve tuş da gönderilebilir. `--actions` içindeki eylemler `;` ile ayrılır:
 `click X Y` (1440x900 koordinatları), `sleep SN`, `key TUŞLAR` (QEMU adlarıyla: `ret`, `esc`, `meta_l-l`),
-`type METİN` (küçük harf ve rakam), `run KOMUT` (seri konsolda root olarak), `shot DOSYA` (ara ekran
-görüntüsü).
+`type METİN` (küçük harf, rakam ve `. / - ,`, Türkçe Q düzenine göre), `run KOMUT` (seri konsolda root
+olarak), `link on|off` (sanal ağ kablosu), `shot DOSYA` (ara ekran görüntüsü).
 
 ```bash
 ./scripts/qemu-test.py --command "ankaros-shell-preview" --wait 25 --screenshot ekran.png
@@ -153,4 +153,9 @@ Ayrıntılar ve tasarım akışı için [tasarim-akisi.md](tasarim-akisi.md).
 - **QEMU'da `Failed to lock byte 100`**: İmaj OrbStack'in paylaşılan klasöründen okunuyor ve bu klasör
   dosya kilitlerini desteklemiyor. `run-qemu.sh` kilitlemeyi bu yüzden kapatır (`file.locking=off`).
   QEMU'yu elle çalıştırıyorsanız aynı seçeneği ekleyin.
+- **Dosya silindi ya da taşındı ama imajda eski hali duruyor**: Buildroot, repodaki `system/`, `shell/` ve
+  `compositor/` klasörlerini derleme klasörüne `rsync` ile kopyalar ve silinen dosyaları orada bırakır.
+  Taşınan bir başlık dosyasının eski kopyası derlemeye karışabilir, imaja eski bir servis dosyası
+  girebilir. Bir dosyayı sildikten ya da taşıdıktan sonra paketin derleme klasörünü temizleyin:
+  `./scripts/build.sh ankaros-system-dirclean all` (paket adı değişir). CI her seferinde temiz derler.
 - **QEMU'da `hvf` hatası**: Intel Mac'te çalışmaz. `-accel hvf` yerine `-accel tcg` kullanın (çok yavaş).
