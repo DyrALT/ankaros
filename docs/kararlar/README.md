@@ -14,3 +14,6 @@ kayıt değiştirilmez. Karar değişirse yeni bir kayıt yazılır ve eskisinin
 | [0003](0003-aarch64-orbstack-qemu.md) | aarch64 hedefi, OrbStack ile derleme, QEMU ile test | Kabul edildi |
 | [0004](0004-glibc.md) | C kütüphanesi olarak glibc | Kabul edildi |
 | [0005](0005-mit-lisansi.md) | Proje lisansı olarak MIT | Kabul edildi |
+| [0006](0006-qt-wayland-compositor-ve-eglfs.md) | Compositor için Qt Wayland Compositor ve eglfs | Kabul edildi |
+| [0007](0007-sunucu-tarafi-pencere-kenarliklari.md) | Pencere kenarlıklarını compositor çizer, kullanıcı özelleştirebilir | Kabul edildi |
+| [0008](0008-kullanici-ayarlari.md) | Kullanıcı ayarları QtCore Settings ile ~/.config/ankaros altında | Kabul edildi |
