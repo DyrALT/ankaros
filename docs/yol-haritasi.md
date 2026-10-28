@@ -13,7 +13,7 @@ ankaros'un hedefi: **hızlı** ve **kendine özel bir masaüstü deneyimi** suna
 - [x] CI'da imaj derlemesi (GitHub'ın arm64 makinesinde, ilk derleme ~40 dk)
 - [x] Kabuk prototipi Mac'te çalışıyor (`shell/preview`)
 
-## Faz 1: Grafik masaüstü (`v0.2.0`), sıradaki
+## Faz 1: Grafik masaüstü (`v0.2.0`), tamamlandı
 
 - [x] Figma'da masaüstü tasarımı: dört varyasyon çizildi, B · Ankara Taşı seçildi
 - [x] Kabuğun QML ile tasarıma göre yazılması (Mac önizlemesinde)
@@ -23,16 +23,17 @@ Ayrıntılı plan: [faz-1-plani.md](faz-1-plani.md)
 - [x] A: Buildroot'a Qt 6 (qtbase, qtdeclarative, qtwayland), Mesa (virgl, softpipe), libinput, weston-terminal eklenmesi
 - [x] B: Qt Wayland Compositor ile compositor: pencere açma, taşıma, odak, kapatma, ankaros başlık çubuğu
 - [x] C: Pencere katmanı, gerçek çalışma göstergeleri, uygulama açma, küçültme/büyütme, Görünüm ayarları
-  - [ ] Uygulama listesinin `/etc/ankaros/apps.json`'dan okunması (şimdilik compositor'da sabit liste)
+  - Uygulama listesinin dosyadan okunması Faz 2'ye kaldı
 - [x] D: Açılışta giriş istemi yerine doğrudan masaüstü
-- [ ] E: QEMU'da otomatik açılış testi, UTM'de GPU hızlandırmalı test
+- [x] E: QEMU'da otomatik açılış testi, UTM'de GPU hızlandırmalı test
   - [x] CI'da açılış testi (`qemu-test.py --expect-desktop`)
   - [x] UTM rehberi ([utm.md](utm.md))
   - [x] UTM'de virgl ile GPU hızlandırmasının doğrulanması (`scripts/utm-olustur.sh`)
-  - [ ] `v0.2.0`
+  - [x] `v0.2.0`
 
-## Faz 2: Sistem servisleri (`v0.3.0`)
+## Faz 2: Sistem servisleri (`v0.3.0`), sıradaki
 
+- [ ] Uygulama listesinin `/etc/ankaros/apps.json`'dan okunması (şimdilik compositor'da sabit liste)
 - [ ] Kendi init sistemimiz (C++)
 - [ ] Oturum yönetimi, ağ ayarları arayüzü
 - [ ] Açılış süresi ölçümü ve optimizasyonu

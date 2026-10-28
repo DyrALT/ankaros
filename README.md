@@ -8,7 +8,7 @@ işletim sistemi.
 | Taban | Linux 6.18, Buildroot 2026.02 LTS, glibc, BusyBox, eudev |
 | Mimari | aarch64 (Apple Silicon üzerinde donanım hızlandırmalı sanal makine) |
 | Masaüstü | C++20 + QML, Qt 6, Qt Wayland Compositor (Faz 1) |
-| Durum | `v0.1.0` yayında, sıradaki Faz 1: grafik masaüstü ([yol haritası](docs/yol-haritasi.md)) |
+| Durum | `v0.2.0` yayında, sıradaki Faz 2: sistem servisleri ([yol haritası](docs/yol-haritasi.md)) |
 
 ## Hızlı başlangıç
 
