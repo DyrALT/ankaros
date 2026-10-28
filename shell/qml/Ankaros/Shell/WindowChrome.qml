@@ -14,7 +14,12 @@ Item {
     property bool active: true
     // Başlık çubuğundan sürüklenerek taşınabilir mi (büyütülmüş pencerelerde kapalı)
     property bool movable: true
-    readonly property real titleBarHeight: titleBar.height
+    // Çerçeveyi (gölge, zemin, başlık çubuğu, yuvarlak köşeler) çiz. Kendi kenarlığını çizmekte
+    // ısrar eden uygulamalarda kapatılır, yoksa çift başlık çubuğu görünür (karar 0007).
+    property bool decorated: true
+    readonly property real titleBarHeight: decorated ? titleBar.height : 0
+    // Çerçevenin içerik çevresindeki kalınlığı (1 px kenarlık)
+    readonly property real frameWidth: decorated ? 1 : 0
     default property alias content: contentArea.data
 
     signal pressed
@@ -23,6 +28,7 @@ Item {
     signal closeClicked
 
     RectangularShadow {
+        visible: root.decorated
         anchors.fill: parent
         radius: Theme.radius.md
         offset.y: root.active ? 20 : 10
@@ -37,6 +43,7 @@ Item {
     Rectangle {
         id: background
 
+        visible: root.decorated
         anchors.fill: parent
         radius: Theme.radius.md
         color: Theme.color.surfaceWindow
@@ -49,8 +56,8 @@ Item {
         id: body
 
         anchors.fill: parent
-        anchors.margins: 1
-        layer.enabled: true
+        anchors.margins: root.frameWidth
+        layer.enabled: root.decorated
         layer.effect: MultiEffect {
             maskEnabled: true
             maskSource: mask
@@ -59,6 +66,7 @@ Item {
         WindowTitleBar {
             id: titleBar
 
+            visible: root.decorated
             anchors.left: parent.left
             anchors.right: parent.right
             app: root.app
@@ -83,7 +91,7 @@ Item {
         Item {
             id: contentArea
 
-            anchors.top: titleBar.bottom
+            anchors.top: root.decorated ? titleBar.bottom : parent.top
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom

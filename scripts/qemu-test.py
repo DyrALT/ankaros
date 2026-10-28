@@ -3,9 +3,12 @@
 
 Kullanım:
     ./scripts/qemu-test.py --command "ankaros-shell-preview" --wait 20 --screenshot ekran.ppm
+    ./scripts/qemu-test.py --command "ankaros-compositor" --wait 15 \
+        --actions "click 326 860; sleep 10" --screenshot ekran.ppm
 
 Adımlar: imaj açılır (değişiklikler kaydedilmez, -snapshot), giriş isteminde root olarak girilir,
---command arka planda çalıştırılır, --wait saniye beklenir, QEMU'nun screendump komutuyla ekran
+--command arka planda çalıştırılır, --wait saniye beklenir, --actions sırayla uygulanır (ekran
+koordinatları 1440x900'e göre: "click X Y", "sleep SANIYE"), QEMU'nun screendump komutuyla ekran
 görüntüsü alınır ve sanal makine kapatılır. Seri konsol çıktısı --log dosyasına yazılır.
 
 GPU 2D sanal karttır (virtio-gpu-pci), Mesa yazılımsal çizer (softpipe). Hız ölçmek için değil,
@@ -65,11 +68,38 @@ def qmp(path, command, arguments=None):
         return json.loads(f.readline())
 
 
+SCREEN_WIDTH, SCREEN_HEIGHT = 1440, 900
+
+
+def click(path, x, y):
+    """Sanal tablet üzerinden (mutlak koordinatlı fare) sol tıklama gönderir."""
+    def axis(name, value, size):
+        return {"type": "abs", "data": {"axis": name, "value": int(value * 32767 / (size - 1))}}
+
+    qmp(path, "input-send-event", {"events": [axis("x", x, SCREEN_WIDTH), axis("y", y, SCREEN_HEIGHT)]})
+    time.sleep(0.1)
+    for down in (True, False):
+        qmp(path, "input-send-event", {"events": [{"type": "btn", "data": {"down": down, "button": "left"}}]})
+        time.sleep(0.08)
+
+
+def run_actions(actions, qmp_path, console, log):
+    for action in filter(None, (a.strip() for a in actions.split(";"))):
+        name, *values = action.split()
+        if name == "click":
+            click(qmp_path, float(values[0]), float(values[1]))
+        elif name == "sleep":
+            wait_for(console, b"\x00", float(values[0]), log)
+        else:
+            raise SystemExit(f"Bilinmeyen eylem: {action}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--images", default=os.environ.get("IMAGES", default_images()))
     parser.add_argument("--command", required=True, help="giriş yapıldıktan sonra arka planda çalıştırılacak komut")
     parser.add_argument("--wait", type=float, default=20, help="ekran görüntüsünden önce beklenecek saniye")
+    parser.add_argument("--actions", default="", help='ör. "click 326 860; sleep 5" (1440x900 koordinatları)')
     parser.add_argument("--screenshot", required=True, help="ekran görüntüsünün kaydedileceği .ppm dosyası")
     parser.add_argument("--log", default=None, help="seri konsol günlüğü (varsayılan: ekran görüntüsünün yanında)")
     parser.add_argument("--boot-timeout", type=float, default=120)
@@ -86,7 +116,7 @@ def main():
         "-M", "virt", "-accel", accel, "-cpu", "host" if accel != "tcg" else "max", "-smp", "4", "-m", "2G",
         "-snapshot",
         "-display", "none",
-        "-device", "virtio-gpu-pci,xres=1440,yres=900",
+        "-device", f"virtio-gpu-pci,xres={SCREEN_WIDTH},yres={SCREEN_HEIGHT}",
         "-device", "virtio-keyboard-pci", "-device", "virtio-tablet-pci",
         "-kernel", os.path.join(args.images, "Image"),
         "-append", "rootwait root=/dev/vda console=ttyAMA0",
@@ -114,6 +144,7 @@ def main():
             # Komutun çıktısı da günlüğe düşsün diye seri konsola yönlendirilir.
             console.sendall(f"({args.command}) > /dev/ttyAMA0 2>&1 &\n".encode())
             wait_for(console, b"\x00", args.wait, log)  # süre boyunca konsolu okumaya devam et
+            run_actions(args.actions, qmp_path, console, log)
             reply = qmp(qmp_path, "screendump", {"filename": os.path.abspath(args.screenshot)})
             if "error" in reply:
                 print("Ekran görüntüsü alınamadı:", reply["error"], file=sys.stderr)

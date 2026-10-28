@@ -57,18 +57,20 @@ WindowChrome {
             restoreGeometry = Qt.rect(x, y, surfaceItem.width, surfaceItem.height);
             x = workArea.x;
             y = workArea.y;
-            toplevel.sendMaximized(Qt.size(workArea.width - 2, workArea.height - titleBarHeight - 2));
+            toplevel.sendMaximized(Qt.size(workArea.width - 2 * frameWidth,
+                                            workArea.height - titleBarHeight - 2 * frameWidth));
         }
     }
 
     app: appName
+    // Uygulama sunucu tarafı kenarlığı kabul etmediyse (ör. weston-terminal) çerçeveyi o çizer.
+    decorated: toplevel ? toplevel.decorationMode === XdgToplevel.ServerSideDecoration : true
     title: toplevel && toplevel.title.length > 0 ? toplevel.title : appName
     active: toplevel ? toplevel.activated : false
     movable: !maximized
     visible: !minimized
-    // Çerçevenin 1 px kenarlığı için iki yandan 1'er piksel pay
-    width: surfaceItem.width + 2
-    height: titleBarHeight + surfaceItem.height + 2
+    width: surfaceItem.width + 2 * frameWidth
+    height: titleBarHeight + surfaceItem.height + 2 * frameWidth
 
     onWidthChanged: place()
     onHeightChanged: place()
