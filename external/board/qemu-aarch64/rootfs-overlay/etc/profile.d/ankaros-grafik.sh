@@ -1,3 +1,6 @@
+# Türkçe ve UTF-8. Qt UTF-8 olmayan bir dil ayarında uyarı verir ve tarihleri İngilizce yazar.
+export LANG="${LANG:-tr_TR.UTF-8}"
+
 # Qt uygulamaları X ya da Wayland olmadan, doğrudan ekran kartına (DRM/KMS) çizer.
 export QT_QPA_PLATFORM=eglfs
 export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
