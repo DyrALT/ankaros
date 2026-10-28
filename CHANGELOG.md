@@ -20,7 +20,7 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 - `run-qemu.sh --gui` ve ekran görüntüsü alan otomatik test betiği `scripts/qemu-test.py`
 - CI'da açılış testi: her imaj derlemesinden sonra imaj QEMU'da açılır, masaüstünün ekrana geldiği
   denetlenir, ekran görüntüsü yüklenir
-- UTM'de GPU hızlandırmalı kullanım rehberi (`docs/utm.md`)
+- UTM'de GPU hızlandırmalı sanal makineyi tek komutla kuran `scripts/utm-olustur.sh` ve rehberi (`docs/utm.md`)
 
 ## [0.1.0] - 2026-10-28
 
