@@ -22,7 +22,6 @@ WaylandCompositor {
 
     // Açık pencereler (WaylandWindow), açılış sırasıyla
     property var windows: []
-    property int topZ: 0
 
     readonly property var runningApps: windows.map(w => w.appName)
     readonly property string activeApp: windows.find(w => w.active)?.appName ?? ""
@@ -33,7 +32,8 @@ WaylandCompositor {
 
     function raise(window) {
         window.minimized = false;
-        window.z = ++topZ;
+        // Kabuğun Ayarlar penceresiyle aynı sıralamayı paylaşmak için z değeri Desktop'tan alınır.
+        window.z = desktop.nextZ();
     }
 
     // Alt çubuktan ya da başlat panelinden bir uygulamaya tıklandığında: penceresi yoksa başlat,

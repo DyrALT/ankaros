@@ -4,13 +4,14 @@ else()
     qt_add_library(ankaros_shell STATIC)
 endif()
 
-set_source_files_properties(Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+set_source_files_properties(Theme.qml ShellSettings.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 qt_add_qml_module(ankaros_shell
     URI Ankaros.Shell
     VERSION 1.0
     QML_FILES
         Theme.qml
+        ShellSettings.qml
         IconData.js
         Label.qml
         Icon.qml
@@ -27,6 +28,7 @@ qt_add_qml_module(ankaros_shell
         RecommendedItem.qml
         WindowTitleBar.qml
         WindowChrome.qml
+        AppearanceSettings.qml
     RESOURCES
         fonts/Inter-Regular.ttf
         fonts/Inter-Medium.ttf

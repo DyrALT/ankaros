@@ -9,7 +9,8 @@ import QtQuick
 QtObject {
     id: theme
 
-    property bool dark: false
+    // Kullanıcının ayarından gelir. Önizleme ekran görüntüleri için doğrudan da atanabilir.
+    property bool dark: ShellSettings.darkMode
 
     readonly property Colors color: Colors {
         dark: theme.dark
@@ -45,6 +46,12 @@ QtObject {
         readonly property color textPrimary: dark ? "#f5f2ee" : "#1d1b19"
         readonly property color textSecondary: dark ? "#a39c95" : "#6b6560"
         readonly property color textOnAccent: "#ffffff"
+
+        // Renkli daire stilindeki pencere düğmeleri (color/windowButton/*)
+        readonly property color windowClose: "#e5604a"
+        readonly property color windowMinimize: "#f2b33d"
+        readonly property color windowMaximize: "#5fb37a"
+        readonly property color windowButtonInactive: dark ? Qt.rgba(1, 1, 1, 0.18) : Qt.rgba(0, 0, 0, 0.14)
 
         // Vurgu koleksiyonu, "Ankara Taşı" modu
         readonly property color accent: "#c0674e"

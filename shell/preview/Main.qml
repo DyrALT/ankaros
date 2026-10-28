@@ -2,9 +2,9 @@
 // pencere yeniden boyutlandırılabilir ve tam ekran yapılabilir. Kabuk her boyuta uyum sağlar.
 //
 // Kısayollar (macOS'ta Ctrl yerine Cmd):
-//   Ctrl+R  yeniden derleyip yeniden aç: uygulama 42 (açık mod) ya da 43 (koyu mod) koduyla çıkar,
-//           scripts/shell-preview.sh bunu görünce derleyip uygulamayı yeniden başlatır
-//   Ctrl+D  açık/koyu mod
+//   Ctrl+R  yeniden derleyip yeniden aç: uygulama 42 koduyla çıkar, scripts/shell-preview.sh bunu
+//           görünce derleyip uygulamayı yeniden başlatır (tema ayarı kalıcı olduğu için korunur)
+//   Ctrl+D  açık/koyu mod (Görünüm ayarlarına kaydedilir)
 //   F11 ya da sistemin tam ekran kısayolu (macOS'ta Ctrl+Cmd+F)  tam ekran
 //   Ctrl+Q  kapat
 //
@@ -15,6 +15,7 @@
 //                        Görüntü pencere boyutundan bağımsız olarak 1440x900 çizilir.
 //   --size <GxY>         ekran görüntüsünün boyutu, ör. --size 1024x720
 //   --window             masaüstünde sahte bir uygulama penceresi göster (pencere tasarımı için)
+//   --settings           Ayarlar penceresini açık olarak başla
 import QtQuick
 import Ankaros.Shell
 
@@ -38,7 +39,11 @@ Window {
     title: qsTr("ankaros: kabuk önizlemesi")
     color: "black"
 
-    Component.onCompleted: Theme.dark = args.includes("--dark")
+    // --dark ekran görüntüleri içindir, kullanıcının kayıtlı ayarını değiştirmez.
+    Component.onCompleted: {
+        if (args.includes("--dark"))
+            Theme.dark = true;
+    }
 
     Desktop {
         id: desktop
@@ -47,6 +52,8 @@ Window {
         width: window.screenshotMode ? window.screenshotSize.width : window.width
         height: window.screenshotMode ? window.screenshotSize.height : window.height
         startMenuOpen: window.args.includes("--launcher")
+        settingsOpen: window.args.includes("--settings")
+        settingsFocused: settingsOpen
 
         // Sahte veriler. ankaros'ta compositor ve sistem servislerinden gelecek.
         apps: ["Terminal", "Dosyalar", "Tarayıcı", "Ayarlar", "Metin Düzenleyici", "Müzik",
@@ -91,12 +98,12 @@ Window {
 
     Shortcut {
         sequence: "Ctrl+R"
-        onActivated: Qt.exit(Theme.dark ? 43 : 42)
+        onActivated: Qt.exit(42)
     }
 
     Shortcut {
         sequence: "Ctrl+D"
-        onActivated: Theme.dark = !Theme.dark
+        onActivated: ShellSettings.darkMode = !ShellSettings.darkMode
     }
 
     Shortcut {

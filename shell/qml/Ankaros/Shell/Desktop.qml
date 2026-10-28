@@ -25,8 +25,44 @@ Item {
     // Pencerelerin kullanabileceği alan (alt çubuk hariç)
     readonly property rect workArea: Qt.rect(0, 0, width, taskBar.y - Theme.size.taskBarMargin)
 
+    // Kabuğun kendi Ayarlar penceresi açık mı, odakta mı. Bu pencere bir Wayland uygulaması değil,
+    // kabuğun parçası. Bu yüzden çalışma ve odak durumu burada tutulur.
+    property bool settingsOpen: false
+    property bool settingsFocused: false
+
+    // Pencerelerin üst üste sırası. Compositor da kendi pencerelerini öne getirirken bunu kullanır,
+    // böylece Ayarlar penceresiyle uygulama pencereleri aynı sıralamayı paylaşır.
+    property int topZ: 0
+
     // Kullanıcı bir uygulamayı başlattığında. Compositor bunu dinleyip uygulamayı çalıştıracak.
+    // "Ayarlar" bu sinyale düşmez, kabuk onu kendisi açar.
     signal appLaunched(string app)
+
+    function nextZ() {
+        return ++topZ;
+    }
+
+    function launch(app) {
+        if (app !== "Ayarlar") {
+            appLaunched(app);
+            return;
+        }
+        if (settingsOpen && settingsFocused) {
+            settingsOpen = false;
+            return;
+        }
+        settingsOpen = true;
+        settingsFocused = true;
+        settingsWindow.z = nextZ();  // zaten açıksa da öne getir
+    }
+
+    // Başka bir uygulama penceresi odak alınca Ayarlar penceresi odaktan çıkar.
+    onActiveAppChanged: settingsFocused = false
+    // Ayarlar penceresi nasıl açılırsa açılsın en öne gelsin.
+    onSettingsOpenChanged: {
+        if (settingsOpen)
+            settingsWindow.z = nextZ();
+    }
 
     // Duvar kağıdı ve pencereler. Alt çubuk ve başlat paneli buzlu cam efekti için bu öğenin
     // görüntüsünü bulanıklaştırır, böylece arkalarındaki pencereler de bulanık görünür.
@@ -43,6 +79,29 @@ Item {
             id: windowLayer
 
             anchors.fill: parent
+
+            WindowChrome {
+                id: settingsWindow
+
+                visible: root.settingsOpen
+                width: Math.min(820, root.width - 80)
+                height: Math.min(600, root.workArea.height - 40)
+                x: (root.width - width) / 2
+                y: Math.max(20, (root.workArea.height - height) / 2)
+                app: "Ayarlar"
+                title: qsTr("Ayarlar")
+                active: root.settingsFocused
+                onPressed: {
+                    z = root.nextZ();
+                    root.settingsFocused = true;
+                }
+                onCloseClicked: root.settingsOpen = false
+                onMinimizeClicked: root.settingsOpen = false
+
+                AppearanceSettings {
+                    anchors.fill: parent
+                }
+            }
         }
     }
 
@@ -65,7 +124,7 @@ Item {
         userName: root.userName
         onAppLaunched: app => {
             open = false;
-            root.appLaunched(app);
+            root.launch(app);
         }
     }
 
@@ -77,15 +136,16 @@ Item {
         anchors.bottom: parent.bottom
         anchors.margins: Theme.size.taskBarMargin
         backdrop: scene
-        apps: root.taskBarApps
-        running: root.running
-        activeApp: root.activeApp
+        apps: root.settingsOpen && !root.taskBarApps.includes("Ayarlar")
+              ? root.taskBarApps.concat(["Ayarlar"]) : root.taskBarApps
+        running: root.settingsOpen ? root.running.concat(["Ayarlar"]) : root.running
+        activeApp: root.settingsFocused ? "Ayarlar" : root.activeApp
         startMenuOpen: startMenu.open
         onStartClicked: startMenu.open = !startMenu.open
         onSearchClicked: {
             startMenu.open = true;
             startMenu.focusSearch();
         }
-        onAppClicked: app => root.appLaunched(app)
+        onAppClicked: app => root.launch(app)
     }
 }
