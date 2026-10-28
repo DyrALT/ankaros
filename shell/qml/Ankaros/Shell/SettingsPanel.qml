@@ -1,5 +1,6 @@
 // Ayarlar penceresinin içeriği: kenar çubuğu ve seçili sayfa. Kenar çubuğu her sayfada aynıdır.
-// session: oturum işlemleri (Kullanıcı sayfası için), bkz. Desktop.session.
+// session: oturum işlemleri (Kullanıcı sayfası), network: ağ durumu ve ayarı (Ağ sayfası),
+// bkz. Desktop.session ve Desktop.network.
 pragma ComponentBehavior: Bound
 
 import QtQuick
@@ -9,6 +10,7 @@ Rectangle {
     id: root
 
     property var session: null
+    property var network: null
     property string page: "appearance"
 
     // Henüz yazılmamış sayfalar soluk görünür ve seçilemez
@@ -17,7 +19,7 @@ Rectangle {
         { id: "wallpaper", label: qsTr("Duvar kağıdı"), ready: false },
         { id: "taskbar", label: qsTr("Alt çubuk"), ready: false },
         { id: "notifications", label: qsTr("Bildirimler"), ready: false },
-        { id: "network", label: qsTr("Ağ"), ready: false },
+        { id: "network", label: qsTr("Ağ"), ready: true },
         { id: "user", label: qsTr("Kullanıcı"), ready: true },
         { id: "about", label: qsTr("Hakkında"), ready: false }
     ]
@@ -80,7 +82,8 @@ Rectangle {
         Loader {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            sourceComponent: root.page === "user" ? userPage : appearancePage
+            sourceComponent: root.page === "user" ? userPage : root.page === "network" ? networkPage
+                                                                                          : appearancePage
         }
     }
 
@@ -88,6 +91,14 @@ Rectangle {
         id: appearancePage
 
         AppearanceSettings {}
+    }
+
+    Component {
+        id: networkPage
+
+        NetworkSettings {
+            network: root.network
+        }
     }
 
     Component {

@@ -15,7 +15,8 @@
 //                        Görüntü pencere boyutundan bağımsız olarak 1440x900 çizilir.
 //   --size <GxY>         ekran görüntüsünün boyutu, ör. --size 1024x720
 //   --window             masaüstünde sahte bir uygulama penceresi göster (pencere tasarımı için)
-//   --settings           Ayarlar penceresini açık olarak başla (--user ile Kullanıcı sayfası)
+//   --settings           Ayarlar penceresini açık olarak başla (--user ile Kullanıcı, --network ile Ağ
+//                        sayfası, --static ile ağ elle ayarlanmış olarak)
 //   --login              giriş ekranını göster (compositor --login gibi). Şifre: ankaros
 //   --lock               masaüstünü kilitli olarak başla. Şifre: ankaros
 //   --error              giriş ya da kilit ekranını "Şifre yanlış" durumunda göster
@@ -54,6 +55,12 @@ Window {
         id: fakeSession
     }
 
+    FakeNetwork {
+        id: fakeNetwork
+
+        mode: window.args.includes("--static") ? "static" : "dhcp"
+    }
+
     // Ekran görüntüsünün alındığı öğe: masaüstü ya da giriş ekranı
     Item {
         id: screen
@@ -68,6 +75,7 @@ Window {
         anchors.fill: parent
         visible: !window.args.includes("--login")
         session: fakeSession
+        network: fakeNetwork
         locked: window.args.includes("--lock")
         startMenuOpen: window.args.includes("--launcher")
         settingsOpen: window.args.includes("--settings")
@@ -90,6 +98,8 @@ Window {
         Component.onCompleted: {
             if (window.args.includes("--user"))
                 settingsPanelPage = "user";
+            else if (window.args.includes("--network"))
+                settingsPanelPage = "network";
         }
     }
 

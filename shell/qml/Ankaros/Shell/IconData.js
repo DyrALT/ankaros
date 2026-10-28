@@ -34,6 +34,8 @@ var paths = {
     info: "M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0Z M12 16v-4 M12 8h.01",
     restart: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8 M3 3v5h5",
     logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9",
+    // Kablolu ağ (Figma: Icon/Kablolu)
+    network: "M17 16h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1Z M3 16h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1Z M10 2h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1Z M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3 M12 12V8",
 };
 
 // Uygulama adı -> simge, degrade renkleri (üst, alt), koyu simge rengi gerekip gerekmediği, kısa ad

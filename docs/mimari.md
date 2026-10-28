@@ -78,7 +78,8 @@ uygulamalar ve öneriler gibi veriler dışarıdan property olarak verilir, kull
 1. QEMU, çekirdeği (`Image`) ve kök dosya sistemini (`rootfs.ext4`, virtio-blk) yükler.
 2. Çekirdek `/dev/vda`'yı kök olarak bağlar, `/sbin/init`'i (`ankaros-init`) başlatır.
 3. `ankaros-init` dosya sistemlerini bağlar ve `/etc/ankaros/services/` altındaki servisleri bağımlılık
-   sırasıyla, birbirini beklemeyenleri aynı anda başlatır: günlük, rastgele sayı tohumu, udev, ağ (DHCP),
+   sırasıyla, birbirini beklemeyenleri aynı anda başlatır: günlük, rastgele sayı tohumu, udev, ağ
+   (`ankaros-network`, [ag.md](ag.md)),
    seri konsolda (`ttyAMA0`) giriş istemi. Ayrıntılar: [init.md](init.md).
 4. udev hazır olunca oturum yöneticisi `ankaros-session` başlar. Otomatik giriş açıksa compositor'ı
    doğrudan kullanıcının hesabıyla, değilse giriş ekranı olarak başlatır ([oturum.md](oturum.md)).
@@ -101,7 +102,7 @@ Kullanıcı hesabı ve giriş ekranı Faz 2'de.
 | `external/provides/` | Buildroot'un init seçeneklerine eklenen `ankaros-init` |
 | `shell/` | Masaüstü kabuğu: QML modülü ve Mac önizleme uygulaması |
 | `compositor/` | Wayland compositor: `Main.qml` (sunucu ve pencere yönetimi), `WaylandWindow.qml`, `AppLauncher` |
-| `system/` | Sistem servisleri (C++, Qt'siz): `ankaros-init`, `ankaros-session`, `ankarosctl`, servis dosyaları, birim testleri |
+| `system/` | Sistem servisleri (C++, Qt'siz): `ankaros-init`, `ankaros-session`, `ankaros-network`, `ankarosctl`, servis dosyaları, birim testleri |
 | `scripts/` | Derleme, çalıştırma ve ilerleme betikleri |
 | `docs/` | Belgeler |
 

@@ -17,7 +17,9 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 - Giriş ekranı, kilit ekranı (Süper+L), başlat panelinde güç menüsü (Kilitle, Oturumu kapat, Yeniden
   başlat, Kapat) ve Ayarlar › Kullanıcı (otomatik giriş, şifre değiştirme)
 - Ayarlarda bilgi balonları: açıklamalar sayfaya yazılmıyor, ayar adının yanındaki ⓘ simgesinde
-- `qemu-test.py`'ye tuş, yazı, seri konsol komutu ve ara ekran görüntüsü eylemleri
+- `qemu-test.py`'ye tuş, yazı, seri konsol komutu, ağ kablosu ve ara ekran görüntüsü eylemleri
+- Kablolu ağ servisi `ankaros-network` (`docs/ag.md`): DHCP ya da statik IP, durum değişince
+  abonelere bildirim. Ayarlar › Ağ ve alt çubukta gerçek durumu gösteren kablolu ağ simgesi
 
 ### Değişti
 

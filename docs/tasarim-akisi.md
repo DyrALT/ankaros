@@ -69,6 +69,7 @@ $APP --dark --launcher --screenshot ekran.png   # koyu mod, başlatıcı açık,
 | `--login` | Giriş ekranını gösterir. Şifre: `ankaros` |
 | `--lock` | Masaüstü kilitli başlar. Şifre: `ankaros` |
 | `--error` | Giriş ekranı "Şifre yanlış" durumunda başlar |
+| `--settings --network` | Ayarlar › Ağ (`--static` ile elle ayarlanmış ağ) |
 
 Önizlemede oturum işlemlerini sahte bir oturum (`preview/FakeSession.qml`) karşılar, ankaros'ta
 compositor'ın `Session` nesnesi.
@@ -107,6 +108,7 @@ Bileşenler (`shell/qml/Ankaros/Shell/`):
 | `SettingsPanel.qml`, `SettingsPage.qml` | Ayarlar penceresi: kenar çubuğu ve sayfa düzeni | Ayarlar ekranları |
 | `AppearanceSettings.qml` | Ayarlar › Görünüm | "B · Pencereler ve Ayarlar" sayfası |
 | `UserSettings.qml` | Ayarlar › Kullanıcı | "Faz 2 · Oturum ve Ağ" sayfası |
+| `NetworkSettings.qml` | Ayarlar › Ağ | "Faz 2 · Oturum ve Ağ" sayfası |
 | `SettingLabel.qml`, `InfoTip.qml`, `Bubble.qml` | Ayar adı, bilgi simgesi, açıklama balonu | `InfoTip` |
 | `ToggleSwitch.qml`, `InputField.qml`, `PushButton.qml` | Anahtar, metin alanı, düğme | `Toggle`, `TextField`, `Button` |
 | `SegmentedControl.qml`, `SectionTitle.qml` | Seçenek grubu (Sol/Sağ), bölüm başlığı | |

@@ -82,6 +82,13 @@ bool ControlServer::handle(int fd)
         accept();
         return true;
     }
+    if (std::find(m_subscribers.begin(), m_subscribers.end(), fd) != m_subscribers.end()) {
+        // Abone bir şey göndermez, okunabilir olması bağlantıyı kapattığı anlamına gelir
+        char buffer[64];
+        if (read(fd, buffer, sizeof buffer) <= 0)
+            drop(fd);
+        return true;
+    }
     auto it = m_clients.find(fd);
     if (it == m_clients.end())
         return false;
@@ -109,19 +116,44 @@ void ControlServer::finish(int fd, const std::string &line)
     getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &credentials, &length);
 
     std::string response;
+    bool subscribe = false;
     if (command.empty()) {
         response = "hata boş komut\n";
     } else {
         const Reply reply = m_handler(command, credentials.uid);
+        subscribe = reply.subscribe;
         for (const std::string &replyLine : reply.lines)
             response += replyLine + "\n";
         response += reply.error.empty() ? "ok\n" : "hata " + reply.error + "\n";
     }
     sendAll(fd, response);
-
+    m_clients.erase(fd);
+    if (!command.empty() && response.ends_with("ok\n") && subscribe) {
+        m_subscribers.push_back(fd);
+        return;
+    }
     epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, nullptr);
     close(fd);
-    m_clients.erase(fd);
+}
+
+void ControlServer::drop(int fd)
+{
+    std::erase(m_subscribers, fd);
+    epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, nullptr);
+    close(fd);
+}
+
+void ControlServer::broadcast(const std::vector<std::string> &lines)
+{
+    std::string message;
+    for (const std::string &line : lines)
+        message += line + "\n";
+    message += "ok\n";
+    for (int fd : std::vector<int>(m_subscribers)) {
+        if (send(fd, message.data(), message.size(), MSG_NOSIGNAL | MSG_DONTWAIT) !=
+            static_cast<ssize_t>(message.size()))
+            drop(fd);
+    }
 }
 
 } // namespace ankaros

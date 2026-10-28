@@ -102,22 +102,26 @@ int main(int argc, char *argv[])
         return argc < 2 ? 2 : 0;
     }
     const bool session = strcmp(argv[1], "session") == 0;
-    std::vector<std::string> command(argv + (session ? 2 : 1), argv + argc);
+    const bool network = strcmp(argv[1], "network") == 0;
+    std::vector<std::string> command(argv + (session || network ? 2 : 1), argv + argc);
     if (command.empty()) {
         fputs(usage, stderr);
         return 2;
     }
 
     std::vector<std::string> lines;
-    const std::string error = ankaros::request(
-        session ? ankaros::sessionSocketPath : ankaros::initSocketPath, command, lines);
+    const char *socketPath = session   ? ankaros::sessionSocketPath
+                             : network ? ankaros::networkSocketPath
+                                       : ankaros::initSocketPath;
+    const std::string error = ankaros::request(socketPath, command, lines);
     if (!error.empty()) {
         fprintf(stderr, "ankarosctl: %s\n", error.c_str());
         return 1;
     }
-    if (!session && command[0] == "status")
+    const bool init = !session && !network;
+    if (init && command[0] == "status")
         printStatus(lines);
-    else if (!session && command[0] == "boot")
+    else if (init && command[0] == "boot")
         printBoot(lines);
     else
         for (const std::string &line : lines)

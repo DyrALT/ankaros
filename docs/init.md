@@ -60,7 +60,7 @@ Repodaki servisler:
 | `syslogd`, `klogd` | `system/services/` | Sistem ve çekirdek günlüğü, `/var/log/messages` |
 | `seedrng` | `system/services/` | Rastgele sayı üretecini besler |
 | `udev` | `system/services/` | Aygıt yöneticisi |
-| `loopback`, `network` | `system/services/` | Yerel arayüz ve DHCP ile kablolu ağ |
+| `ankaros-network` | `system/services/` | Kablolu ağ: DHCP ya da statik IP ([ag.md](ag.md)) |
 | `getty` | `system/services/` | Seri konsolda giriş istemi |
 | `ankaros-session` | `system/services/` | Oturum yöneticisi: giriş ekranı ya da masaüstü ([oturum.md](oturum.md)) |
 
