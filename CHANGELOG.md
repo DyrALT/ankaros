@@ -7,7 +7,7 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
-- Grafik yığını: Qt 6.9 (eglfs, QML, Wayland compositor), Mesa (virgl, softpipe), libinput, foot
+- Grafik yığını: Qt 6.9 (eglfs, QML, Wayland compositor), Mesa (virgl, softpipe), libinput, weston-terminal
 - `ankaros-shell` paketi: kabuk ankaros'ta tam ekran çalışıyor
 - Türkçe dil ayarı (tr_TR.UTF-8) ve İstanbul saat dilimi
 - `run-qemu.sh --gui` ve ekran görüntüsü alan otomatik test betiği `scripts/qemu-test.py`

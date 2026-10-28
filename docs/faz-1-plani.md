@@ -11,7 +11,7 @@ Linux (DRM/KMS, virtio-gpu)
 └── ankaros-compositor   C++ + QML, Qt Wayland Compositor, eglfs (X yok, doğrudan ekrana çizer)
     ├── Desktop          Ankaros.Shell: duvar kağıdı, alt çubuk, başlat paneli, ayarlar
     │   └── pencere katmanı   uygulama pencereleri ve ankaros başlık çubukları
-    └── Wayland sunucusu      foot, Qt uygulamaları vb. buraya bağlanır
+    └── Wayland sunucusu      terminal, Qt uygulamaları vb. buraya bağlanır
 ```
 
 İlgili kararlar:
@@ -31,7 +31,7 @@ Buildroot 2026.02'de hepsi hazır paket olarak var:
 | qt6wayland (compositor) | Qt Wayland Compositor |
 | mesa3d (gbm, egl, gles; virgl ve softpipe sürücüleri) | Sanal GPU (virgl), GPU olmayan ortamlar için yazılımsal çizim (softpipe) |
 | libinput, libxkbcommon, xkeyboard-config | Klavye ve fare |
-| foot | Küçük bir Wayland terminali, ilk test uygulaması |
+| weston (yalnızca weston-terminal) | Wayland terminali, ilk test uygulaması. Başta foot seçilmişti, ama Qt 6.9 compositor'ının desteklediğinden yeni protokol sürümleri istediği için değiştirildi. |
 
 **Qt sürümü:** Buildroot'ta Qt 6.9 var, Mac'te Homebrew ile Qt 6.12 kullanıyoruz. Kabuğun 6.9'da olmayan
 bir özelliği kullanmaması için CI'daki kabuk işi 6.9'a sabitlenir.
@@ -41,7 +41,7 @@ bir özelliği kullanmaması için CI'daki kabuk işi 6.9'a sabitlenir.
 | PR | İçerik |
 |---|---|
 | **A** `build(buildroot)` | Yukarıdaki paketler, çekirdekte DRM ve virtio girdi aygıtları, Inter yazı tipi. `run-qemu.sh --gui` ile grafik modu. Basit bir QML test uygulamasının ekranda açılması. İlk derleme birkaç saat sürer. |
-| **B** `feat(compositor)` | `compositor/`: Desktop tam ekran, Wayland sunucusu (xdg-shell, xdg-decoration), foot penceresinin açılması, ankaros başlık çubuğu, taşıma, odak, kapatma |
+| **B** `feat(compositor)` | `compositor/`: Desktop tam ekran, Wayland sunucusu (xdg-shell, xdg-decoration), terminal penceresinin açılması, ankaros başlık çubuğu, taşıma, odak, kapatma |
 | **C** `feat(shell)` | Pencere katmanı. Alt çubuğun "çalışıyor" ve "etkin" göstergelerinin gerçek pencerelerden gelmesi. Başlat panelinden uygulama açma (`/etc/ankaros/apps.json`). Küçültme ve büyütme. **Görünüm ayarları:** pencere düğmelerinin konumu ve stili, açık/koyu mod. |
 | **D** `build` | `ankaros-shell` ve `ankaros-compositor` Buildroot paketleri, açılışta compositor'ın otomatik başlaması |
 | **E** `test` + `docs` | QEMU'da otomatik açılış testi (ekran görüntüsüyle), UTM kurulum rehberi, `v0.2.0` |
@@ -86,4 +86,4 @@ Başlık çubuğunu compositor çizdiği için ayar bütün uygulamalara aynı a
 | Qt 6.9 (imaj) ile 6.12 (Mac) arasındaki farklar | CI'daki kabuk işi 6.9'a sabitlenir |
 | İlk Qt derlemesi uzun sürer (birkaç saat, ~25 GB disk) | ccache ve indirme önbelleği. CI'da imaj işinin süre sınırı yükseltilir. |
 | softpipe ile Qt Quick çok yavaş çalışabilir | softpipe yalnızca otomatik testte kullanılır, günlük kullanım UTM ve virgl ile |
-| eglfs'te girdi ve odak sorunları | B'de önce tek pencereyle (foot) başlanır, adım adım genişletilir |
+| eglfs'te girdi ve odak sorunları | B'de önce tek pencereyle (terminal) başlanır, adım adım genişletilir |

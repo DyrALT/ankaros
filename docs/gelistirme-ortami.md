@@ -75,7 +75,7 @@ Mac'ten bu dosyalara `~/OrbStack/ankaros-build/home/<kullanıcı>/ankaros-output
 ```
 
 Seri konsolun yanında bir ekran penceresi açılır. Giriş yaptıktan sonra `ankaros-shell-preview` komutu
-kabuğu tam ekran başlatır, `foot` ise Wayland terminalidir (compositor gelince kullanılacak). Bu modda
+kabuğu tam ekran başlatır. `weston-terminal` Wayland terminalidir, compositor içinde çalışır. Bu modda
 sanal GPU 2D'dir ve Mesa yazılımsal çizer (softpipe): çalışır ama yavaştır. GPU hızlandırmalı test
 UTM ile yapılır.
 
