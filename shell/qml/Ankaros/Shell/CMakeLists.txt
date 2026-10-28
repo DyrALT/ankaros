@@ -18,6 +18,9 @@ qt_add_qml_module(ankaros_shell
         RecommendedItem.qml
         WindowChrome.qml
         WindowSwitcher.qml
+        CalendarPopup.qml
+        QuickSettings.qml
+        SettingsIndex.js
         BigClock.qml
         ErrorPill.qml
         GlassIconButton.qml

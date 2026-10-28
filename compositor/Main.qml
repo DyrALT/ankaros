@@ -29,7 +29,10 @@ WaylandCompositor {
     // Ayarlar uygulamasının bir sayfası istendiğinde: penceresi açıksa öne getir, değilse o sayfayla başlat
     function openSettings(page) {
         const own = windows.filter(w => w.appName === "Ayarlar");
+        Appearance.noteAppUsed("Ayarlar");
         if (own.length > 0) {
+            // Açık Ayarlar penceresi shell.conf'u izliyor, isteği görünce sayfaya geçer
+            Appearance.requestSettingsPage(page);
             raise(own[own.length - 1]);
             own[own.length - 1].takeFocus();
         } else {
@@ -107,6 +110,7 @@ WaylandCompositor {
     // Alt çubuktan ya da başlat panelinden bir uygulamaya tıklandığında: penceresi yoksa başlat,
     // odaktaysa küçült, değilse öne getir.
     function activate(app) {
+        Appearance.noteAppUsed(app);
         const own = windows.filter(w => w.appName === app);
         if (own.length === 0) {
             const command = AppCatalog.command(app);
@@ -154,20 +158,24 @@ WaylandCompositor {
                 id: desktop
 
                 anchors.fill: parent
-                // Uygulama listesi /etc/ankaros/apps.json'dan (AppCatalog)
-                apps: AppCatalog.names
+                // Uygulama listesi /etc/ankaros/apps.json'dan (AppCatalog). Komutu olmayan (henüz
+                // yazılmamış) uygulamalar gösterilmez.
+                apps: AppCatalog.launchable
                 taskBarApps: {
                     // Sabitlenmiş uygulamalar ve sırayla, sabitlenmemiş ama çalışan uygulamalar
                     // Kullanıcının seçimi (Ayarlar › Alt çubuk), seçim yoksa apps.json'daki varsayılan
-                    const pinned = Appearance.customPinnedApps ? Appearance.pinnedApps : AppCatalog.pinned;
+                    const pinned = (Appearance.customPinnedApps ? Appearance.pinnedApps : AppCatalog.pinned)
+                        .filter(app => AppCatalog.launchable.includes(app));
                     return pinned.concat(compositor.runningApps.filter(
                         (app, i, all) => !pinned.includes(app) && all.indexOf(app) === i));
                 }
+                recentApps: Appearance.recentApps.filter(recent => AppCatalog.launchable.includes(recent.app))
                 running: compositor.runningApps
                 activeApp: compositor.activeApp
                 userName: Session.userName
                 session: Session
                 network: Network
+                battery: Battery
                 visible: !Session.greeter
                 snapPreview: {
                     const dragged = compositor.windows.find(w => w.snapZone !== "");
@@ -272,7 +280,7 @@ WaylandCompositor {
                 target: GlobalKeys
 
                 function onSuperTapped() {
-                    desktop.startMenuOpen = !desktop.startMenuOpen;
+                    desktop.toggleStartMenu();
                 }
 
                 function onSwitchRequested(backward: bool) {

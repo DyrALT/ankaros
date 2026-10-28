@@ -1,4 +1,4 @@
-// Masaüstünün kökü: duvar kağıdı, alt çubuk ve başlat paneli.
+// Masaüstünün kökü: duvar kağıdı, alt çubuk, başlat paneli, takvim ve hızlı ayarlar.
 // Mac önizlemesi bunu bir pencereye, compositor (Faz 1) ise ekranın kendisine yerleştirir.
 // Wayland'e özgü hiçbir tür import edilmez. Dış dünyadan gelen veriler property olarak verilir.
 import QtQuick
@@ -15,8 +15,8 @@ Item {
     // Penceresi açık uygulamalar ve odaktaki uygulama
     property var running: []
     property string activeApp
-    // Başlat panelindeki öneriler: [{ app, title, subtitle }, ...]
-    property var recommended: []
+    // Son kullanılan uygulamalar, en yeniden eskiye: [{ app, time }, ...] (Appearance.recentApps)
+    property var recentApps: []
     property string userName
     // Oturum işlemleri: kilit açma, oturumu kapatma, kapatma, otomatik giriş, şifre (docs/oturum.md).
     // Compositor'da C++ Session nesnesi, Mac önizlemesinde sahte bir oturum verilir. Beklenen üyeler:
@@ -27,11 +27,15 @@ Item {
     // Beklenen üyeler: available, interfaceName, carrier, connected, mode, address, gateway, dns, mac,
     // configAddress, configGateway, configDns, apply() ve applied, applyFailed sinyalleri.
     property var network: null
+    // Pil (Ankaros.System Battery): present, level, charging. Pil yoksa alt çubukta simgesi görünmez.
+    property var battery: null
     // Ekran kilitli mi. lock() kilitler, kilidi doğru şifre açar.
     property bool locked: false
 
-    // Başlat panelinin açık olup olmadığı. Compositor'da Super tuşu bunu değiştirecek.
+    // Alt çubuğun açılır panelleri. Biri açılınca diğerleri kapanır.
     property alias startMenuOpen: startMenu.open
+    property alias calendarOpen: calendar.open
+    property alias quickSettingsOpen: quickSettings.open
     // Uygulama pencerelerinin yerleştiği katman: duvar kağıdının üstünde, alt çubuğun altında.
     // Compositor pencere çerçevelerini bu öğenin çocuğu olarak oluşturur.
     readonly property alias windowLayer: windowLayer
@@ -59,8 +63,33 @@ Item {
         return ++topZ;
     }
 
-    function lock() {
+    function closePanels() {
         startMenu.open = false;
+        calendar.open = false;
+        quickSettings.open = false;
+    }
+
+    // Panellerden birini aç ya da açıksa kapat, diğerlerini kapat
+    function togglePanel(panel) {
+        const wasOpen = panel.open;
+        closePanels();
+        panel.open = !wasOpen;
+    }
+
+    function toggleStartMenu() {
+        togglePanel(startMenu);
+    }
+
+    // Başlat panelini açıp bir görünümü göster: "all" (bütün uygulamalar) ya da arama metni
+    function showStartMenu(view, query) {
+        closePanels();
+        startMenu.open = true;
+        startMenu.view = view;
+        startMenu.setQuery(query);
+    }
+
+    function lock() {
+        closePanels();
         locked = true;
     }
 
@@ -124,11 +153,11 @@ Item {
         }
     }
 
-    // Başlat paneli açıkken dışarı tıklamak paneli kapatır.
+    // Açılır paneller açıkken dışarı tıklamak onları kapatır.
     MouseArea {
         anchors.fill: parent
-        enabled: startMenu.open
-        onClicked: startMenu.open = false
+        enabled: startMenu.open || calendar.open || quickSettings.open
+        onClicked: root.closePanels()
     }
 
     StartMenu {
@@ -139,11 +168,15 @@ Item {
         anchors.bottomMargin: Theme.size.taskBarMargin
         backdrop: scene
         apps: root.apps
-        recommended: root.recommended
+        recentApps: root.recentApps
         userName: root.userName
         onAppLaunched: app => {
             open = false;
             root.launch(app);
+        }
+        onSettingsRequested: page => {
+            open = false;
+            root.settingsRequested(page);
         }
         onLockRequested: root.lock()
         onLogoutRequested: root.session?.logout()
@@ -163,14 +196,54 @@ Item {
         running: root.running
         activeApp: root.activeApp
         startMenuOpen: startMenu.open
-        onStartClicked: startMenu.open = !startMenu.open
+        calendarOpen: calendar.open
+        quickSettingsOpen: quickSettings.open
+        onStartClicked: root.togglePanel(startMenu)
         onSearchClicked: {
+            root.closePanels();
             startMenu.open = true;
             startMenu.focusSearch();
         }
         network: root.network
-        onAppClicked: app => root.launch(app)
-        onNetworkClicked: root.settingsRequested("network")
+        battery: root.battery
+        onAppClicked: app => {
+            root.closePanels();
+            root.launch(app);
+        }
+        onStatusClicked: root.togglePanel(quickSettings)
+        onClockClicked: root.togglePanel(calendar)
+    }
+
+    CalendarPopup {
+        id: calendar
+
+        anchors.right: parent.right
+        anchors.bottom: taskBar.top
+        anchors.margins: Theme.size.taskBarMargin
+        backdrop: scene
+    }
+
+    QuickSettings {
+        id: quickSettings
+
+        anchors.right: parent.right
+        anchors.bottom: taskBar.top
+        anchors.margins: Theme.size.taskBarMargin
+        backdrop: scene
+        userName: root.userName
+        network: root.network
+        onNetworkClicked: {
+            open = false;
+            root.settingsRequested("network");
+        }
+        onSettingsClicked: {
+            open = false;
+            root.launch("Ayarlar");
+        }
+        onLockRequested: root.lock()
+        onLogoutRequested: root.session?.logout()
+        onRebootRequested: root.session?.reboot()
+        onPoweroffRequested: root.session?.poweroff()
     }
 
     WindowSwitcher {

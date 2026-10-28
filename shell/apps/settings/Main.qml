@@ -11,6 +11,9 @@ Window {
     property string page: "appearance"
     // Boş değilse açılıştan kısa süre sonra pencerenin görüntüsü bu dosyaya kaydedilir ve uygulama kapanır
     property string screenshot
+    // Compositor, Ayarlar zaten açıkken başka bir sayfa isterse (başlat panelinde bir ayar arandığında)
+    // shell.conf'a yazar ("sayfa|zaman"). Açılıştaki eski istek dikkate alınmaz, yalnızca değişiklik.
+    readonly property string settingsRequest: Appearance.settingsRequest
 
     width: 820
     height: 600
@@ -19,6 +22,11 @@ Window {
     visible: true
     title: qsTr("Ayarlar")
     color: Theme.color.surfaceWindow
+    onSettingsRequestChanged: {
+        const page = settingsRequest.split("|")[0];
+        if (page.length > 0)
+            panel.page = page;
+    }
 
     SettingsPanel {
         id: panel
