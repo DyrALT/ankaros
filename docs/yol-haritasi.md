@@ -33,10 +33,15 @@ Ayrıntılı plan: [faz-1-plani.md](faz-1-plani.md)
 
 ## Faz 2: Sistem servisleri (`v0.3.0`), sıradaki
 
-- [ ] Uygulama listesinin `/etc/ankaros/apps.json`'dan okunması (şimdilik compositor'da sabit liste)
-- [ ] Kendi init sistemimiz (C++)
-- [ ] Oturum yönetimi, ağ ayarları arayüzü
-- [ ] Açılış süresi ölçümü ve optimizasyonu
+Ayrıntılı plan: [faz-2-plani.md](faz-2-plani.md)
+
+- [ ] A: Uygulama listesinin `/etc/ankaros/apps.json`'dan okunması
+- [ ] B: Kendi init sistemimiz (`ankaros-init`, C++)
+- [ ] C: Figma'da giriş ekranı, kilit ekranı, güç menüsü, Kullanıcı ve Ağ ayarları
+- [ ] D: Oturum yönetimi: kullanıcı hesabı, giriş ve kilit ekranı, otomatik giriş
+- [ ] E: Kablolu ağ servisi ve Ayarlar › Ağ
+- [ ] F: Açılış süresinin ölçülüp raporlanması
+- [ ] `v0.3.0`
 
 ## Faz 3: Paketler ve uygulamalar (`v0.4.0`)
 
