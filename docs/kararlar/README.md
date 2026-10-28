@@ -24,4 +24,4 @@ kayıt değiştirilmez. Karar değişirse yeni bir kayıt yazılır ve eskisinin
 | [0013](0013-uygulama-mimarisi.md) | Uygulamalar ayrı süreçler, ortak Ankaros.UI ve Ankaros.System modülleri | Kabul edildi |
 | [0014](0014-terminal-libvterm.md) | Terminal için libvterm | Kabul edildi |
 | [0015](0015-gorunum-ayarlari-surecler-arasi.md) | Görünüm ayarları süreçler arasında paylaşılır | Kabul edildi |
-| [0016](0016-uyumluluk-katmanlari.md) | Başka sistemlerin uygulamaları için uyumluluk katmanları | Önerildi |
+| [0016](0016-uyumluluk-katmanlari.md) | Başka sistemlerin uygulamaları için uyumluluk katmanları | Kabul edildi |

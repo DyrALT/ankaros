@@ -1,6 +1,6 @@
 # 0016: Başka sistemlerin uygulamaları için uyumluluk katmanları
 
-- **Durum:** Önerildi
+- **Durum:** Kabul edildi
 - **Tarih:** 2026-10-29
 
 ## Bağlam
