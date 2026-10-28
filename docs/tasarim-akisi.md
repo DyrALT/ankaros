@@ -100,6 +100,26 @@ Bileşenler (`shell/qml/Ankaros/Shell/`):
 | `ShellSettings.qml` | Kalıcı kullanıcı ayarları (tekil nesne) | |
 | `AppearanceSettings.qml` | Ayarlar › Görünüm | "B · Pencereler ve Ayarlar" sayfası |
 
+### Tasarım ilkeleri
+
+Bütün sistemde aynı tasarım dili kullanılır. Yeni bir ekran çizerken ya da QML'e aktarırken:
+
+- **Sayfada açıklama yazısı olmaz.** Ayar satırının altına açıklama, sayfanın sonuna not yazılmaz. Bir
+  ayarın açıklaması gerekiyorsa adının yanına bilgi simgesi (`InfoTip`) konur, açıklama üzerine gelince
+  açılan balonda görünür. Kullanıcıyı ilgilendirmeyen bilgi (dosya yolları, "ileride gelecek" notları)
+  balona da yazılmaz.
+- **Ekranda yalnızca durum ve eylem metinleri vardır:** başlıklar, ayar adları, değerler ("Bağlı · DHCP"),
+  düğmeler ve hata mesajları ("Şifre yanlış").
+- **Ortalanan içerik otomatik yerleşimle ortalanır,** konum elle hesaplanmaz. Ortadaki bir öğenin yanına
+  düğme eklenecekse düğme öğenin içine alınır (şifre alanındaki gönder düğmesi gibi), öğe kaymaz.
+- **Aynı parça her ekranda aynıdır:** Ayarlar'ın kenar çubuğu, düğmeler, metin alanları, anahtarlar ve
+  simgeler bileşenlerden gelir, ekrana özel kopyası çizilmez.
+- **Simge düğmelerin adı balonda görünür,** düğmenin yanına yazılmaz (giriş ekranındaki güç düğmeleri
+  gibi). Menülerde simge ve ad yan yana durur.
+
+Faz 2'nin ekranları (giriş, kilit, güç menüsü, Ayarlar › Kullanıcı ve Ağ) Figma'da
+"Faz 2 · Oturum ve Ağ" sayfasındadır. Bileşenleri "Bileşenler" sayfasındadır.
+
 ### Görünüm ayarları
 
 Başlat panelindeki ayarlar düğmesi ya da alt çubuktaki Ayarlar, kabuğun kendi Ayarlar penceresini açar.
