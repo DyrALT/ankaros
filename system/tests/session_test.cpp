@@ -34,6 +34,23 @@ static void readsAndWritesConfig()
     CHECK_EQ(parseSessionConfig(formatSessionConfig({})).autologin, "");
 }
 
+static void forwardsAppearanceToGreeter()
+{
+    const std::string conf =
+        "[General]\nwallpaper=gece\n"
+        "[appearance]\ndarkMode=true\nwallpaper=kehribar\nwallpaperOnLock=true\n";
+    const auto env = greeterAppearance(conf);
+    CHECK_EQ(env.size(), 2u);
+    CHECK_EQ(env[0], "ANKAROS_DARK_MODE=true");
+    CHECK_EQ(env[1], "ANKAROS_WALLPAPER=kehribar"); // başka bölümdeki değer karışmaz
+
+    // Duvar kağıdı kilitte istenmiyorsa iletilmez, giriş ekranı varsayılanı kullanır
+    CHECK_EQ(greeterAppearance("[appearance]\nwallpaper=gece\nwallpaperOnLock=false\n").size(), 0u);
+    // Bilinmeyen değerler iletilmez
+    CHECK_EQ(greeterAppearance("[appearance]\nwallpaper=../../x\ndarkMode=evet\n").size(), 0u);
+    CHECK(greeterAppearance("").empty());
+}
+
 #ifdef __linux__
 static void hashesPasswords()
 {
@@ -53,6 +70,7 @@ int main()
 {
     replacesShadowHash();
     readsAndWritesConfig();
+    forwardsAppearanceToGreeter();
 #ifdef __linux__
     hashesPasswords();
 #endif

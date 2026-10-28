@@ -29,6 +29,7 @@ qt_add_qml_module(ankaros_ui
         SettingLabel.qml
         ToggleSwitch.qml
         WindowTitleBar.qml
+        Wallpaper.qml
     SOURCES
         appearance.h
         appearance.cpp

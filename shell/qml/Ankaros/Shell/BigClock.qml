@@ -13,7 +13,7 @@ Column {
 
     Label {
         anchors.horizontalCenter: parent.horizontalCenter
-        text: root.now.toLocaleTimeString(Qt.locale(), "HH:mm")
+        text: root.now.toLocaleTimeString(Qt.locale(), Appearance.clockFormat === "12" ? "h:mm AP" : "HH:mm")
         color: "#ffffff"
         font.pixelSize: root.size
         font.weight: Font.DemiBold

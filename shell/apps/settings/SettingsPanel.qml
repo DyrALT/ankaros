@@ -18,12 +18,12 @@ Rectangle {
     // Henüz yazılmamış sayfalar soluk görünür ve seçilemez
     readonly property var pages: [
         { id: "appearance", label: qsTr("Görünüm"), ready: true },
-        { id: "wallpaper", label: qsTr("Duvar kağıdı"), ready: false },
-        { id: "taskbar", label: qsTr("Alt çubuk"), ready: false },
+        { id: "wallpaper", label: qsTr("Duvar kağıdı"), ready: true },
+        { id: "taskbar", label: qsTr("Alt çubuk"), ready: true },
         { id: "notifications", label: qsTr("Bildirimler"), ready: false },
         { id: "network", label: qsTr("Ağ"), ready: true },
         { id: "user", label: qsTr("Kullanıcı"), ready: true },
-        { id: "about", label: qsTr("Hakkında"), ready: false }
+        { id: "about", label: qsTr("Hakkında"), ready: true }
     ]
 
     color: Theme.color.surfaceWindow
@@ -84,8 +84,13 @@ Rectangle {
         Loader {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            sourceComponent: root.page === "user" ? userPage : root.page === "network" ? networkPage
-                                                                                          : appearancePage
+            sourceComponent: ({
+                    wallpaper: wallpaperPage,
+                    taskbar: taskbarPage,
+                    network: networkPage,
+                    user: userPage,
+                    about: aboutPage
+                })[root.page] ?? appearancePage
         }
     }
 
@@ -93,6 +98,24 @@ Rectangle {
         id: appearancePage
 
         AppearanceSettings {}
+    }
+
+    Component {
+        id: wallpaperPage
+
+        WallpaperSettings {}
+    }
+
+    Component {
+        id: taskbarPage
+
+        TaskbarSettings {}
+    }
+
+    Component {
+        id: aboutPage
+
+        AboutSettings {}
     }
 
     Component {

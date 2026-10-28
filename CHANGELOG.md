@@ -21,6 +21,13 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Ayarlar'ın yeni sayfaları:
+  - **Duvar kağıdı:** dört palet (Ankara Taşı, Bozkır, Kehribar, Gece), her birinin açık ve koyu tonu var.
+    İstenirse kilit ve giriş ekranında da kullanılır.
+  - **Alt çubuk:** sabitlenecek uygulamalar ve sıraları (sürükleyerek), 24 ya da 12 saat biçimi, tarihi
+    gösterme
+  - **Hakkında:** sürüm, çekirdek, işlemci, bellek, disk, ekran kartı ve açılış süresi, "Bilgileri kopyala"
+- Giriş ekranı kullanıcının temasını ve duvar kağıdını kullanıyor (oturum yöneticisi aktarır)
 - `utm-olustur.sh --guncelle`: var olan UTM sanal makinesinin diskini ve kernel'ini yeni imajla değiştirir
 
 ## [0.3.0] - 2026-10-28

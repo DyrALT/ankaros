@@ -108,6 +108,22 @@ SessionConfig readConfig()
     return parseSessionConfig(text);
 }
 
+// Giriş ekranında gösterilen kullanıcı: uid'si 1000 ve üstü olan ilk kullanıcı (compositor'daki
+// Session::firstLoginUser ile aynı kural)
+std::string firstLoginUser()
+{
+    setpwent();
+    std::string name;
+    while (const passwd *entry = getpwent()) {
+        if (entry->pw_uid >= 1000 && entry->pw_uid < 60000) {
+            name = entry->pw_name;
+            break;
+        }
+    }
+    endpwent();
+    return name;
+}
+
 // /run/user/<uid>: Wayland soketi ve Qt'nin çalışma zamanı dosyaları için kullanıcıya özel klasör
 std::string prepareRuntimeDirectory(uid_t uid, gid_t gid)
 {
@@ -167,6 +183,15 @@ bool SessionManager::spawn(Mode mode, const std::string &user)
         std::string("SHELL=") + account->pw_shell,
         "XDG_RUNTIME_DIR=" + runtime,
     };
+    if (mode == Mode::Greeter) {
+        // Giriş ekranında gösterilen kullanıcının tema ve duvar kağıdı tercihi (karar 0015)
+        std::string conf;
+        const std::string user = firstLoginUser();
+        if (const passwd *shown = user.empty() ? nullptr : getpwnam(user.c_str()))
+            readFile(std::string(shown->pw_dir) + "/.config/ankaros/shell.conf", conf);
+        for (const std::string &entry : greeterAppearance(conf))
+            environment.push_back(entry);
+    }
     std::vector<char *> envp;
     for (std::string &entry : environment)
         envp.push_back(entry.data());

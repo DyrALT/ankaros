@@ -7,7 +7,7 @@ Kullanım:
     ./scripts/qemu-test.py --wait 15 --actions "click 326 860; sleep 10" --screenshot ekran.png
 
 Adımlar: imaj açılır (değişiklikler kaydedilmez, -snapshot), giriş isteminde root olarak girilir,
---command arka planda çalıştırılır, --wait saniye beklenir, --actions sırayla uygulanır (tıklama,
+--command arka planda çalıştırılır, --wait saniye beklenir, --actions sırayla uygulanır (tıklama, sürükleme,
 tuş, yazı, seri konsolda komut, ara ekran görüntüsü, bkz. run_actions), QEMU'nun screendump komutuyla ekran
 görüntüsü alınır ve sanal makine kapatılır. Seri konsol çıktısı --log dosyasına yazılır.
 
@@ -114,16 +114,38 @@ def qmp(path, command, arguments=None):
 SCREEN_WIDTH, SCREEN_HEIGHT = 1440, 900
 
 
-def click(path, x, y):
-    """Sanal tablet üzerinden (mutlak koordinatlı fare) sol tıklama gönderir."""
+def move(path, x, y):
+    """Sanal tablette (mutlak koordinatlı fare) imleci 1440x900 koordinatlarına taşır."""
     def axis(name, value, size):
         return {"type": "abs", "data": {"axis": name, "value": int(value * 32767 / (size - 1))}}
 
     qmp(path, "input-send-event", {"events": [axis("x", x, SCREEN_WIDTH), axis("y", y, SCREEN_HEIGHT)]})
-    time.sleep(0.1)
+
+
+def button(path, down):
+    qmp(path, "input-send-event", {"events": [{"type": "btn", "data": {"down": down, "button": "left"}}]})
+
+
+def click(path, x, y):
+    """Sol tıklama. İmleç taşındıktan sonra beklenir: softpipe ile bir kare yüzlerce milisaniye
+    sürebiliyor ve hareket işlenmeden basılırsa tıklama uygulamaya imlecin eski konumuyla ulaşıyor."""
+    move(path, x, y)
+    time.sleep(0.6)
     for down in (True, False):
-        qmp(path, "input-send-event", {"events": [{"type": "btn", "data": {"down": down, "button": "left"}}]})
+        button(path, down)
         time.sleep(0.08)
+
+
+def drag(path, x1, y1, x2, y2, steps=12):
+    """Sol düğme basılıyken (x1, y1)'den (x2, y2)'ye adım adım sürükler."""
+    move(path, x1, y1)
+    time.sleep(0.6)
+    button(path, True)
+    for step in range(1, steps + 1):
+        time.sleep(0.05)
+        move(path, x1 + (x2 - x1) * step / steps, y1 + (y2 - y1) * step / steps)
+    time.sleep(0.2)
+    button(path, False)
 
 
 def read_ppm(path):
@@ -199,6 +221,7 @@ def type_text(path, text):
 def run_actions(actions, qmp_path, console, log, screenshot):
     """Eylemler ";" ile ayrılır:
     click X Y      sol tıklama (1440x900 koordinatları)
+    drag X1 Y1 X2 Y2  sol düğme basılıyken sürükle
     sleep SANIYE   bekle
     key TUŞLAR     tuş kombinasyonu, QEMU adlarıyla: ret, esc, meta_l-l
     type METİN     küçük harf, rakam ve . / - , yaz (ör. IP adresi)
@@ -211,6 +234,8 @@ def run_actions(actions, qmp_path, console, log, screenshot):
         values = rest.split()
         if name == "click":
             click(qmp_path, float(values[0]), float(values[1]))
+        elif name == "drag":
+            drag(qmp_path, *(float(v) for v in values[:4]))
         elif name == "sleep":
             wait_for(console, b"\x00", float(values[0]), log)
         elif name == "key":

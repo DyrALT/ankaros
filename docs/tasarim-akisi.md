@@ -87,12 +87,18 @@ Figma'daki masaüstü ekranında görünen Dosyalar penceresi kabuğun parçası
 compositor'dan gelecek.
 
 Ayarlar ayrı bir uygulamadır (`shell/apps/settings/`): kenar çubuğu ve sayfa düzeni `SettingsPanel.qml`
-ve `SettingsPage.qml`, sayfalar `AppearanceSettings.qml` (Görünüm), `NetworkSettings.qml` (Ağ),
-`UserSettings.qml` (Kullanıcı). Mac'te ayrı bir pencerede açılır:
+ve `SettingsPage.qml`, sayfalar `AppearanceSettings.qml` (Görünüm), `WallpaperSettings.qml` (Duvar kağıdı),
+`TaskbarSettings.qml` (Alt çubuk), `NetworkSettings.qml` (Ağ), `UserSettings.qml` (Kullanıcı) ve
+`AboutSettings.qml` (Hakkında). Görünüm ve Duvar kağıdı sayfaları önizlemeli seçenek kartını
+(`OptionCard.qml`) paylaşır. Mac'te ayrı bir pencerede açılır:
 
 ```bash
 build/shell/apps/settings/ankaros-settings.app/Contents/MacOS/ankaros-settings --page network
 ```
+
+| Duvar kağıdı | Alt çubuk (sürükleyerek sıralandı) | Hakkında |
+|---|---|---|
+| ![Ayarlar › Duvar kağıdı](gorseller/vm-ayarlar-duvar-kagidi.png) | ![Ayarlar › Alt çubuk](gorseller/vm-ayarlar-alt-cubuk.png) | ![Ayarlar › Hakkında](gorseller/vm-ayarlar-hakkinda.png) |
 
 Bileşenler üç modüldedir (karar 0013): `Ankaros.UI` (`shell/qml/Ankaros/UI/`) tema, simgeler ve
 bütün uygulamaların paylaştığı bileşenler. `Ankaros.Shell` (`shell/qml/Ankaros/Shell/`) masaüstüne özgü
@@ -108,12 +114,13 @@ parçalar. `Ankaros.System` (`shell/qml/Ankaros/System/`) sistem servislerinin i
 | `AppIcon.qml` | Degrade uygulama simgesi | `AppIcon/*` |
 | `GlassPanel.qml` | Arkasını bulanıklaştıran buzlu cam yüzey | panel dolgusu + arka plan bulanıklığı |
 | `HoverButton.qml` | Üzerine gelince arka planı beliren düğme | `color/surface/hover`, `pressed` |
-| `Wallpaper.qml` | Renk geçişi ve yumuşak renk lekeleri | Duvar kağıdı |
+| `Wallpaper.qml` | Renk geçişi ve yumuşak renk lekeleri, dört palet (Ayarlar'da önizleme olarak da kullanılır) | Duvar kağıdı |
 | `Desktop.qml` | Masaüstünün kökü. Önizleme ve compositor bunu yükler | Ekran çerçevesi |
 | `TaskBar.qml`, `TaskItem.qml`, `Clock.qml` | Alt çubuk, uygulama öğesi, saat | Alt çubuk |
 | `StartMenu.qml`, `AppTile.qml`, `RecommendedItem.qml` | Başlat paneli ve öğeleri | Başlat paneli |
 | `WindowChrome.qml`, `WindowTitleBar.qml` | Pencere çerçevesi ve başlık çubuğu | `WindowTitleBar` bileşeni |
-| `UI/appearance.cpp` (`Appearance`) | Kalıcı görünüm ayarları, süreçler arasında paylaşılır (karar 0015) | |
+| `UI/appearance.cpp` (`Appearance`) | Kalıcı görünüm ayarları (tema, pencere düğmeleri, duvar kağıdı, sabitlenmiş uygulamalar, saat), süreçler arasında paylaşılır (karar 0015) | |
+| `System/systeminfo.cpp` (`SystemInfo`) | Ayarlar › Hakkında'daki sürüm, çekirdek, bellek, disk, ekran kartı ve açılış süresi | |
 | `SettingLabel.qml`, `InfoTip.qml`, `Bubble.qml` | Ayar adı, bilgi simgesi, açıklama balonu | `InfoTip` |
 | `ToggleSwitch.qml`, `InputField.qml`, `PushButton.qml` | Anahtar, metin alanı, düğme | `Toggle`, `TextField`, `Button` |
 | `SegmentedControl.qml`, `SectionTitle.qml` | Seçenek grubu (Sol/Sağ), bölüm başlığı | |

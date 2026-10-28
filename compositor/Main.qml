@@ -8,6 +8,7 @@ import QtWayland.Compositor.XdgShell
 
 import Ankaros.Shell
 import Ankaros.System
+import Ankaros.UI
 
 WaylandCompositor {
     id: compositor
@@ -85,7 +86,8 @@ WaylandCompositor {
                 apps: AppCatalog.names
                 taskBarApps: {
                     // Sabitlenmiş uygulamalar ve sırayla, sabitlenmemiş ama çalışan uygulamalar
-                    const pinned = AppCatalog.pinned;
+                    // Kullanıcının seçimi (Ayarlar › Alt çubuk), seçim yoksa apps.json'daki varsayılan
+                    const pinned = Appearance.customPinnedApps ? Appearance.pinnedApps : AppCatalog.pinned;
                     return pinned.concat(compositor.runningApps.filter(
                         (app, i, all) => !pinned.includes(app) && all.indexOf(app) === i));
                 }
