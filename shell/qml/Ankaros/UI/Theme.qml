@@ -9,8 +9,8 @@ import QtQuick
 QtObject {
     id: theme
 
-    // Kullanıcının ayarından gelir. Önizleme ekran görüntüleri için doğrudan da atanabilir.
-    property bool dark: ShellSettings.darkMode
+    // Kullanıcının ayarından gelir (Appearance). Önizleme ekran görüntüleri için doğrudan da atanabilir.
+    property bool dark: Appearance.darkMode
 
     readonly property Colors color: Colors {
         dark: theme.dark

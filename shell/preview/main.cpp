@@ -6,9 +6,11 @@
 #include <QtQml/QQmlExtensionPlugin>
 
 #ifdef ANKAROS_SHELL_STATIC
-// Ankaros.Shell statik bir kütüphane olarak derlendiyse eklentisinin elle kaydedilmesi gerekir.
+// Modüller statik kütüphane olarak derlendiyse eklentilerinin elle kaydedilmesi gerekir.
 // Paylaşılan modül olarak kurulduysa (ankaros imajı) Qt onu QML klasöründen kendisi bulur.
 Q_IMPORT_QML_PLUGIN(Ankaros_ShellPlugin)
+Q_IMPORT_QML_PLUGIN(Ankaros_UIPlugin)
+Q_IMPORT_QML_PLUGIN(Ankaros_SystemPlugin)
 #endif
 
 int main(int argc, char *argv[])

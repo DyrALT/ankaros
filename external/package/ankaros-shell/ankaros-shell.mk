@@ -5,11 +5,12 @@
 ################################################################################
 
 ANKAROS_SHELL_VERSION = 0.1.0
-# Kaynak, reponun shell/ klasörü. Buildroot onu derleme klasörüne kopyalar.
+# Kaynak, reponun shell/ klasörü: Ankaros.UI, Ankaros.System ve Ankaros.Shell modülleri (karar 0013).
+# Buildroot onu derleme klasörüne kopyalar.
 ANKAROS_SHELL_SITE = $(BR2_EXTERNAL_ANKAROS_PATH)/../shell
 ANKAROS_SHELL_SITE_METHOD = local
 ANKAROS_SHELL_LICENSE = MIT, OFL-1.1 (Inter yazı tipi)
-ANKAROS_SHELL_LICENSE_FILES = qml/Ankaros/Shell/fonts/Inter-LICENSE.txt
+ANKAROS_SHELL_LICENSE_FILES = qml/Ankaros/UI/fonts/Inter-LICENSE.txt
 ANKAROS_SHELL_SUPPORTS_IN_SOURCE_BUILD = NO
 ANKAROS_SHELL_CMAKE_BACKEND = ninja
 

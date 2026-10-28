@@ -2,6 +2,8 @@
 // alan ekranda tek başına ortalanır. Hatalı şifrede kırmızı kenarlıkla sallanır.
 import QtQuick
 
+import Ankaros.UI
+
 Item {
     id: root
 

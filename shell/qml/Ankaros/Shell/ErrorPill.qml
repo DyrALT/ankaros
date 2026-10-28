@@ -1,6 +1,8 @@
 // Giriş ve kilit ekranında şifre alanının altındaki hata mesajı
 import QtQuick
 
+import Ankaros.UI
+
 Rectangle {
     id: root
 

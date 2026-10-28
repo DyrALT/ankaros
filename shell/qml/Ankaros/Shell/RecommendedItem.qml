@@ -1,6 +1,8 @@
 // Başlat panelindeki önerilen öğe: son kullanılan bir dosya ya da uygulama.
 import QtQuick
 
+import Ankaros.UI
+
 HoverButton {
     id: root
 

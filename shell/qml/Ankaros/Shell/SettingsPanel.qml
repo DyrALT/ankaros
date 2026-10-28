@@ -6,6 +6,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 
+import Ankaros.UI
+
 Rectangle {
     id: root
 

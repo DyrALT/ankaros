@@ -6,6 +6,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
 
+import Ankaros.UI
+
 Item {
     id: root
 

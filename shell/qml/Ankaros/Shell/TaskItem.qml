@@ -2,6 +2,8 @@
 // Gösterge: çalışmıyorsa yok, çalışıyorsa kısa, etkin pencereyse uzun.
 import QtQuick
 
+import Ankaros.UI
+
 HoverButton {
     id: root
 

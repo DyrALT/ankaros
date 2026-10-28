@@ -93,8 +93,8 @@ ankarosctl restart ankaros-session        # giriş ekranını ya da masaüstün�
 | ![Kilit ekranı](gorseller/vm-kilit-ekrani.png) | ![Ayarlar › Kullanıcı](gorseller/vm-ayarlar-kullanici.png) |
 
 Kabuk oturum işlemlerini `Desktop.session` nesnesi üzerinden yapar. ankaros'ta bu, compositor'daki
-C++ `Session` sınıfıdır (`compositor/session.cpp`) ve denetim soketine bağlanır. Mac önizlemesinde
-`preview/FakeSession.qml` aynı üyeleri sahte olarak karşılar (şifre `ankaros`).
+C++ `Session` sınıfıdır (Ankaros.System, `shell/qml/Ankaros/System/session.cpp`) ve denetim soketine bağlanır. Mac önizlemesinde
+aynı modülün `Session.qml`'i aynı üyeleri sahte olarak karşılar (şifre `ankaros`).
 
 ## Geliştirme
 

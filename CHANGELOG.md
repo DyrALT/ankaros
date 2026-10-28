@@ -5,6 +5,12 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+### Değişti
+
+- Ortak bileşenler `Ankaros.UI`, oturum ve ağ istemcileri `Ankaros.System` modülüne taşındı (karar 0013).
+  Görünüm ayarları dosya izlenerek süreçler arasında anında paylaşılıyor (karar 0015).
+- CI'da kabuk Qt 6.9 ile açılıp ekran görüntüleri alınıyor (duman testi)
+
 ### Düzeltildi
 
 - Simgeler UTM'de (virgl, Mac'in GPU'su) kesik kesik çiziliyordu. Qt Shapes'in CurveRenderer'ı yerine

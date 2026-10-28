@@ -1,6 +1,8 @@
 // Giriş ve kilit ekranının büyük saati ve tarihi
 import QtQuick
 
+import Ankaros.UI
+
 Column {
     id: root
 

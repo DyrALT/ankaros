@@ -87,7 +87,7 @@ Geriye uyumsuz bir değişiklikte türden sonra `!` eklenir ve gövdeye `BREAKIN
 - **QML sadece görünümdür.** JavaScript'i kısa binding'ler ve küçük olay işleyicileriyle sınırlı tutun.
   Döngü, ağ, dosya ya da hesaplama içeren her şey C++'a gider.
 - Renk, boşluk, yazı tipi ve süre gibi değerler doğrudan yazılmaz, `Theme` tekil nesnesinden okunur
-  (bkz. `shell/qml/Ankaros/Shell/Theme.qml`). Böylece Figma'daki tasarım değişkenleriyle birebir eşleşir.
+  (bkz. `shell/qml/Ankaros/UI/Theme.qml`). Böylece Figma'daki tasarım değişkenleriyle birebir eşleşir.
 - Her bileşen kendi dosyasında, dosya adı bileşen adıyla aynı (`Panel.qml` → `Panel`).
 - QML modülleri `qt_add_qml_module` ile tanımlanır ve önceden derlenir (`qmlsc`).
 

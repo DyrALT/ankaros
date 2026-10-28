@@ -100,7 +100,7 @@ Kullanıcı hesabı ve giriş ekranı Faz 2'de.
 | `external/board/qemu-aarch64/` | Karta özel dosyalar: rootfs overlay, post-build betiği |
 | `external/package/` | ankaros'un kendi paketleri: `ankaros-shell`, `ankaros-compositor`, `ankaros-system` |
 | `external/provides/` | Buildroot'un init seçeneklerine eklenen `ankaros-init` |
-| `shell/` | Masaüstü kabuğu: QML modülü ve Mac önizleme uygulaması |
+| `shell/` | QML modülleri (Ankaros.UI, Ankaros.System, Ankaros.Shell) ve Mac önizleme uygulaması (karar 0013) |
 | `compositor/` | Wayland compositor: `Main.qml` (sunucu ve pencere yönetimi), `WaylandWindow.qml`, `AppLauncher` |
 | `system/` | Sistem servisleri (C++, Qt'siz): `ankaros-init`, `ankaros-session`, `ankaros-network`, `ankarosctl`, servis dosyaları, birim testleri |
 | `scripts/` | Derleme, çalıştırma ve ilerleme betikleri |

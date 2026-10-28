@@ -3,6 +3,8 @@
 // Wayland'e özgü hiçbir tür import edilmez. Dış dünyadan gelen veriler property olarak verilir.
 import QtQuick
 
+import Ankaros.UI
+
 Item {
     id: root
 
