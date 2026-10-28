@@ -1,4 +1,9 @@
-# Faz 3 planı: paketler ve uygulamalar (`v0.4.0`)
+# Faz 3 planı: uygulamalar (`v0.4.0`)
+
+> **Değişti (2026-10-29):** E (kendi paket biçimimiz) ve F (Paket Merkezi) adımları yapılmadı. Kullanıcı
+> uygulamaların kendi sitelerinden indirdiği `.deb` ve `.rpm` paketlerini çalıştırabilmeli. Bunun yerine
+> Faz 4'te uyumluluk katmanları geliyor: [karar 0016](kararlar/0016-uyumluluk-katmanlari.md),
+> [faz-4-plani.md](faz-4-plani.md). Aşağıdaki "Uygulama paketi" bölümü tarihçe olarak duruyor.
 
 **Hedef:**
 - Uygulamalar imajı yeniden derlemeden kurulup kaldırılabilir. Paket herhangi bir dilde yazılmış bir
@@ -40,8 +45,8 @@ Her adım ayrı bir PR'dır. PR'lar üst üste dizilmez.
 | **B** `design` | Figma: Terminal, Ayarlar uygulaması (yeni sayfalar: Duvar kağıdı, Alt çubuk, Hakkında), Paket Merkezi. **Onayın alınır.** |
 | **C** `feat(apps)` | Ayarlar uygulaması: kabuktaki Ayarlar penceresi ayrı bir uygulama olur, boş sayfalar doldurulur |
 | **D** `feat(apps)` | Terminal: libvterm ile terminal öykünmesi, sekmeler, kopyala-yapıştır, tema ve yazı tipi ayarı. `weston-terminal` kalkar. |
-| **E** `feat(system)` | Paket biçimi (`.ankpkg`), `ankaros-packages` servisi, `ank` komutu, imzalı paket deposu, örnek paket ve paketleri üreten CI hattı |
-| **F** `feat(apps)` | Paket Merkezi: arama, kurma, kaldırma, güncelleme |
+| ~~**E**~~ `feat(system)` | Paket biçimi (`.ankpkg`), `ankaros-packages` servisi, `ank` komutu, imzalı paket deposu, örnek paket ve paketleri üreten CI hattı |
+| ~~**F**~~ `feat(apps)` | Paket Merkezi: arama, kurma, kaldırma, güncelleme |
 | **G** `chore` | `v0.4.0` |
 
 A, B ile aynı anda yürüyebilir (tasarım onayını beklemez). C, D ve F tasarım onayından sonra başlar.

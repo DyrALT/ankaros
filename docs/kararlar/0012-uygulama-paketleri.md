@@ -1,6 +1,6 @@
 # 0012: Kendi uygulama paketimiz
 
-- **Durum:** Kabul edildi
+- **Durum:** Yerine geçen: [0016](0016-uyumluluk-katmanlari.md)
 - **Tarih:** 2026-10-28
 
 ## Bağlam
