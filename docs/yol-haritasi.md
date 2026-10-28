@@ -40,7 +40,7 @@ Ayrıntılı plan: [faz-2-plani.md](faz-2-plani.md)
 - [x] C: Figma'da giriş ekranı, kilit ekranı, güç menüsü, Kullanıcı ve Ağ ayarları
 - [x] D: Oturum yönetimi: kullanıcı hesabı, giriş ve kilit ekranı, otomatik giriş
 - [x] E: Kablolu ağ servisi ve Ayarlar › Ağ
-- [ ] F: Açılış süresinin ölçülüp raporlanması
+- [x] F: Açılış süresinin ölçülüp raporlanması ([acilis-suresi.md](acilis-suresi.md))
 - [ ] `v0.3.0`
 
 ## Faz 3: Paketler ve uygulamalar (`v0.4.0`)

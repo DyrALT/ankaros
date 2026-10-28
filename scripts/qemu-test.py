@@ -12,8 +12,8 @@ tuş, yazı, seri konsolda komut, ara ekran görüntüsü, bkz. run_actions), QE
 görüntüsü alınır ve sanal makine kapatılır. Seri konsol çıktısı --log dosyasına yazılır.
 
 --expect-desktop ile açılış testi yapılır (CI'da bu kullanılır): --wait süresi boyunca birkaç saniyede bir
-ekran görüntüsü alınır, ekran masaüstüne benzediğinde test geçer. Masaüstü hiç gelmezse betik 1 ile
-çıkar. Kapanmadan önce compositor'ın günlüğü de seri konsol günlüğüne eklenir.
+ekran görüntüsü alınır, ekran masaüstüne benzediğinde test geçer ve açılış süresi raporu (ankarosctl
+boot) yazdırılır. Masaüstü hiç gelmezse betik 1 ile çıkar. Kapanmadan önce compositor'ın günlüğü de seri konsol günlüğüne eklenir.
 
 Ekran görüntüsü .ppm ya da .png olabilir (PNG'ye dönüştürme ek paket istemez).
 
@@ -60,6 +60,38 @@ def wait_for(sock, needle, timeout, log):
         if needle in buffer:
             return True
     return False
+
+
+def capture(sock, needle, timeout, log):
+    """wait_for gibi, ama okunanları da döner (komut çıktısını almak için)."""
+    deadline = time.time() + timeout
+    buffer = b""
+    sock.settimeout(1)
+    while time.time() < deadline and needle not in buffer:
+        try:
+            data = sock.recv(4096)
+        except socket.timeout:
+            continue
+        if not data:
+            break
+        log.write(data)
+        log.flush()
+        buffer += data
+    # needle'dan sonra satırın geri kalanını da al
+    if needle in buffer and not buffer.endswith(b"\n"):
+        buffer += capture(sock, b"\n", 2, log)
+    return buffer
+
+
+def print_boot_report(console, log):
+    """ankarosctl boot'un açılış raporunu yazdırır (docs/acilis-suresi.md)."""
+    console.sendall(b"ankarosctl boot\n")
+    output = capture(console, b"Toplam:", 15, log).decode(errors="replace").replace("\r", "")
+    start = output.find("ADIM")
+    if start < 0 or "Toplam:" not in output:
+        print("Açılış raporu alınamadı", file=sys.stderr)
+        return
+    print(output[start:].strip(), flush=True)
 
 
 def qmp(path, command, arguments=None):
@@ -270,6 +302,7 @@ def main():
                     ok = looks_like_desktop(*save_screenshot(qmp_path, args.screenshot))
                 if ok:
                     print(f"Masaüstü {time.time() - started:.0f} saniyede göründü", flush=True)
+                    print_boot_report(console, log)
                 else:
                     print(f"Masaüstü {args.wait:.0f} saniyede görünmedi", file=sys.stderr)
             else:

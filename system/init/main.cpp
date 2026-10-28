@@ -100,6 +100,7 @@ int main()
     reboot(RB_DISABLE_CAD);
 
     Supervisor supervisor;
+    supervisor.setKernelTime(startedAt);
     supervisor.load(servicesDirectory);
     if (supervisor.empty()) {
         log::write("hiç servis yok, seri konsolda giriş açılıyor");

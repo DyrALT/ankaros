@@ -84,7 +84,7 @@ ankarosctl status                 # servislerin durumu
 ankarosctl restart ankaros-session
 ankarosctl stop network
 ankarosctl start network
-ankarosctl boot                   # açılışta her servisin başlama ve hazır olma zamanı
+ankarosctl boot                   # açılış süresi raporu (docs/acilis-suresi.md)
 ankarosctl poweroff               # ya da BusyBox'ın poweroff, reboot, halt komutları
 ```
 

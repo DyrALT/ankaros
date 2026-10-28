@@ -56,10 +56,18 @@ jobs:
       - name: Açılış testi (QEMU)
         # İmaj ekransız açılır, masaüstü görünene kadar ekran görüntüsü alınır. Bu makinede KVM yok,
         # işlemci yazılımla taklit edilir: Mac'te 20 saniye süren açılış burada birkaç dakika sürebilir.
+        # Açılış süresi raporu (ankarosctl boot) iş akışının özet sayfasına da yazılır, docs/acilis-suresi.md
         run: |
+          set -o pipefail
           sudo apt-get install -y qemu-system-arm
           ./scripts/qemu-test.py --boot-timeout 600 --expect-desktop --wait 900 \
-            --screenshot acilis-testi.png --log acilis-testi.log
+            --screenshot acilis-testi.png --log acilis-testi.log | tee acilis-testi.txt
+          {
+            echo "### Açılış süresi (QEMU, tcg)"
+            echo '```text'
+            sed -n '/^ADIM/,/^Toplam/p' acilis-testi.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Açılış testinin ekran görüntüsü ve günlüğü
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -68,6 +76,7 @@ jobs:
           path: |
             acilis-testi.png
             acilis-testi.log
+            acilis-testi.txt
           if-no-files-found: ignore
           retention-days: 14
       - uses: actions/upload-artifact@v4
