@@ -75,7 +75,7 @@ bool setPassword(const std::string &user, const std::string &password, std::stri
         error = "şifre değiştirilemedi";
         return false;
     }
-    struct stat info{};
+    struct stat info = {};
     stat(path, &info);
     const int fd = open(temporary, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0600);
     const bool written =
