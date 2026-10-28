@@ -24,4 +24,10 @@ ANKAROS_COMPOSITOR_DEPENDENCIES = \
 ANKAROS_COMPOSITOR_CONF_OPTS = \
 	-DQT_HOST_PATH=$(HOST_DIR)
 
+# Açılışta masaüstünü başlatan init betiği
+define ANKAROS_COMPOSITOR_INSTALL_INIT_SYSV
+	$(INSTALL) -D -m 755 $(ANKAROS_COMPOSITOR_PKGDIR)/S90ankaros-desktop \
+		$(TARGET_DIR)/etc/init.d/S90ankaros-desktop
+endef
+
 $(eval $(cmake-package))

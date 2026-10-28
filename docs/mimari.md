@@ -83,8 +83,13 @@ Faz 0'daki durum:
 3. `/etc/init.d/` betikleri: eudev, ağ (DHCP, `eth0`), rastgele sayı tohumu.
 4. Seri konsolda (`ttyAMA0`) giriş istemi.
 
-Faz 1 hedefi (D): 3. adımdan sonra compositor doğrudan başlar, giriş istemi yerine masaüstü gelir.
-Şimdilik compositor seri konsoldan elle başlatılır: `ankaros-compositor &`.
+Faz 1'den itibaren:
+
+5. `/etc/init.d/S90ankaros-desktop` compositor'ı root olarak arka planda başlatır. Ortam değişkenleri
+   `/etc/profile.d/ankaros-grafik.sh`'den gelir, çıktı `/var/log/ankaros-compositor.log`'a yazılır.
+6. Ekranda masaüstü açılır. Seri konsoldaki giriş istemi kurtarma ve geliştirme için durur.
+
+Kullanıcı hesabı ve giriş ekranı Faz 2'de.
 
 ## Repo yapısı
 
