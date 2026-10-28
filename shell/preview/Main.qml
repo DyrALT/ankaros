@@ -14,6 +14,7 @@
 //   --screenshot <dosya> açılıştan kısa süre sonra masaüstünün görüntüsünü PNG olarak kaydet ve çık.
 //                        Görüntü pencere boyutundan bağımsız olarak 1440x900 çizilir.
 //   --size <GxY>         ekran görüntüsünün boyutu, ör. --size 1024x720
+//   --window             masaüstünde sahte bir uygulama penceresi göster (pencere tasarımı için)
 import QtQuick
 import Ankaros.Shell
 
@@ -61,6 +62,31 @@ Window {
         ]
         userName: "Diyar"
         onAppLaunched: app => console.log("Başlatılacak uygulama:", app)
+    }
+
+    // Sahte bir uygulama penceresi. ankaros'ta pencereler compositor'dan gelir ve içerikleri
+    // gerçek uygulamalardır. Burada sadece pencere çerçevesinin tasarımı denenir.
+    WindowChrome {
+        parent: desktop.windowLayer
+        visible: window.args.includes("--window")
+        x: 300
+        y: 90
+        width: 840
+        height: 560
+        app: "Dosyalar"
+        title: "Ev"
+        onCloseClicked: visible = false
+
+        Rectangle {
+            anchors.fill: parent
+            color: Theme.color.surfaceWindow
+
+            Label {
+                anchors.centerIn: parent
+                text: qsTr("Uygulama içeriği")
+                color: Theme.color.textSecondary
+            }
+        }
     }
 
     Shortcut {

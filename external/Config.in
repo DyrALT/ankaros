@@ -1,1 +1,2 @@
 source "$BR2_EXTERNAL_ANKAROS_PATH/package/ankaros-shell/Config.in"
+source "$BR2_EXTERNAL_ANKAROS_PATH/package/ankaros-compositor/Config.in"

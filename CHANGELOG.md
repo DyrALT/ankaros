@@ -10,6 +10,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 - Grafik yığını: Qt 6.9 (eglfs, QML, Wayland compositor), Mesa (virgl, softpipe), libinput, weston-terminal
 - `ankaros-shell` paketi: kabuk ankaros'ta tam ekran çalışıyor
 - Türkçe dil ayarı (tr_TR.UTF-8) ve İstanbul saat dilimi
+- `ankaros-compositor`: Qt Wayland Compositor ile Wayland sunucusu ve tam ekran masaüstü. Pencereler
+  ankaros çerçevesiyle açılıyor, taşınıyor, öne geliyor, küçültülüp büyütülüyor, kapanıyor. Alt
+  çubuktaki göstergeler gerçek pencerelerden geliyor, Terminal alt çubuktan açılıyor.
+- Kabuğa pencere çerçevesi (`WindowChrome`, `WindowTitleBar`) ve pencere katmanı
 - `run-qemu.sh --gui` ve ekran görüntüsü alan otomatik test betiği `scripts/qemu-test.py`
 
 ## [0.1.0] - 2026-10-28

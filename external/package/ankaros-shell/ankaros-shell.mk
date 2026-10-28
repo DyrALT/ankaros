@@ -21,8 +21,12 @@ ANKAROS_SHELL_DEPENDENCIES = \
 	qt6declarative \
 	qt6shadertools
 
+# Modül staging'e de kurulur, çünkü compositor derlenirken qmllint ve qmlcachegen onu bulmalı.
+ANKAROS_SHELL_INSTALL_STAGING = YES
+
 ANKAROS_SHELL_CONF_OPTS = \
 	-DQT_HOST_PATH=$(HOST_DIR) \
+	-DANKAROS_SHELL_SHARED=ON \
 	-DANKAROS_SHELL_PREVIEW=ON
 
 $(eval $(cmake-package))

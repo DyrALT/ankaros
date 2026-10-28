@@ -70,6 +70,7 @@ BR2_PACKAGE_WESTON_DEFAULT_HEADLESS=y
 
 # ankaros
 BR2_PACKAGE_ANKAROS_SHELL=y
+BR2_PACKAGE_ANKAROS_COMPOSITOR=y
 
 # Kök dosya sistemi (Qt, Mesa ve yazı tipleriyle birlikte büyüdü)
 BR2_TARGET_ROOTFS_EXT2=y

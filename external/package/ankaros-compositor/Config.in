@@ -1,0 +1,13 @@
+config BR2_PACKAGE_ANKAROS_COMPOSITOR
+	bool "ankaros-compositor"
+	depends on BR2_PACKAGE_QT6
+	depends on BR2_PACKAGE_QT6_GL_SUPPORTS
+	select BR2_PACKAGE_ANKAROS_SHELL
+	select BR2_PACKAGE_QT6WAYLAND
+	select BR2_PACKAGE_QT6WAYLAND_COMPOSITOR
+	help
+	  ankaros'un Wayland compositor'ı: tam ekran masaüstü
+	  (Ankaros.Shell) ve pencere yönetimi.
+
+comment "ankaros-compositor needs Qt 6 with OpenGL support"
+	depends on !BR2_PACKAGE_QT6 || !BR2_PACKAGE_QT6_GL_SUPPORTS

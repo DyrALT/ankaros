@@ -51,6 +51,25 @@ WaylandCompositor {
 }
 ```
 
+Gerçekte compositor (`compositor/Main.qml`) şöyle çalışır:
+
+- `WaylandCompositor` `wayland-0` soketinde bir Wayland sunucusu açar, tam ekran bir `Window` içinde
+  `Desktop`'u gösterir.
+- Bir uygulama pencere açtığında (`XdgShell.onToplevelCreated`) `Desktop.windowLayer` içine bir
+  `WaylandWindow` oluşturulur. `WaylandWindow`, kabuktaki `WindowChrome` çerçevesinin içine uygulamanın
+  yüzeyini (`ShellSurfaceItem`) koyar.
+- Pencerenin uygulama adı Wayland `app_id`'sinden bulunur. Alt çubuktaki "çalışıyor" ve "etkin"
+  göstergeleri buradan gelir.
+- Alt çubukta ya da başlat panelinde bir uygulamaya tıklanınca: penceresi yoksa `AppLauncher` (C++)
+  onu `WAYLAND_DISPLAY=wayland-0` ile başlatır, odaktaysa küçültür, değilse öne getirir.
+- Kendi kenarlığını çizen uygulamalarda (xdg-decoration desteklemeyenler) ankaros çerçevesi çizilmez
+  (karar 0007).
+- Pencerelerin üst üste sırası `Desktop.nextZ()` ile verilir. Kabuğun kendi pencereleri (Ayarlar) ve
+  uygulama pencereleri aynı sıralamayı paylaşır.
+
+Kabuk modülü ankaros'ta paylaşılan bir QML modülü olarak Qt'nin QML klasörüne kurulur, Mac
+önizlemesinde ise uygulamaya statik olarak gömülür (`ANKAROS_SHELL_SHARED`).
+
 Kural şu: **kabuk modülü Wayland'e özgü hiçbir türü doğrudan import etmez.** Uygulama listesi, çalışan
 uygulamalar ve öneriler gibi veriler dışarıdan property olarak verilir, kullanıcının istekleri
 (`appLaunched` gibi) sinyal olarak dışarı çıkar. Mac önizlemesi bu verileri sahte (mock) verilerle doldurur.
@@ -64,7 +83,8 @@ Faz 0'daki durum:
 3. `/etc/init.d/` betikleri: eudev, ağ (DHCP, `eth0`), rastgele sayı tohumu.
 4. Seri konsolda (`ttyAMA0`) giriş istemi.
 
-Faz 1 hedefi: 3. adımdan sonra compositor doğrudan başlar, giriş istemi yerine masaüstü gelir.
+Faz 1 hedefi (D): 3. adımdan sonra compositor doğrudan başlar, giriş istemi yerine masaüstü gelir.
+Şimdilik compositor seri konsoldan elle başlatılır: `ankaros-compositor &`.
 
 ## Repo yapısı
 
@@ -74,9 +94,9 @@ Faz 1 hedefi: 3. adımdan sonra compositor doğrudan başlar, giriş istemi yeri
 | `external/` | Buildroot'a dışarıdan eklenen ankaros ağacı (BR2_EXTERNAL) |
 | `external/configs/` | `ankaros_qemu_aarch64_defconfig`: sistemin tüm yapılandırması |
 | `external/board/qemu-aarch64/` | Karta özel dosyalar: rootfs overlay, post-build betiği |
-| `external/package/` | ankaros'un kendi paketleri (Faz 1'de: `ankaros-shell`, `ankaros-compositor`) |
+| `external/package/` | ankaros'un kendi paketleri: `ankaros-shell`, `ankaros-compositor` |
 | `shell/` | Masaüstü kabuğu: QML modülü ve Mac önizleme uygulaması |
-| `compositor/` | Wayland compositor (Faz 1) |
+| `compositor/` | Wayland compositor: `Main.qml` (sunucu ve pencere yönetimi), `WaylandWindow.qml`, `AppLauncher` |
 | `scripts/` | Derleme, çalıştırma ve ilerleme betikleri |
 | `docs/` | Belgeler |
 
