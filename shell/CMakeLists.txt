@@ -15,6 +15,10 @@ qt_standard_project_setup(REQUIRES 6.5)
 # Tüm QML modülleri tek bir klasörde toplanır, qmllint ve qmlls modülleri buradan bulur.
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
+# Mac önizlemesinde modül önizleme uygulamasına statik olarak gömülür. ankaros imajında ise
+# compositor'ın da kullanabilmesi için paylaşılan bir QML modülü olarak Qt'nin QML klasörüne kurulur.
+option(ANKAROS_SHELL_SHARED "Ankaros.Shell'i paylaşılan bir QML modülü olarak derle ve kur" OFF)
+
 add_subdirectory(qml/Ankaros/Shell)
 
 option(ANKAROS_SHELL_PREVIEW "Kabuğu sıradan bir pencerede gösteren önizleme uygulamasını derle" ON)

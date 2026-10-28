@@ -7,7 +7,12 @@ qt_add_qml_module(ankaros-shell-preview
     QML_FILES Main.qml
 )
 
-target_link_libraries(ankaros-shell-preview PRIVATE Qt6::Quick ankaros_shellplugin)
+target_link_libraries(ankaros-shell-preview PRIVATE Qt6::Quick)
+if(NOT ANKAROS_SHELL_SHARED)
+    # Statik modülün eklentisi uygulamaya bağlanır ve main.cpp'de elle kaydedilir.
+    target_link_libraries(ankaros-shell-preview PRIVATE ankaros_shellplugin)
+    target_compile_definitions(ankaros-shell-preview PRIVATE ANKAROS_SHELL_STATIC)
+endif()
 
 install(TARGETS ankaros-shell-preview
     BUNDLE DESTINATION .
