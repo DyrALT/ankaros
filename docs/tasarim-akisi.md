@@ -47,7 +47,7 @@ boyutta (1440x900) açılır, yeniden boyutlandırılabilir ve tam ekran yapıla
 | Kısayol | Ne yapar |
 |---|---|
 | `Cmd+R` | QML'i yeniden yükler (C++ değişikliklerinde yeniden derleyin) |
-| `Cmd+D` | Açık/koyu mod arasında geçiş yapar |
+| `Cmd+D` | Açık/koyu mod arasında geçiş yapar (Görünüm ayarlarına kaydedilir) |
 | `Ctrl+Cmd+F` ya da `F11` | Tam ekran |
 | `Cmd+Q` | Kapatır |
 
@@ -64,6 +64,8 @@ $APP --dark --launcher --screenshot ekran.png   # koyu mod, başlatıcı açık,
 | `--launcher` | Başlat paneli açık olarak başlar |
 | `--screenshot <dosya>` | Masaüstünün görüntüsünü PNG olarak kaydeder ve çıkar. Pencere boyutundan bağımsız olarak 1440x900 çizilir |
 | `--size <GxY>` | Ekran görüntüsünün boyutu, ör. `--size 1024x720` |
+| `--window` | Masaüstünde sahte bir uygulama penceresi gösterir (pencere tasarımı için) |
+| `--settings` | Ayarlar penceresi açık olarak başlar |
 
 ## Şu anki tasarım: B · Ankara Taşı
 
@@ -94,6 +96,18 @@ Bileşenler (`shell/qml/Ankaros/Shell/`):
 | `Desktop.qml` | Masaüstünün kökü. Önizleme ve compositor bunu yükler | Ekran çerçevesi |
 | `TaskBar.qml`, `TaskItem.qml`, `Clock.qml` | Alt çubuk, uygulama öğesi, saat | Alt çubuk |
 | `StartMenu.qml`, `AppTile.qml`, `RecommendedItem.qml` | Başlat paneli ve öğeleri | Başlat paneli |
+| `WindowChrome.qml`, `WindowTitleBar.qml` | Pencere çerçevesi ve başlık çubuğu | `WindowTitleBar` bileşeni |
+| `ShellSettings.qml` | Kalıcı kullanıcı ayarları (tekil nesne) | |
+| `AppearanceSettings.qml` | Ayarlar › Görünüm | "B · Pencereler ve Ayarlar" sayfası |
+
+### Görünüm ayarları
+
+Başlat panelindeki ayarlar düğmesi ya da alt çubuktaki Ayarlar, kabuğun kendi Ayarlar penceresini açar.
+Görünüm bölümünde tema (açık/koyu), pencere düğmelerinin konumu (sol/sağ) ve stili (çizgi
+simgeler/renkli daireler) seçilir. Değişiklik bütün açık pencerelere anında uygulanır ve
+`ShellSettings` ile kalıcı olarak saklanır (karar 0007, 0008).
+
+![ankaros'ta Görünüm ayarları: koyu, sol, renkli daireler](gorseller/vm-gorunum-ayarlari.png)
 
 ### Uygulama notları
 
