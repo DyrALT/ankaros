@@ -1,4 +1,5 @@
 // ankaros compositor'ı: Wayland sunucusu, tam ekran masaüstü (Ankaros.Shell) ve pencere yönetimi.
+// --login ile açılırsa ekran giriş ekranıdır (docs/oturum.md).
 pragma ComponentBehavior: Bound
 
 import QtQuick
@@ -68,7 +69,39 @@ WaylandCompositor {
                 running: compositor.runningApps
                 activeApp: compositor.activeApp
                 userName: Session.userName
+                session: Session
+                visible: !Session.greeter
                 onAppLaunched: app => compositor.activate(app)
+            }
+
+            // Giriş ekranı (ankaros-compositor --login). Şifre doğruysa oturum yöneticisi bu süreci
+            // kapatır ve kullanıcının masaüstünü açar.
+            Loader {
+                anchors.fill: parent
+                active: Session.greeter
+
+                sourceComponent: LoginScreen {
+                    id: login
+
+                    userName: Session.userName
+                    onSubmitted: password => Session.login(Session.userName, password)
+                    onRebootRequested: Session.reboot()
+                    onPoweroffRequested: Session.poweroff()
+
+                    Connections {
+                        target: Session
+
+                        function onLoginFailed(message: string) {
+                            login.fail(message);
+                        }
+                    }
+                }
+            }
+
+            Shortcut {
+                sequence: "Meta+L"
+                enabled: !Session.greeter
+                onActivated: desktop.lock()
             }
         }
     }

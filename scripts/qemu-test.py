@@ -7,8 +7,8 @@ Kullanım:
     ./scripts/qemu-test.py --wait 15 --actions "click 326 860; sleep 10" --screenshot ekran.png
 
 Adımlar: imaj açılır (değişiklikler kaydedilmez, -snapshot), giriş isteminde root olarak girilir,
---command arka planda çalıştırılır, --wait saniye beklenir, --actions sırayla uygulanır (ekran
-koordinatları 1440x900'e göre: "click X Y", "sleep SANIYE"), QEMU'nun screendump komutuyla ekran
+--command arka planda çalıştırılır, --wait saniye beklenir, --actions sırayla uygulanır (tıklama,
+tuş, yazı, seri konsolda komut, ara ekran görüntüsü, bkz. run_actions), QEMU'nun screendump komutuyla ekran
 görüntüsü alınır ve sanal makine kapatılır. Seri konsol çıktısı --log dosyasına yazılır.
 
 --expect-desktop ile açılış testi yapılır (CI'da bu kullanılır): --wait süresi boyunca birkaç saniyede bir
@@ -146,13 +146,45 @@ def save_screenshot(qmp_path, target):
     return image
 
 
-def run_actions(actions, qmp_path, console, log):
+def send_key(path, combo):
+    """QEMU tuş adlarıyla (qcode) tuş kombinasyonu gönderir: "ret", "meta_l-l", "shift-a"."""
+    keys = [{"type": "qcode", "data": key} for key in combo.split("-")]
+    qmp(path, "send-key", {"keys": keys})
+    time.sleep(0.08)
+
+
+def type_text(path, text):
+    """Küçük harf, rakam ve boşluktan oluşan metni tuş tuş yazar."""
+    for char in text:
+        send_key(path, "spc" if char == " " else char)
+
+
+def run_actions(actions, qmp_path, console, log, screenshot):
+    """Eylemler ";" ile ayrılır:
+    click X Y      sol tıklama (1440x900 koordinatları)
+    sleep SANIYE   bekle
+    key TUŞLAR     tuş kombinasyonu, QEMU adlarıyla: ret, esc, meta_l-l
+    type METİN     küçük harf ve rakamları yaz
+    run KOMUT      seri konsolda (root) komut çalıştır
+    shot DOSYA     o anki ekranın görüntüsünü kaydet (yol --screenshot'a göre)
+    """
     for action in filter(None, (a.strip() for a in actions.split(";"))):
-        name, *values = action.split()
+        name, _, rest = action.partition(" ")
+        values = rest.split()
         if name == "click":
             click(qmp_path, float(values[0]), float(values[1]))
         elif name == "sleep":
             wait_for(console, b"\x00", float(values[0]), log)
+        elif name == "key":
+            send_key(qmp_path, values[0])
+        elif name == "type":
+            type_text(qmp_path, rest)
+        elif name == "run":
+            console.sendall(f"{rest}\n".encode())
+        elif name == "shot":
+            target = os.path.join(os.path.dirname(os.path.abspath(screenshot)), rest)
+            save_screenshot(qmp_path, target)
+            print(f"Ekran görüntüsü: {target}", flush=True)
         else:
             raise SystemExit(f"Bilinmeyen eylem: {action}")
 
@@ -165,7 +197,8 @@ def main():
                         help="ekran görüntüsünden önce beklenecek saniye (--expect-desktop ile: en fazla)")
     parser.add_argument("--expect-desktop", action="store_true",
                         help="masaüstü ekrana gelene kadar bekle, gelmezse başarısız ol")
-    parser.add_argument("--actions", default="", help='ör. "click 326 860; sleep 5" (1440x900 koordinatları)')
+    parser.add_argument("--actions", default="",
+                        help='ör. "click 326 860; sleep 5; key meta_l-l; type ankaros; key ret; shot kilit.png"')
     parser.add_argument("--screenshot", required=True, help="ekran görüntüsünün kaydedileceği .ppm ya da .png")
     parser.add_argument("--log", default=None, help="seri konsol günlüğü (varsayılan: ekran görüntüsünün yanında)")
     parser.add_argument("--boot-timeout", type=float, default=120)
@@ -234,7 +267,7 @@ def main():
             else:
                 wait_for(console, b"\x00", args.wait, log)  # süre boyunca konsolu okumaya devam et
                 ok = True
-            run_actions(args.actions, qmp_path, console, log)
+            run_actions(args.actions, qmp_path, console, log, args.screenshot)
             save_screenshot(qmp_path, args.screenshot)
             console.sendall(b"echo '--- compositor gunlugu ---'; cat /var/log/ankaros-compositor.log; poweroff\n")
             wait_for(console, b"Power down", 30, log)

@@ -106,15 +106,22 @@ alır. Masaüstü `--wait` saniye içinde gelmezse 1 ile çıkar. CI her imaj de
 değildir: siyah konsol ekranı ile renkli duvar kâğıdı birbirinden ayrılır, saat ya da tasarım değişince
 test bozulmaz.
 
-Komut çalıştırıp fare tıklaması da gönderilebilir (1440x900 ekran koordinatları):
+Komut çalıştırıp fare tıklaması ve tuş da gönderilebilir. `--actions` içindeki eylemler `;` ile ayrılır:
+`click X Y` (1440x900 koordinatları), `sleep SN`, `key TUŞLAR` (QEMU adlarıyla: `ret`, `esc`, `meta_l-l`),
+`type METİN` (küçük harf ve rakam), `run KOMUT` (seri konsolda root olarak), `shot DOSYA` (ara ekran
+görüntüsü).
 
 ```bash
 ./scripts/qemu-test.py --command "ankaros-shell-preview" --wait 25 --screenshot ekran.png
 ./scripts/qemu-test.py --wait 20 \
   --actions "click 326 860; sleep 15" --screenshot terminal.png   # alt çubuktaki Terminal'e tıkla
+./scripts/qemu-test.py --expect-desktop --actions \
+  "key meta_l-l; sleep 10; type yanlis; key ret; sleep 10" --screenshot kilit.png   # kilit ekranı
 ```
 
-Seri konsol çıktısı ve compositor günlüğü `ekran.log` dosyasına yazılır. Mac'te donanım
+Seri konsol çıktısı ve compositor günlüğü `ekran.log` dosyasına yazılır. QEMU'da GPU olmadığı için
+bulanıklaştırma gibi efektler yavaştır: kilit ekranı gibi bir değişiklikten sonra ekran görüntüsü
+almadan önce birkaç saniye bekleyin. Mac'te donanım
 hızlandırması (`hvf`) kullanılır. KVM olmayan Linux'ta (CI, OrbStack'teki derleme makinesi) işlemci
 yazılımla taklit edilir (`tcg`), o zaman da masaüstü yaklaşık 20 saniyede gelir. `--accel tcg` ile
 Mac'te de denenebilir.

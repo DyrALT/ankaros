@@ -19,6 +19,10 @@ GlassPanel {
         : apps.filter(app => app.toLocaleLowerCase().includes(query))
 
     signal appLaunched(string app)
+    signal lockRequested
+    signal logoutRequested
+    signal rebootRequested
+    signal poweroffRequested
 
     function focusSearch() {
         search.forceActiveFocus();
@@ -43,6 +47,7 @@ GlassPanel {
 
     onOpenChanged: {
         search.text = "";
+        powerMenu.opacity = 0;
         if (open)
             search.forceActiveFocus();
     }
@@ -205,19 +210,9 @@ GlassPanel {
             Layout.fillWidth: true
             spacing: 10
 
-            Rectangle {
-                Layout.preferredWidth: 32
-                Layout.preferredHeight: 32
-                radius: 16
-                color: Theme.color.accent
-
-                Label {
-                    anchors.centerIn: parent
-                    text: root.userName.charAt(0)
-                    color: Theme.color.textOnAccent
-                    font.pixelSize: Theme.font.large
-                    font.weight: Font.DemiBold
-                }
+            Avatar {
+                name: root.userName
+                size: 32
             }
 
             Label {
@@ -238,6 +233,37 @@ GlassPanel {
                     size: 28
                 }
             }
+
+            HoverButton {
+                id: powerButton
+
+                Layout.preferredWidth: 36
+                Layout.preferredHeight: 36
+                radius: Theme.radius.sm
+                checked: powerMenu.opacity > 0
+                onClicked: powerMenu.opacity = powerMenu.opacity > 0 ? 0 : 1
+
+                Icon {
+                    anchors.centerIn: parent
+                    name: "power"
+                    size: 18
+                }
+            }
         }
+    }
+
+    PowerMenu {
+        id: powerMenu
+
+        x: parent.width - width - 22
+        y: parent.height - height - 64
+        opacity: 0
+        onLockRequested: {
+            root.open = false;
+            root.lockRequested();
+        }
+        onLogoutRequested: root.logoutRequested()
+        onRebootRequested: root.rebootRequested()
+        onPoweroffRequested: root.poweroffRequested()
     }
 }

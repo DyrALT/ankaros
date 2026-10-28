@@ -65,7 +65,13 @@ $APP --dark --launcher --screenshot ekran.png   # koyu mod, başlatıcı açık,
 | `--screenshot <dosya>` | Masaüstünün görüntüsünü PNG olarak kaydeder ve çıkar. Pencere boyutundan bağımsız olarak 1440x900 çizilir |
 | `--size <GxY>` | Ekran görüntüsünün boyutu, ör. `--size 1024x720` |
 | `--window` | Masaüstünde sahte bir uygulama penceresi gösterir (pencere tasarımı için) |
-| `--settings` | Ayarlar penceresi açık olarak başlar |
+| `--settings` | Ayarlar penceresi açık olarak başlar (`--user` ile Kullanıcı sayfası) |
+| `--login` | Giriş ekranını gösterir. Şifre: `ankaros` |
+| `--lock` | Masaüstü kilitli başlar. Şifre: `ankaros` |
+| `--error` | Giriş ekranı "Şifre yanlış" durumunda başlar |
+
+Önizlemede oturum işlemlerini sahte bir oturum (`preview/FakeSession.qml`) karşılar, ankaros'ta
+compositor'ın `Session` nesnesi.
 
 ## Şu anki tasarım: B · Ankara Taşı
 
@@ -98,7 +104,16 @@ Bileşenler (`shell/qml/Ankaros/Shell/`):
 | `StartMenu.qml`, `AppTile.qml`, `RecommendedItem.qml` | Başlat paneli ve öğeleri | Başlat paneli |
 | `WindowChrome.qml`, `WindowTitleBar.qml` | Pencere çerçevesi ve başlık çubuğu | `WindowTitleBar` bileşeni |
 | `ShellSettings.qml` | Kalıcı kullanıcı ayarları (tekil nesne) | |
+| `SettingsPanel.qml`, `SettingsPage.qml` | Ayarlar penceresi: kenar çubuğu ve sayfa düzeni | Ayarlar ekranları |
 | `AppearanceSettings.qml` | Ayarlar › Görünüm | "B · Pencereler ve Ayarlar" sayfası |
+| `UserSettings.qml` | Ayarlar › Kullanıcı | "Faz 2 · Oturum ve Ağ" sayfası |
+| `SettingLabel.qml`, `InfoTip.qml`, `Bubble.qml` | Ayar adı, bilgi simgesi, açıklama balonu | `InfoTip` |
+| `ToggleSwitch.qml`, `InputField.qml`, `PushButton.qml` | Anahtar, metin alanı, düğme | `Toggle`, `TextField`, `Button` |
+| `SegmentedControl.qml`, `SectionTitle.qml` | Seçenek grubu (Sol/Sağ), bölüm başlığı | |
+| `LoginScreen.qml`, `LockScreen.qml` | Giriş ve kilit ekranı | "Faz 2 · Oturum ve Ağ" sayfası |
+| `PasswordField.qml`, `Avatar.qml`, `BigClock.qml`, `ErrorPill.qml` | Şifre alanı, avatar, büyük saat, hata balonu | `Şifre alanı`, `Oturum kartı` |
+| `GlassIconButton.qml`, `LockBackground.qml` | Giriş ekranının cam düğmeleri, bulanık arka plan | |
+| `PowerMenu.qml` | Başlat panelindeki güç menüsü | Güç menüsü |
 
 ### Tasarım ilkeleri
 

@@ -29,6 +29,26 @@ qt_add_qml_module(ankaros_shell
         WindowTitleBar.qml
         WindowChrome.qml
         AppearanceSettings.qml
+        Avatar.qml
+        BigClock.qml
+        Bubble.qml
+        ErrorPill.qml
+        GlassIconButton.qml
+        InfoTip.qml
+        InputField.qml
+        LockBackground.qml
+        LockScreen.qml
+        LoginScreen.qml
+        PasswordField.qml
+        PowerMenu.qml
+        PushButton.qml
+        SectionTitle.qml
+        SegmentedControl.qml
+        SettingLabel.qml
+        SettingsPage.qml
+        SettingsPanel.qml
+        ToggleSwitch.qml
+        UserSettings.qml
     RESOURCES
         fonts/Inter-Regular.ttf
         fonts/Inter-Medium.ttf

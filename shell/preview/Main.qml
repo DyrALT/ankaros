@@ -15,7 +15,12 @@
 //                        Görüntü pencere boyutundan bağımsız olarak 1440x900 çizilir.
 //   --size <GxY>         ekran görüntüsünün boyutu, ör. --size 1024x720
 //   --window             masaüstünde sahte bir uygulama penceresi göster (pencere tasarımı için)
-//   --settings           Ayarlar penceresini açık olarak başla
+//   --settings           Ayarlar penceresini açık olarak başla (--user ile Kullanıcı sayfası)
+//   --login              giriş ekranını göster (compositor --login gibi). Şifre: ankaros
+//   --lock               masaüstünü kilitli olarak başla. Şifre: ankaros
+//   --error              giriş ya da kilit ekranını "Şifre yanlış" durumunda göster
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import Ankaros.Shell
 
@@ -45,12 +50,25 @@ Window {
             Theme.dark = true;
     }
 
-    Desktop {
-        id: desktop
+    FakeSession {
+        id: fakeSession
+    }
+
+    // Ekran görüntüsünün alındığı öğe: masaüstü ya da giriş ekranı
+    Item {
+        id: screen
 
         // Ekran görüntüsü modunda pencere ekrana sığmak için küçülse bile görüntü aynı boyutta çıksın.
         width: window.screenshotMode ? window.screenshotSize.width : window.width
         height: window.screenshotMode ? window.screenshotSize.height : window.height
+
+    Desktop {
+        id: desktop
+
+        anchors.fill: parent
+        visible: !window.args.includes("--login")
+        session: fakeSession
+        locked: window.args.includes("--lock")
         startMenuOpen: window.args.includes("--launcher")
         settingsOpen: window.args.includes("--settings")
         settingsFocused: settingsOpen
@@ -67,8 +85,45 @@ Window {
             { app: "Terminal", title: "build.sh", subtitle: qsTr("Dün") },
             { app: "Takvim", title: "Ekim 2026", subtitle: qsTr("3 gün önce") }
         ]
-        userName: "Diyar"
+        userName: fakeSession.userName
         onAppLaunched: app => console.log("Başlatılacak uygulama:", app)
+        Component.onCompleted: {
+            if (window.args.includes("--user"))
+                settingsPanelPage = "user";
+        }
+    }
+
+    Loader {
+        anchors.fill: parent
+        active: window.args.includes("--login")
+
+        sourceComponent: LoginScreen {
+            id: login
+
+            userName: fakeSession.userName
+            onSubmitted: password => fakeSession.login(fakeSession.userName, password)
+            onRebootRequested: fakeSession.reboot()
+            onPoweroffRequested: fakeSession.poweroff()
+
+            Connections {
+                target: fakeSession
+
+                function onLoginFailed(message: string) {
+                    login.fail(message);
+                }
+
+                function onLoggedIn() {
+                    console.log("Önizleme: oturum açılacaktı");
+                    login.busy = false;
+                }
+            }
+
+            Component.onCompleted: {
+                if (window.args.includes("--error"))
+                    error = qsTr("Şifre yanlış");
+            }
+        }
+    }
     }
 
     // Sahte bir uygulama penceresi. ankaros'ta pencereler compositor'dan gelir ve içerikleri
@@ -123,7 +178,7 @@ Window {
         interval: 800
         onTriggered: {
             const path = window.args[window.args.indexOf("--screenshot") + 1];
-            desktop.grabToImage(result => {
+            screen.grabToImage(result => {
                 result.saveToFile(path);
                 Qt.quit();
             });
