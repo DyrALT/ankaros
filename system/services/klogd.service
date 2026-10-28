@@ -1,0 +1,4 @@
+# Çekirdek mesajlarını sistem günlüğüne aktarır
+description = Çekirdek günlüğü (klogd)
+exec = /sbin/klogd -n
+after = syslogd

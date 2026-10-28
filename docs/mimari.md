@@ -17,8 +17,7 @@ ankaros, Linux çekirdeğinin üzerine kurulmuş, kendi masaüstü kabuğu ve co
 ├───────────────────────────────────────────────────────────┤
 │ Grafik yığını  ·  Mesa (virgl), DRM/KMS, libinput         │  Faz 1
 ├───────────────────────────────────────────────────────────┤
-│ Sistem servisleri  ·  init, ağ, oturum                    │  Faz 0: BusyBox init
-│                                                           │  Faz 2: kendi init'imiz (C++)
+│ Sistem servisleri  ·  init, ağ, oturum                    │  Faz 2: ankaros-init (C++)
 ├───────────────────────────────────────────────────────────┤
 │ C kütüphanesi ve temel araçlar  ·  glibc, BusyBox, eudev  │  Faz 0
 ├───────────────────────────────────────────────────────────┤
@@ -76,18 +75,16 @@ uygulamalar ve öneriler gibi veriler dışarıdan property olarak verilir, kull
 
 ## Açılış sırası
 
-Faz 0'daki durum:
-
 1. QEMU, çekirdeği (`Image`) ve kök dosya sistemini (`rootfs.ext4`, virtio-blk) yükler.
-2. Çekirdek `/dev/vda`'yı kök olarak bağlar, `/sbin/init`'i (BusyBox) başlatır.
-3. `/etc/init.d/` betikleri: eudev, ağ (DHCP, `eth0`), rastgele sayı tohumu.
-4. Seri konsolda (`ttyAMA0`) giriş istemi.
-
-Faz 1'den itibaren:
-
-5. `/etc/init.d/S90ankaros-desktop` compositor'ı root olarak arka planda başlatır. Ortam değişkenleri
+2. Çekirdek `/dev/vda`'yı kök olarak bağlar, `/sbin/init`'i (`ankaros-init`) başlatır.
+3. `ankaros-init` dosya sistemlerini bağlar ve `/etc/ankaros/services/` altındaki servisleri bağımlılık
+   sırasıyla, birbirini beklemeyenleri aynı anda başlatır: günlük, rastgele sayı tohumu, udev, ağ (DHCP),
+   seri konsolda (`ttyAMA0`) giriş istemi. Ayrıntılar: [init.md](init.md).
+4. udev hazır olunca `ankaros-compositor` servisi başlar. Ortam değişkenleri
    `/etc/profile.d/ankaros-grafik.sh`'den gelir, çıktı `/var/log/ankaros-compositor.log`'a yazılır.
-6. Ekranda masaüstü açılır. Seri konsoldaki giriş istemi kurtarma ve geliştirme için durur.
+5. Ekranda masaüstü açılır. Seri konsoldaki giriş istemi kurtarma ve geliştirme için durur.
+
+`ankarosctl boot` her adımın ne zaman başlayıp bittiğini gösterir.
 
 Kullanıcı hesabı ve giriş ekranı Faz 2'de.
 
@@ -99,9 +96,11 @@ Kullanıcı hesabı ve giriş ekranı Faz 2'de.
 | `external/` | Buildroot'a dışarıdan eklenen ankaros ağacı (BR2_EXTERNAL) |
 | `external/configs/` | `ankaros_qemu_aarch64_defconfig`: sistemin tüm yapılandırması |
 | `external/board/qemu-aarch64/` | Karta özel dosyalar: rootfs overlay, post-build betiği |
-| `external/package/` | ankaros'un kendi paketleri: `ankaros-shell`, `ankaros-compositor` |
+| `external/package/` | ankaros'un kendi paketleri: `ankaros-shell`, `ankaros-compositor`, `ankaros-system` |
+| `external/provides/` | Buildroot'un init seçeneklerine eklenen `ankaros-init` |
 | `shell/` | Masaüstü kabuğu: QML modülü ve Mac önizleme uygulaması |
 | `compositor/` | Wayland compositor: `Main.qml` (sunucu ve pencere yönetimi), `WaylandWindow.qml`, `AppLauncher` |
+| `system/` | Sistem servisleri (C++, Qt'siz): `ankaros-init`, `ankarosctl`, servis dosyaları, birim testleri |
 | `scripts/` | Derleme, çalıştırma ve ilerleme betikleri |
 | `docs/` | Belgeler |
 

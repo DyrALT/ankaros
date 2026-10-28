@@ -1,5 +1,6 @@
-# ankaros CI: kod stili denetimi, kabuğun ve compositor'ın derlenip qmllint'ten geçmesi. Birkaç dakika
-# sürer, PR'ı birleştirmek için yeşil olması yeter. İmaj derlemesi ayrı iş akışında: imaj.yml
+# ankaros CI: kod stili denetimi, kabuğun ve compositor'ın derlenip qmllint'ten geçmesi, sistem
+# servislerinin derlenip birim testlerinden geçmesi. Birkaç dakika sürer, PR'ı birleştirmek için yeşil
+# olması yeter. İmaj derlemesi ayrı iş akışında: imaj.yml
 name: CI
 
 on:
@@ -54,3 +55,17 @@ jobs:
           cmake --build build/compositor
       - name: Compositor qmllint
         run: cmake --build build/compositor --target all_qmllint
+
+  system:
+    name: Sistem servisleri
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Derle
+        run: |
+          sudo apt-get install -y ninja-build
+          cmake -S system -B build/system -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="-Werror -fsanitize=address,undefined"
+          cmake --build build/system
+      - name: Birim testleri
+        run: ctest --test-dir build/system --output-on-failure

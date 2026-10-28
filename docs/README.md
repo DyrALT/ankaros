@@ -4,6 +4,7 @@
 |---|---|
 | [gelistirme-ortami.md](gelistirme-ortami.md) | Mac'te geliştirme ortamının sıfırdan kurulumu |
 | [mimari.md](mimari.md) | Sistemin katmanları, repo yapısı ve açılış sırası |
+| [init.md](init.md) | ankaros-init: servis dosyaları, ankarosctl, günlükler, kapatma |
 | [yol-haritasi.md](yol-haritasi.md) | Fazlar, hedefler ve şu anki durum |
 | [faz-1-plani.md](faz-1-plani.md) | Faz 1'in (grafik masaüstü) ayrıntılı planı |
 | [faz-2-plani.md](faz-2-plani.md) | Faz 2'nin (sistem servisleri) ayrıntılı planı |

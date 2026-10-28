@@ -1,0 +1,3 @@
+# Sistem günlüğü: /var/log/messages
+description = Sistem günlüğü (syslogd)
+exec = /sbin/syslogd -n

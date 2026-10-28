@@ -14,6 +14,7 @@ on:
       - external/**
       - shell/**
       - compositor/**
+      - system/**
       - scripts/build.sh
       - scripts/qemu-test.py
       - .github/workflows/imaj.yml

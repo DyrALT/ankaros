@@ -1,0 +1,3 @@
+description = Yerel ağ arayüzü (lo)
+type = oneshot
+exec = ip link set lo up
