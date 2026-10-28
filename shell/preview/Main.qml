@@ -24,6 +24,8 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Ankaros.Shell
+import Ankaros.System
+import Ankaros.UI
 
 Window {
     id: window
@@ -49,16 +51,9 @@ Window {
     Component.onCompleted: {
         if (args.includes("--dark"))
             Theme.dark = true;
-    }
-
-    FakeSession {
-        id: fakeSession
-    }
-
-    FakeNetwork {
-        id: fakeNetwork
-
-        mode: window.args.includes("--static") ? "static" : "dhcp"
+        // Sahte ağ (Ankaros.System, Network.qml, yalnızca Mac'te) elle ayarlanmış olarak başlasın
+        if (args.includes("--static") && Qt.platform.os === "osx")
+            Network.mode = "static";
     }
 
     // Ekran görüntüsünün alındığı öğe: masaüstü ya da giriş ekranı
@@ -74,8 +69,8 @@ Window {
 
         anchors.fill: parent
         visible: !window.args.includes("--login")
-        session: fakeSession
-        network: fakeNetwork
+        session: Session
+        network: Network
         locked: window.args.includes("--lock")
         startMenuOpen: window.args.includes("--launcher")
         settingsOpen: window.args.includes("--settings")
@@ -93,7 +88,7 @@ Window {
             { app: "Terminal", title: "build.sh", subtitle: qsTr("Dün") },
             { app: "Takvim", title: "Ekim 2026", subtitle: qsTr("3 gün önce") }
         ]
-        userName: fakeSession.userName
+        userName: Session.userName
         onAppLaunched: app => console.log("Başlatılacak uygulama:", app)
         Component.onCompleted: {
             if (window.args.includes("--user"))
@@ -110,13 +105,13 @@ Window {
         sourceComponent: LoginScreen {
             id: login
 
-            userName: fakeSession.userName
-            onSubmitted: password => fakeSession.login(fakeSession.userName, password)
-            onRebootRequested: fakeSession.reboot()
-            onPoweroffRequested: fakeSession.poweroff()
+            userName: Session.userName
+            onSubmitted: password => Session.login(Session.userName, password)
+            onRebootRequested: Session.reboot()
+            onPoweroffRequested: Session.poweroff()
 
             Connections {
-                target: fakeSession
+                target: Session
 
                 function onLoginFailed(message: string) {
                     login.fail(message);
@@ -168,7 +163,7 @@ Window {
 
     Shortcut {
         sequence: "Ctrl+D"
-        onActivated: ShellSettings.darkMode = !ShellSettings.darkMode
+        onActivated: Appearance.darkMode = !Appearance.darkMode
     }
 
     Shortcut {

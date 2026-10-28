@@ -3,6 +3,8 @@
 // verir ve sonucu error ile alır.
 import QtQuick
 
+import Ankaros.UI
+
 Item {
     id: root
 

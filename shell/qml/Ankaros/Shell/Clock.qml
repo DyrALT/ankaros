@@ -1,6 +1,8 @@
 // Alt çubuktaki saat ve tarih, sistem diline göre biçimlenir.
 import QtQuick
 
+import Ankaros.UI
+
 Column {
     id: root
 

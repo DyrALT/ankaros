@@ -1,5 +1,8 @@
-// Önizleme için sahte ağ. ankaros'ta compositor'ın C++ Network nesnesi ağ servisinden (ankaros-network)
-// gelen gerçek durumu verir. Burada ayar uygulanınca değerler biraz gecikmeyle değişir.
+// Mac önizlemesi için sahte ağ (Ankaros.System). ankaros'ta bunun yerine C++ Network sınıfı
+// (network.cpp) ağ servisinden (ankaros-network) gelen gerçek durumu verir. Burada ayar uygulanınca
+// değerler biraz gecikmeyle değişir.
+pragma Singleton
+
 import QtQuick
 
 QtObject {

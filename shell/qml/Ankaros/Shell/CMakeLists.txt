@@ -4,20 +4,11 @@ else()
     qt_add_library(ankaros_shell STATIC)
 endif()
 
-set_source_files_properties(Theme.qml ShellSettings.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
-
 qt_add_qml_module(ankaros_shell
     URI Ankaros.Shell
     VERSION 1.0
+    DEPENDENCIES Ankaros.UI
     QML_FILES
-        Theme.qml
-        ShellSettings.qml
-        IconData.js
-        Label.qml
-        Icon.qml
-        AppIcon.qml
-        GlassPanel.qml
-        HoverButton.qml
         Wallpaper.qml
         Desktop.qml
         TaskBar.qml
@@ -29,45 +20,20 @@ qt_add_qml_module(ankaros_shell
         WindowTitleBar.qml
         WindowChrome.qml
         AppearanceSettings.qml
-        Avatar.qml
         BigClock.qml
-        Bubble.qml
         ErrorPill.qml
         GlassIconButton.qml
-        InfoTip.qml
-        InputField.qml
         LockBackground.qml
         LockScreen.qml
         LoginScreen.qml
         NetworkSettings.qml
         PasswordField.qml
         PowerMenu.qml
-        PushButton.qml
-        SectionTitle.qml
-        SegmentedControl.qml
-        SettingLabel.qml
         SettingsPage.qml
         SettingsPanel.qml
-        ToggleSwitch.qml
         UserSettings.qml
-    RESOURCES
-        fonts/Inter-Regular.ttf
-        fonts/Inter-Medium.ttf
-        fonts/Inter-SemiBold.ttf
-        fonts/Inter-Bold.ttf
-        fonts/Inter-LICENSE.txt
 )
 
-target_link_libraries(ankaros_shell PRIVATE Qt6::Quick)
+target_link_libraries(ankaros_shell PRIVATE Qt6::Quick ankaros_ui)
 
-if(ANKAROS_SHELL_SHARED)
-    # Qt'nin QML klasörü (Buildroot'ta /usr/qml). Modülü kullanan uygulamalar onu buradan bulur.
-    set(module_dir ${QT6_INSTALL_QML}/Ankaros/Shell)
-    install(TARGETS ankaros_shell LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-    install(TARGETS ankaros_shellplugin LIBRARY DESTINATION ${module_dir})
-    install(FILES
-        ${QT_QML_OUTPUT_DIRECTORY}/Ankaros/Shell/qmldir
-        ${QT_QML_OUTPUT_DIRECTORY}/Ankaros/Shell/ankaros_shell.qmltypes
-        DESTINATION ${module_dir}
-    )
-endif()
+ankaros_install_qml_module(ankaros_shell Ankaros/Shell)

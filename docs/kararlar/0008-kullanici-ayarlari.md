@@ -1,6 +1,6 @@
 # 0008: Kullanıcı ayarları QtCore Settings ile ~/.config/ankaros altında
 
-- **Durum:** Kabul edildi
+- **Durum:** Yerine geçen: [0015](0015-gorunum-ayarlari-surecler-arasi.md)
 - **Tarih:** 2026-10-28
 
 ## Bağlam

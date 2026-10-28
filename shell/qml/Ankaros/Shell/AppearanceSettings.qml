@@ -1,9 +1,11 @@
-// Ayarlar › Görünüm: tema, pencere düğmelerinin konumu ve stili. Seçimler ShellSettings'e yazılır,
+// Ayarlar › Görünüm: tema, pencere düğmelerinin konumu ve stili. Seçimler Appearance'a yazılır,
 // açık pencerelere hemen uygulanır. Figma: "B · Pencereler ve Ayarlar" sayfası.
 pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+
+import Ankaros.UI
 
 SettingsPage {
     id: root
@@ -145,8 +147,8 @@ SettingsPage {
                 // Kartlar o an geçerli temayı gösterir (önizlemenin --dark seçeneği ayarı değiştirmez)
                 selected: !Theme.dark
                 onChosen: {
-                    ShellSettings.darkMode = false;
-                    Theme.dark = Qt.binding(() => ShellSettings.darkMode);
+                    Appearance.darkMode = false;
+                    Theme.dark = Qt.binding(() => Appearance.darkMode);
                 }
 
                 ThemePreview {
@@ -158,8 +160,8 @@ SettingsPage {
                 label: qsTr("Koyu")
                 selected: Theme.dark
                 onChosen: {
-                    ShellSettings.darkMode = true;
-                    Theme.dark = Qt.binding(() => ShellSettings.darkMode);
+                    Appearance.darkMode = true;
+                    Theme.dark = Qt.binding(() => Appearance.darkMode);
                 }
 
                 ThemePreview {
@@ -187,8 +189,8 @@ SettingsPage {
 
             SegmentedControl {
                 options: [{ value: "left", label: qsTr("Sol") }, { value: "right", label: qsTr("Sağ") }]
-                value: ShellSettings.windowButtonSide
-                onSelected: value => ShellSettings.windowButtonSide = value
+                value: Appearance.windowButtonSide
+                onSelected: value => Appearance.windowButtonSide = value
             }
         }
 
@@ -205,8 +207,8 @@ SettingsPage {
                     required property var modelData
 
                     label: modelData.label
-                    selected: ShellSettings.windowButtonStyle === modelData.value
-                    onChosen: ShellSettings.windowButtonStyle = modelData.value
+                    selected: Appearance.windowButtonStyle === modelData.value
+                    onChosen: Appearance.windowButtonStyle = modelData.value
 
                     Rectangle {
                         width: 250

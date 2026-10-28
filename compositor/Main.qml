@@ -7,6 +7,7 @@ import QtWayland.Compositor
 import QtWayland.Compositor.XdgShell
 
 import Ankaros.Shell
+import Ankaros.System
 
 WaylandCompositor {
     id: compositor

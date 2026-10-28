@@ -1,7 +1,8 @@
 // Başlat panelindeki sabitlenmiş uygulama: simge ve kısa ad.
 import QtQuick
 
-import "IconData.js" as IconData
+
+import Ankaros.UI
 
 HoverButton {
     id: root

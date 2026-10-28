@@ -1,11 +1,15 @@
-// Önizleme için sahte oturum. ankaros'ta compositor'ın C++ Session nesnesi oturum yöneticisiyle
-// (ankaros-session) konuşur. Burada şifre "ankaros"tur, cevaplar gerçeğe benzesin diye biraz gecikir.
+// Mac önizlemesi için sahte oturum (Ankaros.System). ankaros'ta bunun yerine C++ Session sınıfı
+// (session.cpp) oturum yöneticisiyle (ankaros-session) konuşur. Burada şifre "ankaros"tur, cevaplar
+// gerçeğe benzesin diye biraz gecikir.
+pragma Singleton
+
 import QtQuick
 
 QtObject {
     id: root
 
     readonly property string userName: "ankaros"
+    readonly property bool greeter: false
     property bool autologin: true
     readonly property string password: "ankaros"
 

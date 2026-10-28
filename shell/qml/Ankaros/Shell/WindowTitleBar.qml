@@ -7,6 +7,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 
+import Ankaros.UI
+
 Rectangle {
     id: root
 
@@ -14,9 +16,9 @@ Rectangle {
     property string title
     property bool active: true
     // "right" ya da "left"
-    property string buttonSide: ShellSettings.windowButtonSide
+    property string buttonSide: Appearance.windowButtonSide
     // "icons" ya da "colored"
-    property string buttonStyle: ShellSettings.windowButtonStyle
+    property string buttonStyle: Appearance.windowButtonStyle
 
     signal minimizeClicked
     signal maximizeClicked

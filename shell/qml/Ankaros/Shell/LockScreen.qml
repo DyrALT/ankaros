@@ -2,6 +2,8 @@
 // her şey bulanıklaşır ve tıklamalar ile tuşlar uygulamalara ulaşmaz.
 import QtQuick
 
+import Ankaros.UI
+
 Item {
     id: root
 

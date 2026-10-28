@@ -46,9 +46,30 @@ jobs:
           cmake --build build/shell
       - name: Kabuk qmllint
         run: cmake --build build/shell --target all_qmllint
-      - name: Kabuk modülünü kur
-        # Compositor "import Ankaros.Shell" yapıyor, modül Qt'nin QML klasöründe olmalı.
+      - name: Kabuk modüllerini kur
+        # Compositor Ankaros.Shell, Ankaros.UI ve Ankaros.System'i içe aktarıyor, modüller Qt'nin QML
+        # klasöründe olmalı.
         run: cmake --install build/shell
+      - name: Duman testi (önizleme, Qt 6.9)
+        # Modüllerin imajdaki Qt sürümüyle gerçekten yüklendiğini denetler. qmllint, yalnızca çalışırken
+        # ortaya çıkan hataları (ör. iki kez bulunan modül) yakalamaz. Önizleme bir QML hatasında 1 ile çıkar.
+        run: |
+          sudo apt-get install -y xvfb libegl1 libgl1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 \
+            libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0
+          mkdir -p duman-testi
+          for args in "" "--launcher" "--login --error" "--lock" "--settings --user" "--settings --network"; do
+            name=$(echo "masaustu $args" | tr -s ' -' '_')
+            xvfb-run -a -s "-screen 0 1440x900x24" build/shell/preview/ankaros-shell-preview $args \
+              --screenshot "duman-testi/$name.png"
+          done
+      - name: Duman testinin ekran görüntüleri
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: duman-testi
+          path: duman-testi
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Compositor'ı derle
         run: |
           cmake -S compositor -B build/compositor -G Ninja

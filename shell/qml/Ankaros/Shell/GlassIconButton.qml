@@ -1,6 +1,8 @@
 // Giriş ekranındaki yuvarlak cam düğme. Adı yanına yazılmaz, üzerine gelince balonda görünür.
 import QtQuick
 
+import Ankaros.UI
+
 Rectangle {
     id: root
 

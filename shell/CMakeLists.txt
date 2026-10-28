@@ -1,5 +1,8 @@
-# ankaros masaüstü kabuğu.
-# Ankaros.Shell QML modülü hem Mac önizlemesinde hem de (Faz 1'de) compositor'da kullanılır.
+# ankaros masaüstü kabuğu ve ortak QML modülleri (karar 0013):
+#   Ankaros.UI      tema, simgeler, ortak bileşenler (qml/Ankaros/UI)
+#   Ankaros.System  sistem servislerinin istemcileri: oturum, ağ (qml/Ankaros/System)
+#   Ankaros.Shell   masaüstü: alt çubuk, başlat paneli, giriş ve kilit ekranı (qml/Ankaros/Shell)
+# Modüller hem Mac önizlemesinde hem de compositor'da kullanılır.
 cmake_minimum_required(VERSION 3.21)
 project(ankaros-shell VERSION 0.1.0 LANGUAGES CXX)
 
@@ -17,8 +20,28 @@ set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 # Mac önizlemesinde modül önizleme uygulamasına statik olarak gömülür. ankaros imajında ise
 # compositor'ın da kullanabilmesi için paylaşılan bir QML modülü olarak Qt'nin QML klasörüne kurulur.
-option(ANKAROS_SHELL_SHARED "Ankaros.Shell'i paylaşılan bir QML modülü olarak derle ve kur" OFF)
+option(ANKAROS_SHELL_SHARED "QML modüllerini paylaşılan modül olarak derle ve kur" OFF)
 
+# Paylaşılan derlemede modülü Qt'nin QML klasörüne (Buildroot'ta /usr/qml) kurar. Modülü kullanan
+# uygulamalar (compositor, Terminal, Ayarlar) onu buradan bulur.
+function(ankaros_install_qml_module target path)
+    if(NOT ANKAROS_SHELL_SHARED)
+        return()
+    endif()
+    set(module_dir ${QT6_INSTALL_QML}/${path})
+    install(TARGETS ${target} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(TARGETS ${target}plugin LIBRARY DESTINATION ${module_dir})
+    string(REPLACE "/" "_" types ${path})
+    string(TOLOWER ${target} lower)
+    install(FILES
+        ${QT_QML_OUTPUT_DIRECTORY}/${path}/qmldir
+        ${QT_QML_OUTPUT_DIRECTORY}/${path}/${lower}.qmltypes
+        DESTINATION ${module_dir}
+    )
+endfunction()
+
+add_subdirectory(qml/Ankaros/UI)
+add_subdirectory(qml/Ankaros/System)
 add_subdirectory(qml/Ankaros/Shell)
 
 option(ANKAROS_SHELL_PREVIEW "Kabuğu sıradan bir pencerede gösteren önizleme uygulamasını derle" ON)

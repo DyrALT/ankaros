@@ -71,8 +71,8 @@ $APP --dark --launcher --screenshot ekran.png   # koyu mod, başlatıcı açık,
 | `--error` | Giriş ekranı "Şifre yanlış" durumunda başlar |
 | `--settings --network` | Ayarlar › Ağ (`--static` ile elle ayarlanmış ağ) |
 
-Önizlemede oturum işlemlerini sahte bir oturum (`preview/FakeSession.qml`) karşılar, ankaros'ta
-compositor'ın `Session` nesnesi.
+Önizlemede oturum ve ağ işlemlerini Ankaros.System modülünün sahte `Session.qml` ve `Network.qml`'i
+karşılar, ankaros'ta aynı adlı C++ sınıfları.
 
 ## Şu anki tasarım: B · Ankara Taşı
 
@@ -88,7 +88,10 @@ başlat paneli (arama, sabitlenmiş uygulamalar, önerilenler, kullanıcı).
 Figma'daki masaüstü ekranında görünen Dosyalar penceresi kabuğun parçası değildir. Pencereler Faz 1'de
 compositor'dan gelecek.
 
-Bileşenler (`shell/qml/Ankaros/Shell/`):
+Bileşenler üç modüldedir (karar 0013): `Ankaros.UI` (`shell/qml/Ankaros/UI/`) tema, simgeler ve
+bütün uygulamaların paylaştığı bileşenler. `Ankaros.Shell` (`shell/qml/Ankaros/Shell/`) masaüstüne özgü
+parçalar. `Ankaros.System` (`shell/qml/Ankaros/System/`) sistem servislerinin istemcileri.
+
 
 | Dosya | Bileşen | Figma karşılığı |
 |---|---|---|
@@ -104,7 +107,7 @@ Bileşenler (`shell/qml/Ankaros/Shell/`):
 | `TaskBar.qml`, `TaskItem.qml`, `Clock.qml` | Alt çubuk, uygulama öğesi, saat | Alt çubuk |
 | `StartMenu.qml`, `AppTile.qml`, `RecommendedItem.qml` | Başlat paneli ve öğeleri | Başlat paneli |
 | `WindowChrome.qml`, `WindowTitleBar.qml` | Pencere çerçevesi ve başlık çubuğu | `WindowTitleBar` bileşeni |
-| `ShellSettings.qml` | Kalıcı kullanıcı ayarları (tekil nesne) | |
+| `UI/appearance.cpp` (`Appearance`) | Kalıcı görünüm ayarları, süreçler arasında paylaşılır (karar 0015) | |
 | `SettingsPanel.qml`, `SettingsPage.qml` | Ayarlar penceresi: kenar çubuğu ve sayfa düzeni | Ayarlar ekranları |
 | `AppearanceSettings.qml` | Ayarlar › Görünüm | "B · Pencereler ve Ayarlar" sayfası |
 | `UserSettings.qml` | Ayarlar › Kullanıcı | "Faz 2 · Oturum ve Ağ" sayfası |
@@ -142,7 +145,7 @@ Faz 2'nin ekranları (giriş, kilit, güç menüsü, Ayarlar › Kullanıcı ve 
 Başlat panelindeki ayarlar düğmesi ya da alt çubuktaki Ayarlar, kabuğun kendi Ayarlar penceresini açar.
 Görünüm bölümünde tema (açık/koyu), pencere düğmelerinin konumu (sol/sağ) ve stili (çizgi
 simgeler/renkli daireler) seçilir. Değişiklik bütün açık pencerelere anında uygulanır ve
-`ShellSettings` ile kalıcı olarak saklanır (karar 0007, 0008).
+`Appearance` ile kalıcı olarak saklanır (karar 0007, 0015).
 
 ![ankaros'ta Görünüm ayarları: koyu, sol, renkli daireler](gorseller/vm-gorunum-ayarlari.png)
 

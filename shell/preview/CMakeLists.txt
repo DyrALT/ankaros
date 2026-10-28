@@ -4,13 +4,13 @@ qt_add_executable(ankaros-shell-preview MACOSX_BUNDLE main.cpp)
 qt_add_qml_module(ankaros-shell-preview
     URI Ankaros.Shell.Preview
     VERSION 1.0
-    QML_FILES Main.qml FakeSession.qml FakeNetwork.qml
+    QML_FILES Main.qml
 )
 
 target_link_libraries(ankaros-shell-preview PRIVATE Qt6::Quick)
 if(NOT ANKAROS_SHELL_SHARED)
     # Statik modülün eklentisi uygulamaya bağlanır ve main.cpp'de elle kaydedilir.
-    target_link_libraries(ankaros-shell-preview PRIVATE ankaros_shellplugin)
+    target_link_libraries(ankaros-shell-preview PRIVATE ankaros_shellplugin ankaros_uiplugin ankaros_systemplugin)
     target_compile_definitions(ankaros-shell-preview PRIVATE ANKAROS_SHELL_STATIC)
 endif()
 
