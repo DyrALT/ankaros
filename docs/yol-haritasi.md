@@ -35,7 +35,7 @@ Ayrıntılı plan: [faz-1-plani.md](faz-1-plani.md)
 
 Ayrıntılı plan: [faz-2-plani.md](faz-2-plani.md)
 
-- [ ] A: Uygulama listesinin `/etc/ankaros/apps.json`'dan okunması
+- [x] A: Uygulama listesinin `/etc/ankaros/apps.json`'dan okunması
 - [ ] B: Kendi init sistemimiz (`ankaros-init`, C++)
 - [ ] C: Figma'da giriş ekranı, kilit ekranı, güç menüsü, Kullanıcı ve Ağ ayarları
 - [ ] D: Oturum yönetimi: kullanıcı hesabı, giriş ve kilit ekranı, otomatik giriş
