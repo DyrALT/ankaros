@@ -77,7 +77,7 @@ Mac'ten bu dosyalara `~/OrbStack/ankaros-build/home/<kullanıcı>/ankaros-output
 Seri konsolun yanında bir ekran penceresi açılır. Giriş yaptıktan sonra `ankaros-shell-preview` komutu
 kabuğu tam ekran başlatır. `weston-terminal` Wayland terminalidir, compositor içinde çalışır. Bu modda
 sanal GPU 2D'dir ve Mesa yazılımsal çizer (softpipe): çalışır ama yavaştır. GPU hızlandırmalı test
-UTM ile yapılır.
+UTM ile yapılır: `./scripts/utm-olustur.sh`, ayrıntılar [utm.md](utm.md).
 
 ### Masaüstü
 
@@ -94,19 +94,27 @@ istemcisi olarak açılabilir: `QT_QPA_PLATFORM=wayland ankaros-shell-preview`.
 ### Otomatik test
 
 ```bash
-./scripts/qemu-test.py --command "ankaros-shell-preview" --wait 25 --screenshot ekran.ppm
+./scripts/qemu-test.py --expect-desktop --wait 120 --screenshot masaustu.png
 ```
 
-İmajı ekransız açar, root olarak girer, komutu çalıştırır, bekler, ekran görüntüsü alır ve kapatır.
-`--actions` ile fare tıklaması da gönderilebilir (1440x900 ekran koordinatları):
+Açılış testi: imajı ekransız açar, masaüstü ekrana gelene kadar birkaç saniyede bir ekran görüntüsü
+alır. Masaüstü `--wait` saniye içinde gelmezse 1 ile çıkar. CI her imaj derlemesinden sonra bunu
+çalıştırır, ekran görüntüsünü ve günlüğü `acilis-testi` adıyla yükler. Ölçüt piksel karşılaştırması
+değildir: siyah konsol ekranı ile renkli duvar kâğıdı birbirinden ayrılır, saat ya da tasarım değişince
+test bozulmaz.
+
+Komut çalıştırıp fare tıklaması da gönderilebilir (1440x900 ekran koordinatları):
 
 ```bash
-./scripts/qemu-test.py --command "true" --wait 20 \
-  --actions "click 326 860; sleep 15" --screenshot terminal.ppm   # alt çubuktaki Terminal'e tıkla
+./scripts/qemu-test.py --command "ankaros-shell-preview" --wait 25 --screenshot ekran.png
+./scripts/qemu-test.py --wait 20 \
+  --actions "click 326 860; sleep 15" --screenshot terminal.png   # alt çubuktaki Terminal'e tıkla
 ```
 
-Seri konsol çıktısı `ekran.log` dosyasına yazılır. PPM'i PNG'ye çevirmek için:
-`sips -s format png ekran.ppm --out ekran.png`.
+Seri konsol çıktısı ve compositor günlüğü `ekran.log` dosyasına yazılır. Mac'te donanım
+hızlandırması (`hvf`) kullanılır. KVM olmayan Linux'ta (CI, OrbStack'teki derleme makinesi) işlemci
+yazılımla taklit edilir (`tcg`), o zaman da masaüstü yaklaşık 20 saniyede gelir. `--accel tcg` ile
+Mac'te de denenebilir.
 
 `run-qemu.sh` QEMU'yu Apple'ın donanım hızlandırmasıyla (`-accel hvf`) çalıştırır. Bu yüzden misafir
 sistem neredeyse yerel hızda açılır. Ek QEMU argümanları betiğe eklenebilir. Örneğin

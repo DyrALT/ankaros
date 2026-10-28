@@ -8,7 +8,7 @@
 # Çıkmak için: Ctrl-a ardından x
 #
 # --gui modunda sanal GPU 2D'dir (virtio-gpu-pci), Mesa yazılımsal çizer (softpipe): çalışır ama
-# yavaştır. GPU hızlandırmalı test için UTM kullanılır (bkz. docs/faz-1-plani.md).
+# yavaştır. GPU hızlandırmalı test için UTM kullanılır (bkz. docs/utm.md).
 #
 # file.locking=off: imaj OrbStack'in paylaşılan dosya sisteminden okunuyor ve bu dosya sistemi
 # QEMU'nun bayt kilitlerini desteklemiyor ("Failed to lock byte 100").

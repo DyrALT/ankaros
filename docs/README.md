@@ -6,6 +6,7 @@
 | [mimari.md](mimari.md) | Sistemin katmanları, repo yapısı ve açılış sırası |
 | [yol-haritasi.md](yol-haritasi.md) | Fazlar, hedefler ve şu anki durum |
 | [faz-1-plani.md](faz-1-plani.md) | Faz 1'in (grafik masaüstü) ayrıntılı planı |
+| [utm.md](utm.md) | ankaros'u UTM'de GPU hızlandırmasıyla çalıştırmak |
 | [tasarim-akisi.md](tasarim-akisi.md) | Figma tasarımlarının QML'e aktarılması, kabuk önizlemesi |
 | [kararlar/](kararlar/) | Mimari karar kayıtları (ADR): neyi neden seçtik |
 | [../CONTRIBUTING.md](../CONTRIBUTING.md) | Git akışı, commit kuralları, kod stili |

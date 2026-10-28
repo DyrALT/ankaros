@@ -1,4 +1,5 @@
-# ankaros CI: kod stili denetimi, kabuğun derlenip qmllint'ten geçmesi ve aarch64 imaj derlemesi.
+# ankaros CI: kod stili denetimi, kabuğun derlenip qmllint'ten geçmesi, aarch64 imaj derlemesi ve
+# imajın QEMU'da masaüstüne kadar açılması.
 name: CI
 
 on:
@@ -78,6 +79,23 @@ jobs:
           restore-keys: buildroot-${{ hashFiles('external/configs/*_defconfig', '.gitmodules') }}-
       - name: Derle
         run: ./scripts/build.sh
+      - name: Açılış testi (QEMU)
+        # İmaj ekransız açılır, masaüstü görünene kadar ekran görüntüsü alınır. Bu makinede KVM yok,
+        # işlemci yazılımla taklit edilir: Mac'te 20 saniye süren açılış burada birkaç dakika sürebilir.
+        run: |
+          sudo apt-get install -y qemu-system-arm
+          ./scripts/qemu-test.py --boot-timeout 600 --expect-desktop --wait 900 \
+            --screenshot acilis-testi.png --log acilis-testi.log
+      - name: Açılış testinin ekran görüntüsü ve günlüğü
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: acilis-testi
+          path: |
+            acilis-testi.png
+            acilis-testi.log
+          if-no-files-found: ignore
+          retention-days: 14
       - uses: actions/upload-artifact@v4
         with:
           name: ankaros-qemu-aarch64

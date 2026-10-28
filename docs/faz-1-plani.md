@@ -67,8 +67,10 @@ Başlık çubuğunu compositor çizdiği için ayar bütün uygulamalara aynı a
 ## Test yöntemi
 
 - **UTM (günlük kullanım):** virtio-gpu-gl ile GPU hızlandırmalı, virgl sürücüsü. Gerçek hızı görmek için.
+  Kurulum: [utm.md](utm.md).
 - **QEMU ve CI (otomatik):** virtio-gpu (2D) ve softpipe ile yazılımsal çizim. İmaj açılır, QEMU'nun
-  ekran görüntüsü komutuyla (`screendump`) masaüstünün göründüğü doğrulanır.
+  ekran görüntüsü komutuyla (`screendump`) masaüstünün göründüğü doğrulanır
+  (`qemu-test.py --expect-desktop`).
 - **Mac önizlemesi:** Kabuk, ayarlar ekranı ve başlık çubuğu tasarımı compositor olmadan da denenebilir.
 
 ## Kapsam dışı (Faz 2 ve sonrası)
