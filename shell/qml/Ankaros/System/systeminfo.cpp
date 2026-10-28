@@ -64,7 +64,7 @@ SystemInfo::SystemInfo(QObject *parent)
                            .match(readFile(QStringLiteral("/proc/meminfo")));
     m_memory = total.hasMatch() ? size(total.captured(1).toDouble() * 1024) : QStringLiteral("-");
 
-    struct statvfs root{};
+    struct statvfs root = {};
     if (statvfs("/", &root) == 0 && root.f_blocks > 0) {
         const double capacity = double(root.f_blocks) * root.f_frsize;
         const double used = double(root.f_blocks - root.f_bfree) * root.f_frsize;
