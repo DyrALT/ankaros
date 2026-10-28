@@ -32,6 +32,13 @@ static void readsAndWritesConfig()
     const SessionConfig config{"ankaros"};
     CHECK_EQ(parseSessionConfig(formatSessionConfig(config)).autologin, "ankaros");
     CHECK_EQ(parseSessionConfig(formatSessionConfig({})).autologin, "");
+    // Ölçek: auto (0), 1 ya da 2; dosya yeniden yazılınca korunur
+    CHECK(parseSessionConfig("autologin = ankaros\n").scale == 0);
+    CHECK(parseSessionConfig("scale = auto\n").scale == 0);
+    CHECK(parseSessionConfig("scale = 2\n").scale == 2);
+    CHECK(parseSessionConfig("scale = 3\n").scale == 0);
+    CHECK(parseSessionConfig(formatSessionConfig({"ankaros", 1})).scale == 1);
+    CHECK(parseSessionConfig(formatSessionConfig({"ankaros", 0})).scale == 0);
 }
 
 static void forwardsAppearanceToGreeter()
@@ -66,11 +73,26 @@ static void hashesPasswords()
 }
 #endif
 
+static void choosesDisplayScale()
+{
+    CHECK(displayScale("1440x900") == 1);
+    CHECK(displayScale("1920x1080") == 1);
+    CHECK(displayScale("2560x1600") == 2);
+    CHECK(displayScale("3680x2300") == 2);
+    CHECK(displayScale("") == 1);
+    CHECK(displayScale("x900") == 1);
+    CHECK(displayScale("abcx900") == 1);
+    CHECK(displayScale("99999999999x1") == 1);
+    CHECK(displayScale("1280x800", 2) == 2);
+    CHECK(displayScale("2880x1800", 1) == 1);
+}
+
 int main()
 {
     replacesShadowHash();
     readsAndWritesConfig();
     forwardsAppearanceToGreeter();
+    choosesDisplayScale();
 #ifdef __linux__
     hashesPasswords();
 #endif

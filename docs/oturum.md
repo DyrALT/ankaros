@@ -85,6 +85,10 @@ ankarosctl restart ankaros-session        # giriş ekranını ya da masaüstün�
   kağıdını (`~/.config/ankaros/shell.conf`) okuyup `ANKAROS_DARK_MODE` ve `ANKAROS_WALLPAPER` ortam
   değişkenleriyle giriş ekranına verir. Ayarlar › Duvar kağıdı'nda "Kilit ve giriş ekranında da kullan"
   kapalıysa giriş ve kilit ekranında Ankara Taşı görünür.
+- **Ölçek:** Oturum yöneticisi ekranın çözünürlüğünü DRM'den okur (`/sys/class/drm/*/modes`). 2560 piksel ve
+  daha geniş ekranlarda (Retina, UTM'nin Retina modu) compositor'ı `QT_SCALE_FACTOR=2` ile başlatır.
+  Compositor ölçeği Wayland çıktısıyla uygulamalara bildirir, uygulamalar pencerelerini 2 kat
+  çözünürlükle çizer. Seçilen ölçek oturum yöneticisinin günlüğünde görünür ("ekran: 3680x2300, ölçek 2").
 - **Kilit ekranı** (`LockScreen.qml`): Süper+L ya da başlat panelindeki güç menüsünden Kilitle. Masaüstünün
   kilitlendiği andaki görüntüsü bulanık arka plan olur, arkadaki uygulamaların değişen içeriği görünmez.
   Tıklamalar ve tuşlar uygulamalara ulaşmaz.

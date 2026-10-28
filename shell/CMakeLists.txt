@@ -44,8 +44,15 @@ add_subdirectory(qml/Ankaros/UI)
 add_subdirectory(qml/Ankaros/System)
 add_subdirectory(qml/Ankaros/Shell)
 
+# Birim testleri (Mac'te ve CI'da). ankaros imajına girmez.
+option(ANKAROS_SHELL_TESTS "Birim testlerini derle" ON)
+if(ANKAROS_SHELL_TESTS)
+    enable_testing()
+endif()
+
 # Uygulamalar (karar 0013)
 add_subdirectory(apps/settings)
+add_subdirectory(apps/terminal)
 
 option(ANKAROS_SHELL_PREVIEW "Kabuğu sıradan bir pencerede gösteren önizleme uygulamasını derle" ON)
 if(ANKAROS_SHELL_PREVIEW)

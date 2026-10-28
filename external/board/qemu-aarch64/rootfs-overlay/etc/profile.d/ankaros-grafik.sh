@@ -1,9 +1,12 @@
 # Türkçe ve UTF-8. Qt UTF-8 olmayan bir dil ayarında uyarı verir ve tarihleri İngilizce yazar.
 export LANG="${LANG:-tr_TR.UTF-8}"
 
-# Qt uygulamaları X ya da Wayland olmadan, doğrudan ekran kartına (DRM/KMS) çizer.
-export QT_QPA_PLATFORM=eglfs
-export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
+# Qt uygulamaları X ya da Wayland olmadan, doğrudan ekran kartına (DRM/KMS) çizer. Masaüstündeki
+# Terminal'de ise Wayland'li kalır (uygulamalar compositor'da pencere olarak açılır).
+if [ -z "$WAYLAND_DISPLAY" ]; then
+  export QT_QPA_PLATFORM=eglfs
+  export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
+fi
 # Klavye düzeni (libinput + xkbcommon). Farklı bir düzen için: XKB_DEFAULT_LAYOUT=us
 export XKB_DEFAULT_LAYOUT="${XKB_DEFAULT_LAYOUT:-tr}"
 

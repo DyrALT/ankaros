@@ -9,7 +9,8 @@ namespace ankaros {
 SessionConfig parseSessionConfig(const std::string &text)
 {
     const Config config = parseConfig(text);
-    return {config.value("autologin")};
+    const std::string scale = config.value("scale");
+    return {config.value("autologin"), scale == "1" ? 1 : scale == "2" ? 2 : 0};
 }
 
 std::vector<std::string> greeterAppearance(const std::string &shellConf)
@@ -53,7 +54,29 @@ std::string formatSessionConfig(const SessionConfig &config)
     return "# ankaros oturum ayarları (docs/oturum.md). Ayarlar › Kullanıcı'dan da değiştirilir.\n"
            "# Açılışta şifre sorulmadan oturum açılacak kullanıcı. Boşsa giriş ekranı açılır.\n"
            "autologin = " +
-           config.autologin + "\n";
+           config.autologin +
+           "\n"
+           "# Arayüz ölçeği: auto (2560 piksel ve daha geniş ekranlarda 2), 1 ya da 2.\n"
+           "scale = " +
+           (config.scale == 0 ? std::string("auto") : std::to_string(config.scale)) + "\n";
+}
+
+int displayScale(const std::string &mode, int configured)
+{
+    if (configured == 1 || configured == 2)
+        return configured;
+    const size_t separator = mode.find('x');
+    if (separator == std::string::npos || separator == 0)
+        return 1;
+    int width = 0;
+    for (size_t i = 0; i < separator; ++i) {
+        if (mode[i] < '0' || mode[i] > '9')
+            return 1;
+        width = width * 10 + (mode[i] - '0');
+        if (width > 100000)
+            return 1;
+    }
+    return width >= 2560 ? 2 : 1;
 }
 
 } // namespace ankaros

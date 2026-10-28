@@ -39,13 +39,16 @@ jobs:
           cache: true
       - name: Kabuğu derle
         # Qt'nin WaylandCompositor paketi sistemdeki libwayland'e bağlı, aqt onu getirmiyor.
+        # libvterm: Terminal (karar 0014)
         run: |
-          sudo apt-get install -y ninja-build libwayland-dev
+          sudo apt-get install -y ninja-build libwayland-dev libvterm-dev
           cmake -S shell -B build/shell -G Ninja -DANKAROS_SHELL_SHARED=ON \
             -DCMAKE_INSTALL_PREFIX="$QT_ROOT_DIR"
           cmake --build build/shell
       - name: Kabuk qmllint
         run: cmake --build build/shell --target all_qmllint
+      - name: Birim testleri (Terminal)
+        run: ctest --test-dir build/shell --output-on-failure
       - name: Kabuk modüllerini kur
         # Compositor Ankaros.Shell, Ankaros.UI ve Ankaros.System'i içe aktarıyor, modüller Qt'nin QML
         # klasöründe olmalı.
@@ -66,6 +69,7 @@ jobs:
             xvfb-run -a build/shell/apps/settings/ankaros-settings --page $page \
               --screenshot "duman-testi/ayarlar_$page.png"
           done
+          xvfb-run -a build/shell/apps/terminal/ankaros-terminal --screenshot duman-testi/terminal.png
       - name: Duman testinin ekran görüntüleri
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4

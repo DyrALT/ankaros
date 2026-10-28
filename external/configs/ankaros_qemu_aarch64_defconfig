@@ -65,12 +65,6 @@ BR2_PACKAGE_QT6SHADERTOOLS=y
 BR2_PACKAGE_QT6WAYLAND=y
 BR2_PACKAGE_QT6WAYLAND_COMPOSITOR=y
 
-# Terminal: weston-terminal. foot, Qt 6.9 compositor'ının desteklediğinden daha yeni Wayland protokolü
-# sürümleri istiyor (wl_seat 5, wl_data_device_manager 3), bu yüzden kullanılamıyor. Weston'ın kendi
-# compositor'ı kullanılmaz, en hafif arka uçla (headless) derlenir. Kendi terminalimiz Faz 3'te.
-BR2_PACKAGE_WESTON=y
-BR2_PACKAGE_WESTON_DEFAULT_HEADLESS=y
-
 # ankaros
 BR2_PACKAGE_ANKAROS_SHELL=y
 BR2_PACKAGE_ANKAROS_COMPOSITOR=y

@@ -53,17 +53,11 @@ Item {
         border.width: 1
     }
 
-    // İçerik köşelerden taşmasın diye pencere yuvarlak köşeli bir maskeyle kırpılır.
     Item {
         id: body
 
         anchors.fill: parent
         anchors.margins: root.frameWidth
-        layer.enabled: root.decorated
-        layer.effect: MultiEffect {
-            maskEnabled: true
-            maskSource: mask
-        }
 
         WindowTitleBar {
             id: titleBar
@@ -71,6 +65,8 @@ Item {
             visible: root.decorated
             anchors.left: parent.left
             anchors.right: parent.right
+            topLeftRadius: Theme.radius.md - 1
+            topRightRadius: Theme.radius.md - 1
             app: root.app
             title: root.title
             active: root.active
@@ -90,6 +86,7 @@ Item {
             }
         }
 
+        // İçerik alt köşelerden taşmasın diye katman olarak yuvarlak köşeli bir maskeyle çizilir.
         Item {
             id: contentArea
 
@@ -97,19 +94,25 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
+            layer.enabled: root.decorated
+            layer.effect: MultiEffect {
+                maskEnabled: true
+                maskSource: mask
+            }
         }
-    }
 
-    Item {
-        id: mask
+        Item {
+            id: mask
 
-        anchors.fill: body
-        visible: false
-        layer.enabled: true
+            anchors.fill: contentArea
+            visible: false
+            layer.enabled: true
 
-        Rectangle {
-            anchors.fill: parent
-            radius: Theme.radius.md - 1
+            Rectangle {
+                anchors.fill: parent
+                bottomLeftRadius: Theme.radius.md - 1
+                bottomRightRadius: Theme.radius.md - 1
+            }
         }
     }
 

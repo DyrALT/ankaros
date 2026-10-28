@@ -75,7 +75,7 @@ Mac'ten bu dosyalara `~/OrbStack/ankaros-build/home/<kullanıcı>/ankaros-output
 ```
 
 Seri konsolun yanında bir ekran penceresi açılır. Giriş yaptıktan sonra `ankaros-shell-preview` komutu
-kabuğu tam ekran başlatır. `weston-terminal` Wayland terminalidir, compositor içinde çalışır. Bu modda
+kabuğu tam ekran başlatır. Bu modda
 sanal GPU 2D'dir ve Mesa yazılımsal çizer (softpipe): çalışır ama yavaştır. GPU hızlandırmalı test
 UTM ile yapılır: `./scripts/utm-olustur.sh`, ayrıntılar [utm.md](utm.md).
 
@@ -83,7 +83,7 @@ UTM ile yapılır: `./scripts/utm-olustur.sh`, ayrıntılar [utm.md](utm.md).
 
 Masaüstü açılışta `ankaros` kullanıcısıyla (şifre `ankaros`) otomatik girişle açılır. Oturumu
 oturum yöneticisi `ankaros-session` başlatır, bkz. [oturum.md](oturum.md). Alt çubuktaki Terminal simgesi
-`weston-terminal`'i açar. Seri konsolda (root):
+ankaros'un kendi terminalini (`ankaros-terminal`, [terminal.md](terminal.md)) açar. Seri konsolda (root):
 
 ```bash
 cat /var/log/ankaros-compositor.log        # compositor'ın çıktısı

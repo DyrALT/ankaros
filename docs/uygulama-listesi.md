@@ -10,8 +10,8 @@ gömülü kopyası kullanılır.
     "apps": [
         {
             "name": "Terminal",
-            "command": "weston-terminal",
-            "appIds": ["org.freedesktop.weston.wayland-terminal", "weston-terminal"],
+            "command": "ankaros-terminal",
+            "appIds": ["org.ankaros.terminal", "ankaros-terminal"],
             "pinned": true
         },
         { "name": "Dosyalar", "pinned": true }

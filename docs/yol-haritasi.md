@@ -50,7 +50,7 @@ Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
 - [x] A: Ortak modüller: Ankaros.UI (bileşenler) ve Ankaros.System (servis istemcileri)
 - [x] B: Figma'da Terminal, Ayarlar uygulaması ve Paket Merkezi
 - [x] C: Ayarlar uygulaması (Duvar kağıdı, Alt çubuk, Hakkında sayfaları)
-- [ ] D: Terminal (libvterm)
+- [x] D: Terminal (libvterm)
 - [ ] E: Uygulama paketi (`.ankpkg`), paket servisi, `ank` komutu, imzalı depo
 - [ ] F: Paket Merkezi
 - [ ] `v0.4.0`
