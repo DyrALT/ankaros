@@ -79,6 +79,17 @@ kabuğu tam ekran başlatır. `weston-terminal` Wayland terminalidir, compositor
 sanal GPU 2D'dir ve Mesa yazılımsal çizer (softpipe): çalışır ama yavaştır. GPU hızlandırmalı test
 UTM ile yapılır.
 
+### Compositor'ı denemek
+
+Seri konsolda giriş yaptıktan sonra:
+
+```bash
+ankaros-compositor &
+```
+
+Masaüstü gelir. Alt çubuktaki Terminal simgesi `weston-terminal`'i açar. Qt uygulamaları Wayland
+istemcisi olarak açılabilir: `QT_QPA_PLATFORM=wayland ankaros-shell-preview`.
+
 ### Otomatik test
 
 ```bash
@@ -86,6 +97,13 @@ UTM ile yapılır.
 ```
 
 İmajı ekransız açar, root olarak girer, komutu çalıştırır, bekler, ekran görüntüsü alır ve kapatır.
+`--actions` ile fare tıklaması da gönderilebilir (1440x900 ekran koordinatları):
+
+```bash
+./scripts/qemu-test.py --command "ankaros-compositor" --wait 20 \
+  --actions "click 326 860; sleep 15" --screenshot terminal.ppm   # alt çubuktaki Terminal'e tıkla
+```
+
 Seri konsol çıktısı `ekran.log` dosyasına yazılır. PPM'i PNG'ye çevirmek için:
 `sips -s format png ekran.ppm --out ekran.png`.
 

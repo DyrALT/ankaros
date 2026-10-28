@@ -24,21 +24,34 @@ jobs:
         run: shellcheck scripts/*.sh external/board/*/*.sh
 
   shell:
-    name: Kabuk (Qt 6)
+    name: Kabuk ve compositor (Qt 6.9)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      # ankaros imajındaki Qt sürümü (Buildroot 2026.02). Mac'te daha yeni bir Qt kullanılıyor,
+      # kabuğun 6.9'da olmayan bir şey kullanması burada yakalanır.
       - uses: jurplel/install-qt-action@v4
         with:
-          version: '6.10.*'
+          version: '6.9.*'
+          modules: qtwaylandcompositor
           cache: true
-      - name: Derle
+      - name: Kabuğu derle
         run: |
           sudo apt-get install -y ninja-build
-          cmake -S shell -B build/shell -G Ninja
+          cmake -S shell -B build/shell -G Ninja -DANKAROS_SHELL_SHARED=ON \
+            -DCMAKE_INSTALL_PREFIX="$QT_ROOT_DIR"
           cmake --build build/shell
-      - name: qmllint
+      - name: Kabuk qmllint
         run: cmake --build build/shell --target all_qmllint
+      - name: Kabuk modülünü kur
+        # Compositor "import Ankaros.Shell" yapıyor, modül Qt'nin QML klasöründe olmalı.
+        run: cmake --install build/shell
+      - name: Compositor'ı derle
+        run: |
+          cmake -S compositor -B build/compositor -G Ninja
+          cmake --build build/compositor
+      - name: Compositor qmllint
+        run: cmake --build build/compositor --target all_qmllint
 
   image:
     name: İmaj (aarch64)
