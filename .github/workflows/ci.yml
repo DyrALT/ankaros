@@ -37,8 +37,9 @@ jobs:
           modules: qtwaylandcompositor
           cache: true
       - name: Kabuğu derle
+        # Qt'nin WaylandCompositor paketi sistemdeki libwayland'e bağlı, aqt onu getirmiyor.
         run: |
-          sudo apt-get install -y ninja-build
+          sudo apt-get install -y ninja-build libwayland-dev
           cmake -S shell -B build/shell -G Ninja -DANKAROS_SHELL_SHARED=ON \
             -DCMAKE_INSTALL_PREFIX="$QT_ROOT_DIR"
           cmake --build build/shell
