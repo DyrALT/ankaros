@@ -44,6 +44,9 @@ add_subdirectory(qml/Ankaros/UI)
 add_subdirectory(qml/Ankaros/System)
 add_subdirectory(qml/Ankaros/Shell)
 
+# Uygulamalar (karar 0013)
+add_subdirectory(apps/settings)
+
 option(ANKAROS_SHELL_PREVIEW "Kabuğu sıradan bir pencerede gösteren önizleme uygulamasını derle" ON)
 if(ANKAROS_SHELL_PREVIEW)
     add_subdirectory(preview)

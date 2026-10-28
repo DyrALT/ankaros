@@ -107,5 +107,5 @@ denenir. Örnek: kilitle, yanlış şifre gir, ekran görüntüsü al:
   "key meta_l-l; sleep 10; type yanlis; key ret; sleep 10" --screenshot kilit.png
 ```
 
-Arayüz Mac önizlemesinde de denenebilir: `--login`, `--lock`, `--settings --user`
+Arayüz Mac önizlemesinde de denenebilir: `--login`, `--lock` ve Ayarlar uygulaması `--page user`
 ([tasarim-akisi.md](tasarim-akisi.md)).

@@ -65,11 +65,9 @@ $APP --dark --launcher --screenshot ekran.png   # koyu mod, başlatıcı açık,
 | `--screenshot <dosya>` | Masaüstünün görüntüsünü PNG olarak kaydeder ve çıkar. Pencere boyutundan bağımsız olarak 1440x900 çizilir |
 | `--size <GxY>` | Ekran görüntüsünün boyutu, ör. `--size 1024x720` |
 | `--window` | Masaüstünde sahte bir uygulama penceresi gösterir (pencere tasarımı için) |
-| `--settings` | Ayarlar penceresi açık olarak başlar (`--user` ile Kullanıcı sayfası) |
 | `--login` | Giriş ekranını gösterir. Şifre: `ankaros` |
 | `--lock` | Masaüstü kilitli başlar. Şifre: `ankaros` |
 | `--error` | Giriş ekranı "Şifre yanlış" durumunda başlar |
-| `--settings --network` | Ayarlar › Ağ (`--static` ile elle ayarlanmış ağ) |
 
 Önizlemede oturum ve ağ işlemlerini Ankaros.System modülünün sahte `Session.qml` ve `Network.qml`'i
 karşılar, ankaros'ta aynı adlı C++ sınıfları.
@@ -87,6 +85,14 @@ başlat paneli (arama, sabitlenmiş uygulamalar, önerilenler, kullanıcı).
 
 Figma'daki masaüstü ekranında görünen Dosyalar penceresi kabuğun parçası değildir. Pencereler Faz 1'de
 compositor'dan gelecek.
+
+Ayarlar ayrı bir uygulamadır (`shell/apps/settings/`): kenar çubuğu ve sayfa düzeni `SettingsPanel.qml`
+ve `SettingsPage.qml`, sayfalar `AppearanceSettings.qml` (Görünüm), `NetworkSettings.qml` (Ağ),
+`UserSettings.qml` (Kullanıcı). Mac'te ayrı bir pencerede açılır:
+
+```bash
+build/shell/apps/settings/ankaros-settings.app/Contents/MacOS/ankaros-settings --page network
+```
 
 Bileşenler üç modüldedir (karar 0013): `Ankaros.UI` (`shell/qml/Ankaros/UI/`) tema, simgeler ve
 bütün uygulamaların paylaştığı bileşenler. `Ankaros.Shell` (`shell/qml/Ankaros/Shell/`) masaüstüne özgü
@@ -108,10 +114,6 @@ parçalar. `Ankaros.System` (`shell/qml/Ankaros/System/`) sistem servislerinin i
 | `StartMenu.qml`, `AppTile.qml`, `RecommendedItem.qml` | Başlat paneli ve öğeleri | Başlat paneli |
 | `WindowChrome.qml`, `WindowTitleBar.qml` | Pencere çerçevesi ve başlık çubuğu | `WindowTitleBar` bileşeni |
 | `UI/appearance.cpp` (`Appearance`) | Kalıcı görünüm ayarları, süreçler arasında paylaşılır (karar 0015) | |
-| `SettingsPanel.qml`, `SettingsPage.qml` | Ayarlar penceresi: kenar çubuğu ve sayfa düzeni | Ayarlar ekranları |
-| `AppearanceSettings.qml` | Ayarlar › Görünüm | "B · Pencereler ve Ayarlar" sayfası |
-| `UserSettings.qml` | Ayarlar › Kullanıcı | "Faz 2 · Oturum ve Ağ" sayfası |
-| `NetworkSettings.qml` | Ayarlar › Ağ | "Faz 2 · Oturum ve Ağ" sayfası |
 | `SettingLabel.qml`, `InfoTip.qml`, `Bubble.qml` | Ayar adı, bilgi simgesi, açıklama balonu | `InfoTip` |
 | `ToggleSwitch.qml`, `InputField.qml`, `PushButton.qml` | Anahtar, metin alanı, düğme | `Toggle`, `TextField`, `Button` |
 | `SegmentedControl.qml`, `SectionTitle.qml` | Seçenek grubu (Sol/Sağ), bölüm başlığı | |
@@ -142,7 +144,8 @@ Faz 2'nin ekranları (giriş, kilit, güç menüsü, Ayarlar › Kullanıcı ve 
 
 ### Görünüm ayarları
 
-Başlat panelindeki ayarlar düğmesi ya da alt çubuktaki Ayarlar, kabuğun kendi Ayarlar penceresini açar.
+Başlat panelindeki ayarlar düğmesi ya da alt çubuktaki Ayarlar, Ayarlar uygulamasını açar
+(`ankaros-settings`, kendi sürecinde).
 Görünüm bölümünde tema (açık/koyu), pencere düğmelerinin konumu (sol/sağ) ve stili (çizgi
 simgeler/renkli daireler) seçilir. Değişiklik bütün açık pencerelere anında uygulanır ve
 `Appearance` ile kalıcı olarak saklanır (karar 0007, 0015).

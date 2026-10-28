@@ -7,6 +7,9 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Değişti
 
+- Ayarlar ayrı bir uygulama (`ankaros-settings`): kabuğun içindeki pencere yerine kendi sürecinde açılıyor,
+  Görünüm'de yapılan değişiklik masaüstüne anında yansıyor. Alt çubuktaki ağ simgesi Ayarlar'ı Ağ
+  sayfasıyla açıyor.
 - Ortak bileşenler `Ankaros.UI`, oturum ve ağ istemcileri `Ankaros.System` modülüne taşındı (karar 0013).
   Görünüm ayarları dosya izlenerek süreçler arasında anında paylaşılıyor (karar 0015).
 - CI'da kabuk Qt 6.9 ile açılıp ekran görüntüleri alınıyor (duman testi)
