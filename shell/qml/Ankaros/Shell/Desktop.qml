@@ -38,20 +38,14 @@ Item {
     // Pencerelerin kullanabileceği alan (alt çubuk hariç)
     readonly property rect workArea: Qt.rect(0, 0, width, taskBar.y - Theme.size.taskBarMargin)
 
-    // Kabuğun kendi Ayarlar penceresi açık mı, odakta mı. Bu pencere bir Wayland uygulaması değil,
-    // kabuğun parçası. Bu yüzden çalışma ve odak durumu burada tutulur.
-    property bool settingsOpen: false
-    property bool settingsFocused: false
-    // Ayarlar penceresinde açık sayfa ("appearance", "user")
-    property alias settingsPanelPage: settingsPanel.page
-
-    // Pencerelerin üst üste sırası. Compositor da kendi pencerelerini öne getirirken bunu kullanır,
-    // böylece Ayarlar penceresiyle uygulama pencereleri aynı sıralamayı paylaşır.
+    // Pencerelerin üst üste sırası. Compositor pencereleri öne getirirken bunu kullanır.
     property int topZ: 0
 
-    // Kullanıcı bir uygulamayı başlattığında. Compositor bunu dinleyip uygulamayı çalıştıracak.
-    // "Ayarlar" bu sinyale düşmez, kabuk onu kendisi açar.
+    // Kullanıcı bir uygulamayı başlattığında. Compositor bunu dinleyip uygulamayı çalıştırır ya da
+    // penceresi açıksa öne getirir.
     signal appLaunched(string app)
+    // Ayarlar uygulamasının belirli bir sayfası istendiğinde (ör. alt çubuktaki ağ simgesi: "network")
+    signal settingsRequested(string page)
 
     function nextZ() {
         return ++topZ;
@@ -63,25 +57,7 @@ Item {
     }
 
     function launch(app) {
-        if (app !== "Ayarlar") {
-            appLaunched(app);
-            return;
-        }
-        if (settingsOpen && settingsFocused) {
-            settingsOpen = false;
-            return;
-        }
-        settingsOpen = true;
-        settingsFocused = true;
-        settingsWindow.z = nextZ();  // zaten açıksa da öne getir
-    }
-
-    // Başka bir uygulama penceresi odak alınca Ayarlar penceresi odaktan çıkar.
-    onActiveAppChanged: settingsFocused = false
-    // Ayarlar penceresi nasıl açılırsa açılsın en öne gelsin.
-    onSettingsOpenChanged: {
-        if (settingsOpen)
-            settingsWindow.z = nextZ();
+        appLaunched(app);
     }
 
     // Duvar kağıdı ve pencereler. Alt çubuk ve başlat paneli buzlu cam efekti için bu öğenin
@@ -99,33 +75,6 @@ Item {
             id: windowLayer
 
             anchors.fill: parent
-
-            WindowChrome {
-                id: settingsWindow
-
-                visible: root.settingsOpen
-                width: Math.min(820, root.width - 80)
-                height: Math.min(600, root.workArea.height - 40)
-                x: (root.width - width) / 2
-                y: Math.max(20, (root.workArea.height - height) / 2)
-                app: "Ayarlar"
-                title: qsTr("Ayarlar")
-                active: root.settingsFocused
-                onPressed: {
-                    z = root.nextZ();
-                    root.settingsFocused = true;
-                }
-                onCloseClicked: root.settingsOpen = false
-                onMinimizeClicked: root.settingsOpen = false
-
-                SettingsPanel {
-                    id: settingsPanel
-
-                    anchors.fill: parent
-                    session: root.session
-                    network: root.network
-                }
-            }
         }
     }
 
@@ -164,10 +113,9 @@ Item {
         anchors.bottom: parent.bottom
         anchors.margins: Theme.size.taskBarMargin
         backdrop: scene
-        apps: root.settingsOpen && !root.taskBarApps.includes("Ayarlar")
-              ? root.taskBarApps.concat(["Ayarlar"]) : root.taskBarApps
-        running: root.settingsOpen ? root.running.concat(["Ayarlar"]) : root.running
-        activeApp: root.settingsFocused ? "Ayarlar" : root.activeApp
+        apps: root.taskBarApps
+        running: root.running
+        activeApp: root.activeApp
         startMenuOpen: startMenu.open
         onStartClicked: startMenu.open = !startMenu.open
         onSearchClicked: {
@@ -176,11 +124,7 @@ Item {
         }
         network: root.network
         onAppClicked: app => root.launch(app)
-        onNetworkClicked: {
-            root.settingsPanelPage = "network";
-            if (!root.settingsOpen || !root.settingsFocused)
-                root.launch("Ayarlar");
-        }
+        onNetworkClicked: root.settingsRequested("network")
     }
 
     // Kilit ekranı her şeyin üstünde. Arkasındaki sahne bulanık görünür.

@@ -57,10 +57,14 @@ jobs:
           sudo apt-get install -y xvfb libegl1 libgl1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 \
             libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0
           mkdir -p duman-testi
-          for args in "" "--launcher" "--login --error" "--lock" "--settings --user" "--settings --network"; do
+          for args in "" "--launcher" "--login --error" "--lock"; do
             name=$(echo "masaustu $args" | tr -s ' -' '_')
             xvfb-run -a -s "-screen 0 1440x900x24" build/shell/preview/ankaros-shell-preview $args \
               --screenshot "duman-testi/$name.png"
+          done
+          for page in appearance network user; do
+            xvfb-run -a build/shell/apps/settings/ankaros-settings --page $page \
+              --screenshot "duman-testi/ayarlar_$page.png"
           done
       - name: Duman testinin ekran görüntüleri
         if: ${{ !cancelled() }}

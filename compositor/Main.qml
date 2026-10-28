@@ -18,6 +18,17 @@ WaylandCompositor {
     readonly property var runningApps: windows.map(w => w.appName)
     readonly property string activeApp: windows.find(w => w.active)?.appName ?? ""
 
+    // Ayarlar uygulamasının bir sayfası istendiğinde: penceresi açıksa öne getir, değilse o sayfayla başlat
+    function openSettings(page) {
+        const own = windows.filter(w => w.appName === "Ayarlar");
+        if (own.length > 0) {
+            raise(own[own.length - 1]);
+            own[own.length - 1].takeFocus();
+        } else {
+            AppLauncher.launch(AppCatalog.command("Ayarlar") + " --page " + page, socketName);
+        }
+    }
+
     function raise(window) {
         window.minimized = false;
         // Kabuğun Ayarlar penceresiyle aynı sıralamayı paylaşmak için z değeri Desktop'tan alınır.
@@ -85,6 +96,7 @@ WaylandCompositor {
                 network: Network
                 visible: !Session.greeter
                 onAppLaunched: app => compositor.activate(app)
+                onSettingsRequested: page => compositor.openSettings(page)
             }
 
             // Giriş ekranı (ankaros-compositor --login). Şifre doğruysa oturum yöneticisi bu süreci

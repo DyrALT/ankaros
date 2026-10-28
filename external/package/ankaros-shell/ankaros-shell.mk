@@ -30,4 +30,10 @@ ANKAROS_SHELL_CONF_OPTS = \
 	-DANKAROS_SHELL_SHARED=ON \
 	-DANKAROS_SHELL_PREVIEW=ON
 
+# Başlat panelindeki ve alt çubuktaki uygulamaların listesi (docs/uygulama-listesi.md)
+define ANKAROS_SHELL_INSTALL_APPS
+	$(INSTALL) -D -m 644 $(@D)/qml/Ankaros/System/apps.json $(TARGET_DIR)/etc/ankaros/apps.json
+endef
+ANKAROS_SHELL_POST_INSTALL_TARGET_HOOKS += ANKAROS_SHELL_INSTALL_APPS
+
 $(eval $(cmake-package))

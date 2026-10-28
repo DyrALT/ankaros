@@ -1,7 +1,9 @@
 # Uygulama listesi
 
 Başlat panelindeki ve alt çubuktaki uygulamalar `/etc/ankaros/apps.json` dosyasından okunur. Repodaki
-kaynağı [compositor/apps.json](../compositor/apps.json), imaja `ankaros-compositor` paketiyle kurulur.
+kaynağı [shell/qml/Ankaros/System/apps.json](../shell/qml/Ankaros/System/apps.json), imaja `ankaros-shell`
+paketiyle kurulur. Okuyan sınıf Ankaros.System'deki `AppCatalog`'dur. Dosya yoksa (Mac önizlemesi) modüle
+gömülü kopyası kullanılır.
 
 ```json
 {

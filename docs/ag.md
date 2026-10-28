@@ -80,7 +80,7 @@ ankarosctl network set dhcp
 
 Kabuk ağa `Desktop.network` nesnesi üzerinden ulaşır. ankaros'ta bu nesne compositor'daki C++ `Network`
 sınıfıdır (Ankaros.System, `shell/qml/Ankaros/System/network.cpp`) ve `watch` ile abone olur, bağlantı koparsa yeniden bağlanır. Mac
-önizlemesinde aynı modülün sahte `Network.qml`'i kullanılır (`--settings --network`, `--static`).
+önizlemesinde aynı modülün sahte `Network.qml`'i kullanılır (`ankaros-settings --page network`).
 
 ## Geliştirme
 

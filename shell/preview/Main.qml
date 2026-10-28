@@ -15,8 +15,6 @@
 //                        Görüntü pencere boyutundan bağımsız olarak 1440x900 çizilir.
 //   --size <GxY>         ekran görüntüsünün boyutu, ör. --size 1024x720
 //   --window             masaüstünde sahte bir uygulama penceresi göster (pencere tasarımı için)
-//   --settings           Ayarlar penceresini açık olarak başla (--user ile Kullanıcı, --network ile Ağ
-//                        sayfası, --static ile ağ elle ayarlanmış olarak)
 //   --login              giriş ekranını göster (compositor --login gibi). Şifre: ankaros
 //   --lock               masaüstünü kilitli olarak başla. Şifre: ankaros
 //   --error              giriş ya da kilit ekranını "Şifre yanlış" durumunda göster
@@ -51,9 +49,6 @@ Window {
     Component.onCompleted: {
         if (args.includes("--dark"))
             Theme.dark = true;
-        // Sahte ağ (Ankaros.System, Network.qml, yalnızca Mac'te) elle ayarlanmış olarak başlasın
-        if (args.includes("--static") && Qt.platform.os === "osx")
-            Network.mode = "static";
     }
 
     // Ekran görüntüsünün alındığı öğe: masaüstü ya da giriş ekranı
@@ -73,8 +68,6 @@ Window {
         network: Network
         locked: window.args.includes("--lock")
         startMenuOpen: window.args.includes("--launcher")
-        settingsOpen: window.args.includes("--settings")
-        settingsFocused: settingsOpen
 
         // Sahte veriler. ankaros'ta compositor ve sistem servislerinden gelecek.
         apps: ["Terminal", "Dosyalar", "Tarayıcı", "Ayarlar", "Metin Düzenleyici", "Müzik",
@@ -90,12 +83,7 @@ Window {
         ]
         userName: Session.userName
         onAppLaunched: app => console.log("Başlatılacak uygulama:", app)
-        Component.onCompleted: {
-            if (window.args.includes("--user"))
-                settingsPanelPage = "user";
-            else if (window.args.includes("--network"))
-                settingsPanelPage = "network";
-        }
+        onSettingsRequested: page => console.log("Ayarlar açılacak:", page)
     }
 
     Loader {

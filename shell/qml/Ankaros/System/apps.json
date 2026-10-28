@@ -8,7 +8,11 @@
         },
         { "name": "Dosyalar", "pinned": true },
         { "name": "Tarayıcı", "pinned": true },
-        { "name": "Ayarlar" },
+        {
+            "name": "Ayarlar",
+            "command": "ankaros-settings",
+            "appIds": ["org.ankaros.settings", "ankaros-settings"]
+        },
         { "name": "Metin Düzenleyici", "pinned": true },
         { "name": "Müzik" },
         { "name": "Fotoğraflar" },

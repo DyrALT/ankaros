@@ -13,7 +13,8 @@ AppCatalog::AppCatalog(QObject *parent)
 {
     const QString path =
         qEnvironmentVariable("ANKAROS_APPS", QStringLiteral("/etc/ankaros/apps.json"));
-    load(path);
+    // Mac önizlemesinde /etc/ankaros yoktur, modüle gömülü liste kullanılır
+    load(QFile::exists(path) ? path : QStringLiteral(":/qt/qml/Ankaros/System/apps.json"));
 }
 
 bool AppCatalog::load(const QString &path)

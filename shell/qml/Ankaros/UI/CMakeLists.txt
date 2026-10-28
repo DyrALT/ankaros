@@ -28,6 +28,7 @@ qt_add_qml_module(ankaros_ui
         SegmentedControl.qml
         SettingLabel.qml
         ToggleSwitch.qml
+        WindowTitleBar.qml
     SOURCES
         appearance.h
         appearance.cpp

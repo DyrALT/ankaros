@@ -24,10 +24,4 @@ ANKAROS_COMPOSITOR_DEPENDENCIES = \
 ANKAROS_COMPOSITOR_CONF_OPTS = \
 	-DQT_HOST_PATH=$(HOST_DIR)
 
-# Başlat panelindeki ve alt çubuktaki uygulamaların listesi (docs/uygulama-listesi.md)
-define ANKAROS_COMPOSITOR_INSTALL_APPS
-	$(INSTALL) -D -m 644 $(@D)/apps.json $(TARGET_DIR)/etc/ankaros/apps.json
-endef
-ANKAROS_COMPOSITOR_POST_INSTALL_TARGET_HOOKS += ANKAROS_COMPOSITOR_INSTALL_APPS
-
 $(eval $(cmake-package))
