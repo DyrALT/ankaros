@@ -1,0 +1,6 @@
+# Buildroot kullanıcı tablosu (makeusers biçimi, bkz. docs/oturum.md)
+# ad uid grup gid şifre ev kabuk ek-gruplar açıklama
+# ankaros: varsayılan kullanıcı, şifresi "ankaros" (derlemede hash'lenir, Ayarlar › Kullanıcı'dan değişir)
+ankaros -2 ankaros -2 =ankaros /home/ankaros /bin/sh video,input,audio,users ankaros
+# ankaros-login: giriş ekranını çalıştıran sistem kullanıcısı, oturum açamaz
+ankaros-login -1 ankaros-login -1 * - - video,input Giriş ekranı

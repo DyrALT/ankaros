@@ -1,7 +1,0 @@
-# Masaüstü. Ortam değişkenleri (eglfs/KMS, dil, klavye, XDG_RUNTIME_DIR) etkileşimli oturumlarla aynı
-# yerden, /etc/profile.d altından gelir. Faz 2 D'de ankaros-session'a geçecek.
-description = Masaüstü (ankaros-compositor)
-exec = /bin/sh -c '. /etc/profile; exec /usr/bin/ankaros-compositor'
-after = udev
-environment = HOME=/root
-environment = USER=root

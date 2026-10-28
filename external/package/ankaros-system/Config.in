@@ -2,9 +2,11 @@ config BR2_PACKAGE_ANKAROS_SYSTEM
 	bool "ankaros-system"
 	depends on BR2_INSTALL_LIBSTDCPP
 	depends on BR2_TOOLCHAIN_USES_GLIBC
+	select BR2_PACKAGE_LIBXCRYPT # şifre doğrulama (crypt)
 	help
 	  ankaros sistem servisleri: init sistemi (ankaros-init, PID 1),
-	  ankarosctl ve temel servis dosyaları.
+	  oturum yöneticisi (ankaros-session), ankarosctl ve temel
+	  servis dosyaları.
 
 	  Init olarak kullanmak için: System configuration > Init system
 	  > ankaros-init

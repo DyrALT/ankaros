@@ -117,10 +117,11 @@ int main()
     epoll_ctl(epollFd, EPOLL_CTL_ADD, signalFd, &event);
 
     ControlServer control;
-    control.listen(initSocketPath, epollFd,
-                   [&supervisor](const std::vector<std::string> &command, uid_t uid) {
-                       return handleCommand(supervisor, command, uid);
-                   });
+    if (!control.listen(initSocketPath, epollFd,
+                        [&supervisor](const std::vector<std::string> &command, uid_t uid) {
+                            return handleCommand(supervisor, command, uid);
+                        }))
+        log::write("denetim soketi açılamadı: %s: %s", initSocketPath, strerror(errno));
 
     supervisor.update();
     while (!requestedAction) {

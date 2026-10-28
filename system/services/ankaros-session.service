@@ -1,0 +1,4 @@
+# Oturum yöneticisi: giriş ekranını ya da kullanıcının masaüstünü başlatır (docs/oturum.md)
+description = Oturum yöneticisi
+exec = /usr/sbin/ankaros-session
+after = udev

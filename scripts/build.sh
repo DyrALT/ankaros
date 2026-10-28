@@ -19,7 +19,10 @@ OUT="${ANKAROS_OUT:-$HOME/ankaros-output}"
 export BR2_DL_DIR="${BR2_DL_DIR:-$HOME/ankaros-dl}"
 
 cd "$REPO/buildroot"
-if [ ! -f "$OUT/.config" ]; then
+# İlk derlemede ve defconfig değiştiğinde (ör. git pull sonrası) yapılandırma yeniden uygulanır.
+# menuconfig ile yapılan ve savedefconfig ile kaydedilmemiş değişiklikler bu durumda kaybolur.
+if [ ! -f "$OUT/.config" ] \
+  || [ -n "$(find "$REPO/external/configs/$DEFCONFIG" -newer "$OUT/.config")" ]; then
   make BR2_EXTERNAL="$REPO/external" O="$OUT" "$DEFCONFIG"
 fi
 make O="$OUT" "$@"

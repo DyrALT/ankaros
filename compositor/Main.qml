@@ -67,7 +67,7 @@ WaylandCompositor {
                 }
                 running: compositor.runningApps
                 activeApp: compositor.activeApp
-                userName: "root"
+                userName: Session.userName
                 onAppLaunched: app => compositor.activate(app)
             }
         }

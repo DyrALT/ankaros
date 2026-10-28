@@ -12,10 +12,15 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   başlatma, çöken servisi yeniden başlatma, servis başına günlük, düzgün kapatma. Servisleri denetleyen
   `ankarosctl` komutu, açılışta her adımın süresini gösteren `ankarosctl boot`.
 
+- Kullanıcı hesapları ve oturum yöneticisi `ankaros-session` (`docs/oturum.md`): masaüstü root yerine
+  `ankaros` kullanıcısıyla (şifre `ankaros`) çalışıyor, geliştirme imajında otomatik giriş açık
+
 ### Değişti
 
-- BusyBox init ve `/etc/init.d` betikleri kaldırıldı. Masaüstünü yeniden başlatmak için:
-  `ankarosctl restart ankaros-compositor`
+- BusyBox init ve `/etc/init.d` betikleri kaldırıldı
+- Masaüstünü init değil `ankaros-session` başlatıyor. Yeniden başlatmak için:
+  `ankarosctl restart ankaros-session`
+- `build.sh` değişen defconfig'i (ör. `git pull` sonrası) kendiliğinden yeniden uyguluyor
 
 ## [0.2.0] - 2026-10-28
 

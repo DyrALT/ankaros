@@ -81,16 +81,18 @@ UTM ile yapılır: `./scripts/utm-olustur.sh`, ayrıntılar [utm.md](utm.md).
 
 ### Masaüstü
 
-`ankaros-compositor` açılışta kendiliğinden başlar (`ankaros-compositor` servisi, bkz. [init.md](init.md)). Alt çubuktaki
-Terminal simgesi `weston-terminal`'i açar. Seri konsolda:
+Masaüstü açılışta `ankaros` kullanıcısıyla (şifre `ankaros`) otomatik girişle açılır. Oturumu
+oturum yöneticisi `ankaros-session` başlatır, bkz. [oturum.md](oturum.md). Alt çubuktaki Terminal simgesi
+`weston-terminal`'i açar. Seri konsolda (root):
 
 ```bash
 cat /var/log/ankaros-compositor.log        # compositor'ın çıktısı
-ankarosctl restart ankaros-compositor      # yeniden başlat (ör. ayar dosyasını elle değiştirdikten sonra)
+ankarosctl restart ankaros-session         # masaüstünü yeniden başlat (ör. ayar dosyasını elle değiştirdikten sonra)
+ankarosctl session logout                  # giriş ekranına dön
 ankarosctl status                          # bütün servislerin durumu
 ```
- Qt uygulamaları Wayland
-istemcisi olarak açılabilir: `QT_QPA_PLATFORM=wayland ankaros-shell-preview`.
+
+Qt uygulamaları Wayland istemcisi olarak açılabilir: `QT_QPA_PLATFORM=wayland ankaros-shell-preview`.
 
 ### Otomatik test
 

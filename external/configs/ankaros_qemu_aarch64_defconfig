@@ -20,6 +20,8 @@ BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_EUDEV=y
 BR2_GENERATE_LOCALE="tr_TR.UTF-8"
 BR2_TARGET_TZ_INFO=y
 BR2_TARGET_LOCALTIME="Europe/Istanbul"
+# Kullanıcı hesapları: ankaros (şifre ankaros) ve giriş ekranı kullanıcısı (docs/oturum.md)
+BR2_ROOTFS_USERS_TABLES="$(BR2_EXTERNAL_ANKAROS_PATH)/board/qemu-aarch64/users.txt"
 BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_ANKAROS_PATH)/board/qemu-aarch64/rootfs-overlay"
 BR2_ROOTFS_POST_BUILD_SCRIPT="$(BR2_EXTERNAL_ANKAROS_PATH)/board/qemu-aarch64/post-build.sh"
 

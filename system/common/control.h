@@ -8,6 +8,9 @@
 
 namespace ankaros {
 
+// Komut satırını alanlarına (sekmeyle ayrılmış) böler. Boş alanlar atlanır.
+std::vector<std::string> splitFields(const std::string &line);
+
 // Denetim soketi sunucusu (protokol: common/protocol.h). epoll ile ana döngüye bağlanır.
 class ControlServer
 {
@@ -20,6 +23,7 @@ public:
     // Komut satırı ve bağlanan sürecin kullanıcı kimliği (SO_PEERCRED)
     using Handler = std::function<Reply(const std::vector<std::string> &command, uid_t uid)>;
 
+    // Soket açılamazsa false döner, errno ayarlıdır
     bool listen(const char *path, int epollFd, Handler handler);
     // fd bu sunucuya aitse olayı işler ve true döner
     bool handle(int fd);

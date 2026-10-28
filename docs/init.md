@@ -62,10 +62,10 @@ Repodaki servisler:
 | `udev` | `system/services/` | Aygıt yöneticisi |
 | `loopback`, `network` | `system/services/` | Yerel arayüz ve DHCP ile kablolu ağ |
 | `getty` | `system/services/` | Seri konsolda giriş istemi |
-| `ankaros-compositor` | `external/package/ankaros-compositor/` | Masaüstü |
+| `ankaros-session` | `system/services/` | Oturum yöneticisi: giriş ekranı ya da masaüstü ([oturum.md](oturum.md)) |
 
 Bir Buildroot paketi kendi servisini getiriyorsa servis dosyası o paketin `.mk` dosyasında
-`/etc/ankaros/services/` altına kurulur (örnek: `ankaros-compositor.mk`).
+`/etc/ankaros/services/` altına kurulur (örnek: `ankaros-system.mk`).
 
 ## Günlükler
 
@@ -81,7 +81,7 @@ RAM'deki `/tmp`'dedir, yeniden başlatınca silinir.
 
 ```bash
 ankarosctl status                 # servislerin durumu
-ankarosctl restart ankaros-compositor
+ankarosctl restart ankaros-session
 ankarosctl stop network
 ankarosctl start network
 ankarosctl boot                   # açılışta her servisin başlama ve hazır olma zamanı

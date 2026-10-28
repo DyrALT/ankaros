@@ -1,7 +1,6 @@
 #include "control.h"
 
-#include "log.h"
-
+#include <algorithm>
 #include <cerrno>
 #include <cstring>
 #include <sys/epoll.h>
@@ -11,6 +10,18 @@
 #include <unistd.h>
 
 namespace ankaros {
+
+std::vector<std::string> splitFields(const std::string &line)
+{
+    std::vector<std::string> fields;
+    for (size_t start = 0; start <= line.size();) {
+        const size_t end = std::min(line.find('\t', start), line.size());
+        if (end > start)
+            fields.push_back(line.substr(start, end - start));
+        start = end + 1;
+    }
+    return fields;
+}
 
 namespace {
 
@@ -40,11 +51,9 @@ bool ControlServer::listen(const char *path, int epollFd, Handler handler)
     unlink(path);
     if (m_listenFd < 0 ||
         bind(m_listenFd, reinterpret_cast<sockaddr *>(&address), sizeof address) ||
-        ::listen(m_listenFd, 16) != 0) {
-        log::write("denetim soketi açılamadı: %s: %s", path, strerror(errno));
+        ::listen(m_listenFd, 16) != 0)
         return false;
-    }
-    // Herkes bağlanabilir (durum, açılış süresi). Yetki komut başına kullanıcıya göre denetlenir.
+    // Herkes bağlanabilir. Yetki komut başına, bağlanan sürecin kullanıcısına göre denetlenir.
     chmod(path, 0666);
     epoll_event event{};
     event.events = EPOLLIN;
@@ -93,13 +102,7 @@ bool ControlServer::handle(int fd)
 
 void ControlServer::finish(int fd, const std::string &line)
 {
-    std::vector<std::string> command;
-    for (size_t start = 0; start < line.size();) {
-        const size_t end = std::min(line.find(' ', start), line.size());
-        if (end > start)
-            command.push_back(line.substr(start, end - start));
-        start = end + 1;
-    }
+    const std::vector<std::string> command = splitFields(line);
 
     ucred credentials{};
     socklen_t length = sizeof credentials;
