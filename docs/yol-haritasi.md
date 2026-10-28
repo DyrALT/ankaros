@@ -45,8 +45,15 @@ Ayrıntılı plan: [faz-2-plani.md](faz-2-plani.md)
 
 ## Faz 3: Paketler ve uygulamalar (`v0.4.0`), sıradaki
 
-- [ ] Paket formatı ve paket yöneticisi
-- [ ] Temel uygulamalar: terminal, dosya yöneticisi, ayarlar
+Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
+
+- [ ] A: Ortak modüller: Ankaros.UI (bileşenler) ve Ankaros.System (servis istemcileri)
+- [ ] B: Figma'da Terminal, Ayarlar uygulaması ve Paket Merkezi
+- [ ] C: Ayarlar uygulaması (Duvar kağıdı, Alt çubuk, Hakkında sayfaları)
+- [ ] D: Terminal (libvterm)
+- [ ] E: Uygulama paketi (`.ankpkg`), paket servisi, `ank` komutu, imzalı depo
+- [ ] F: Paket Merkezi
+- [ ] `v0.4.0`
 
 ## Faz 4: Dağıtım (`v0.5.0`)
 
