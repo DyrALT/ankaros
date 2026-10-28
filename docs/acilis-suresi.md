@@ -46,8 +46,11 @@ akışının özet sayfasına da eklenir.
 |---|---|---|---|
 | QEMU, hvf (donanım hızlandırma), 3 ölçüm | 0,04–0,10 sn | 0,13–0,24 sn | 1,04–1,18 sn |
 | QEMU, tcg (yazılımsal taklit, CI'daki gibi) | 0,82 sn | 1,78 sn | 17,90 sn |
+| UTM 4.7.5, hvf, virgl (Mac'in GPU'su) | 0,29 sn | 0,38 sn | 1,33 sn |
 
-Ekranda (2B sanal GPU) çizimi Mesa'nın softpipe sürücüsü yapar. UTM'de (virgl) ölçülmedi.
+QEMU'da ekranı (2B sanal GPU) Mesa'nın softpipe sürücüsü çizer, UTM'de virgl ile Mac'in GPU'su
+([utm.md](utm.md)). UTM'de çekirdek daha geç başlıyor (3B sanal GPU'nun hazırlanması), masaüstünün ilk
+karesi QEMU'dakiyle hemen hemen aynı sürede geliyor.
 
 ## Gözlemler
 
