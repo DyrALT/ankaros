@@ -20,7 +20,8 @@ kayıt değiştirilmez. Karar değişirse yeni bir kayıt yazılır ve eskisinin
 | [0009](0009-kendi-init-sistemimiz.md) | Kendi init sistemimiz | Kabul edildi |
 | [0010](0010-oturum-yonetimi.md) | Oturum yönetimi ve giriş ekranı | Kabul edildi |
 | [0011](0011-ag-servisi.md) | Kablolu ağ için kendi servisimiz | Kabul edildi |
-| [0012](0012-uygulama-paketleri.md) | Kendi uygulama paketimiz | Kabul edildi |
+| [0012](0012-uygulama-paketleri.md) | Kendi uygulama paketimiz | Yerine geçen: 0016 |
 | [0013](0013-uygulama-mimarisi.md) | Uygulamalar ayrı süreçler, ortak Ankaros.UI ve Ankaros.System modülleri | Kabul edildi |
 | [0014](0014-terminal-libvterm.md) | Terminal için libvterm | Kabul edildi |
 | [0015](0015-gorunum-ayarlari-surecler-arasi.md) | Görünüm ayarları süreçler arasında paylaşılır | Kabul edildi |
+| [0016](0016-uyumluluk-katmanlari.md) | Başka sistemlerin uygulamaları için uyumluluk katmanları | Önerildi |

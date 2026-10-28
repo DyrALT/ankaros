@@ -43,7 +43,7 @@ Ayrıntılı plan: [faz-2-plani.md](faz-2-plani.md)
 - [x] F: Açılış süresinin ölçülüp raporlanması ([acilis-suresi.md](acilis-suresi.md))
 - [x] `v0.3.0`
 
-## Faz 3: Paketler ve uygulamalar (`v0.4.0`), sıradaki
+## Faz 3: Uygulamalar (`v0.4.0`), sıradaki
 
 Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
 
@@ -51,11 +51,31 @@ Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
 - [x] B: Figma'da Terminal, Ayarlar uygulaması ve Paket Merkezi
 - [x] C: Ayarlar uygulaması (Duvar kağıdı, Alt çubuk, Hakkında sayfaları)
 - [x] D: Terminal (libvterm)
-- [ ] E: Uygulama paketi (`.ankpkg`), paket servisi, `ank` komutu, imzalı depo
-- [ ] F: Paket Merkezi
+- ~~E: Kendi uygulama paketimiz, F: Paket Merkezi~~: yerine Faz 4'teki uyumluluk katmanları
+  ([karar 0016](kararlar/0016-uyumluluk-katmanlari.md))
 - [ ] `v0.4.0`
 
-## Faz 4: Dağıtım (`v0.5.0`)
+## Faz 4: Başka sistemlerin uygulamaları (`v0.5.0`)
+
+Ayrıntılı plan: [faz-4-plani.md](faz-4-plani.md)
+
+- [ ] A: Ses (PipeWire) ve D-Bus
+- [ ] B: Compositor'ın eksik Wayland protokolleri
+- [ ] C: Kapsayıcı başlatıcısı ve Debian katmanı
+- [ ] D: `ankaros-apps` servisi ve `ank` komutu: `.deb` kurma (hedef: VS Code)
+- [ ] E: Figma'da Paket Merkezi
+- [ ] F: Paket Merkezi
+- [ ] G: XWayland
+- [ ] H: Fedora katmanı (`.rpm`) ve AppImage
+- [ ] `v0.5.0`
+
+## Faz 5: x86_64 ve Windows uygulamaları (`v0.6.0`)
+
+- [ ] x86_64 için imaj (Buildroot), CI'da iki mimari
+- [ ] Windows katmanı: Wine ile `.exe` çalıştırma
+- [ ] İsteğe bağlı: Windows'u sanal makinede çalıştırma
+
+## Faz 6: Dağıtım (`v0.7.0`)
 
 - [ ] Kurulum programı
 - [ ] ISO imajı, gerçek donanımda test
