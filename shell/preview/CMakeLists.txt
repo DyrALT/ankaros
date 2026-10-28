@@ -8,3 +8,8 @@ qt_add_qml_module(ankaros-shell-preview
 )
 
 target_link_libraries(ankaros-shell-preview PRIVATE Qt6::Quick ankaros_shellplugin)
+
+install(TARGETS ankaros-shell-preview
+    BUNDLE DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

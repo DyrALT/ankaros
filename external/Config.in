@@ -1,2 +1,1 @@
-# ankaros'a özel paketler buraya eklenecek, örnek:
-# source "$BR2_EXTERNAL_ANKAROS_PATH/package/ankaros-shell/Config.in"
+source "$BR2_EXTERNAL_ANKAROS_PATH/package/ankaros-shell/Config.in"
