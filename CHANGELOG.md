@@ -16,6 +16,7 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Düzeltildi
 
+- Bir pencerenin içinde sürükleyince arkasında kalan pencere taşınabiliyordu (ör. terminalde metin seçerken)
 - Uygulama pencereleri bazen bir sonraki tıklamaya kadar eski görüntüde kalıyordu (ör. Terminal'de komut
   çıktısı, Ayarlar'da tıklamanın gecikmesi). Compositor "kare çizildi" bildirimini geç gönderiyordu, Qt
   uygulamaları da 100 ms'de alamayınca çizmeyi bırakıyordu. Bildirim artık hemen gönderiliyor,
@@ -25,6 +26,9 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Pencere yönetimi (`docs/pencere-yonetimi.md`): kenarlardan ve köşelerden boyutlandırma, ekranın
+  yarısına ya da tamamına yaslama (önizlemeli), Alt+Tab ile pencere geçişi, açılma, kapanma ve küçültme
+  animasyonları. Kısayollar: Süper (başlat paneli), Süper+D, Süper+oklar, Alt+F4.
 - Terminal (`ankaros-terminal`, `docs/terminal.md`): ankaros'un kendi terminali. libvterm ile xterm
   öykünmesi, sekmeler, kopyala-yapıştır, kaydırma geçmişi, JetBrains Mono yazı tipi, temayla uyumlu
   renkler. `weston-terminal` ve Weston imajdan çıktı.

@@ -22,6 +22,16 @@ GlassPanel {
     signal appClicked(string app)
     signal networkClicked
 
+    // Uygulamanın simgesinin ortası, sahne koordinatında. Çubukta yoksa çubuğun ortası.
+    function iconCenter(app) {
+        for (let i = 0; i < taskItems.count; ++i) {
+            const item = taskItems.itemAt(i) as TaskItem;
+            if (item && item.app === app)
+                return item.mapToItem(null, item.width / 2, item.height / 2);
+        }
+        return mapToItem(null, width / 2, height / 2);
+    }
+
     implicitHeight: Theme.size.taskBar
     radius: 18
 
@@ -80,6 +90,8 @@ GlassPanel {
         }
 
         Repeater {
+            id: taskItems
+
             model: root.apps
 
             TaskItem {

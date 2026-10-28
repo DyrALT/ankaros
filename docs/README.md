@@ -6,6 +6,7 @@
 | [mimari.md](mimari.md) | Sistemin katmanları, repo yapısı ve açılış sırası |
 | [oturum.md](oturum.md) | Kullanıcı hesapları, giriş, oturum yöneticisi (ankaros-session) |
 | [ag.md](ag.md) | Kablolu ağ servisi (ankaros-network) ve Ayarlar › Ağ |
+| [pencere-yonetimi.md](pencere-yonetimi.md) | Pencere taşıma, boyutlandırma, yaslama, Alt+Tab ve kısayollar |
 | [terminal.md](terminal.md) | Terminal (ankaros-terminal): özellikler, kısayollar, yapı |
 | [acilis-suresi.md](acilis-suresi.md) | Açılış süresinin ölçülmesi ve ölçümler |
 | [init.md](init.md) | ankaros-init: servis dosyaları, ankarosctl, günlükler, kapatma |

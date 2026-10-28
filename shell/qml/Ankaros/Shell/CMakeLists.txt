@@ -17,6 +17,7 @@ qt_add_qml_module(ankaros_shell
         AppTile.qml
         RecommendedItem.qml
         WindowChrome.qml
+        WindowSwitcher.qml
         BigClock.qml
         ErrorPill.qml
         GlassIconButton.qml

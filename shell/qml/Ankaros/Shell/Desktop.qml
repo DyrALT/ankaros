@@ -40,12 +40,20 @@ Item {
 
     // Pencerelerin üst üste sırası. Compositor pencereleri öne getirirken bunu kullanır.
     property int topZ: 0
+    // Sürüklenen pencere bırakılınca kaplayacağı yer (yaslama önizlemesi). Boşsa gizli.
+    property rect snapPreview
+    // Alt+Tab: son kullanılandan başlayarak pencereler ({ app, title, item, minimized }) ve seçili
+    // olanın sırası (-1: kapalı)
+    property var switcherWindows: []
+    property int switcherIndex: -1
 
     // Kullanıcı bir uygulamayı başlattığında. Compositor bunu dinleyip uygulamayı çalıştırır ya da
     // penceresi açıksa öne getirir.
     signal appLaunched(string app)
     // Ayarlar uygulamasının belirli bir sayfası istendiğinde (ör. alt çubuktaki ağ simgesi: "network")
     signal settingsRequested(string page)
+    // Alt+Tab geçişinde bir pencereye tıklandı
+    signal switcherActivated(int index)
 
     function nextZ() {
         return ++topZ;
@@ -58,6 +66,11 @@ Item {
 
     function launch(app) {
         appLaunched(app);
+    }
+
+    // Alt çubukta uygulamanın simgesinin ortası (küçültme animasyonu buraya uçar)
+    function taskIconCenter(app) {
+        return taskBar.iconCenter(app);
     }
 
     // Duvar kağıdı ve pencereler. Alt çubuk ve başlat paneli buzlu cam efekti için bu öğenin
@@ -75,6 +88,39 @@ Item {
             id: windowLayer
 
             anchors.fill: parent
+
+            // Yaslama önizlemesi: sürüklenen pencerenin hemen altında
+            Rectangle {
+                id: snapIndicator
+
+                readonly property bool shown: root.snapPreview.width > 0
+
+                x: shown ? root.snapPreview.x + Theme.spacing.sm : x
+                y: shown ? root.snapPreview.y + Theme.spacing.sm : y
+                width: shown ? root.snapPreview.width - 2 * Theme.spacing.sm : width
+                height: shown ? root.snapPreview.height - 2 * Theme.spacing.sm : height
+                z: root.topZ - 0.5
+                radius: Theme.radius.lg
+                color: Qt.alpha(Theme.color.accent, 0.18)
+                border.width: 2
+                border.color: Qt.alpha(Theme.color.accent, 0.7)
+                opacity: shown ? 1 : 0
+                visible: opacity > 0
+
+                Behavior on opacity {
+                    NumberAnimation { duration: Theme.motion.fast }
+                }
+
+                Behavior on width {
+                    enabled: snapIndicator.visible
+                    NumberAnimation { duration: Theme.motion.fast; easing.type: Theme.motion.easing }
+                }
+
+                Behavior on x {
+                    enabled: snapIndicator.visible
+                    NumberAnimation { duration: Theme.motion.fast; easing.type: Theme.motion.easing }
+                }
+            }
         }
     }
 
@@ -125,6 +171,14 @@ Item {
         network: root.network
         onAppClicked: app => root.launch(app)
         onNetworkClicked: root.settingsRequested("network")
+    }
+
+    WindowSwitcher {
+        anchors.fill: parent
+        backdrop: scene
+        windows: root.switcherWindows
+        currentIndex: root.switcherIndex
+        onActivated: index => root.switcherActivated(index)
     }
 
     // Kilit ekranı her şeyin üstünde. Arkasındaki sahne bulanık görünür.

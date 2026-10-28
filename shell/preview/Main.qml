@@ -15,6 +15,7 @@
 //                        Görüntü pencere boyutundan bağımsız olarak 1440x900 çizilir.
 //   --size <GxY>         ekran görüntüsünün boyutu, ör. --size 1024x720
 //   --window             masaüstünde sahte bir uygulama penceresi göster (pencere tasarımı için)
+//   --switcher           Alt+Tab pencere geçişini göster (sahte pencereyle)
 //   --login              giriş ekranını göster (compositor --login gibi). Şifre: ankaros
 //   --lock               masaüstünü kilitli olarak başla. Şifre: ankaros
 //   --error              giriş ya da kilit ekranını "Şifre yanlış" durumunda göster
@@ -82,6 +83,11 @@ Window {
             { app: "Takvim", title: "Ekim 2026", subtitle: qsTr("3 gün önce") }
         ]
         userName: Session.userName
+        switcherWindows: window.args.includes("--switcher") ? [
+            { app: "Terminal", title: "ankaros@ankaros: ~", item: null, minimized: true },
+            { app: "Dosyalar", title: qsTr("Ev"), item: fakeWindow, minimized: false }
+        ] : []
+        switcherIndex: window.args.includes("--switcher") ? 1 : -1
         onAppLaunched: app => console.log("Başlatılacak uygulama:", app)
         onSettingsRequested: page => console.log("Ayarlar açılacak:", page)
     }
@@ -122,8 +128,10 @@ Window {
     // Sahte bir uygulama penceresi. ankaros'ta pencereler compositor'dan gelir ve içerikleri
     // gerçek uygulamalardır. Burada sadece pencere çerçevesinin tasarımı denenir.
     WindowChrome {
+        id: fakeWindow
+
         parent: desktop.windowLayer
-        visible: window.args.includes("--window")
+        visible: window.args.includes("--window") || window.args.includes("--switcher")
         x: 300
         y: 90
         width: 840
