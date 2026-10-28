@@ -24,6 +24,12 @@ ANKAROS_COMPOSITOR_DEPENDENCIES = \
 ANKAROS_COMPOSITOR_CONF_OPTS = \
 	-DQT_HOST_PATH=$(HOST_DIR)
 
+# Başlat panelindeki ve alt çubuktaki uygulamaların listesi (docs/uygulama-listesi.md)
+define ANKAROS_COMPOSITOR_INSTALL_APPS
+	$(INSTALL) -D -m 644 $(@D)/apps.json $(TARGET_DIR)/etc/ankaros/apps.json
+endef
+ANKAROS_COMPOSITOR_POST_INSTALL_TARGET_HOOKS += ANKAROS_COMPOSITOR_INSTALL_APPS
+
 # Açılışta masaüstünü başlatan init betiği
 define ANKAROS_COMPOSITOR_INSTALL_INIT_SYSV
 	$(INSTALL) -D -m 755 $(ANKAROS_COMPOSITOR_PKGDIR)/S90ankaros-desktop \

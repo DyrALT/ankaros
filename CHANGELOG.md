@@ -5,6 +5,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+### Eklendi
+
+- Uygulama listesi `/etc/ankaros/apps.json`'dan okunuyor (`docs/uygulama-listesi.md`)
+
 ## [0.2.0] - 2026-10-28
 
 Faz 1: Açılışta gelen grafik masaüstü. ankaros'un kendi Wayland compositor'ı, pencereler ve Görünüm ayarları.

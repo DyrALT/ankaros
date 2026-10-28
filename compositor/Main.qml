@@ -10,25 +10,11 @@ import Ankaros.Shell
 WaylandCompositor {
     id: compositor
 
-    // Uygulama adı -> çalıştırılacak komut ve Wayland app_id -> uygulama adı.
-    // Faz 1 C'de /etc/ankaros/apps.json'dan okunacak.
-    readonly property var commands: ({
-            "Terminal": "weston-terminal"
-        })
-    readonly property var appNames: ({
-            "org.freedesktop.weston.wayland-terminal": "Terminal",
-            "weston-terminal": "Terminal"
-        })
-
     // Açık pencereler (WaylandWindow), açılış sırasıyla
     property var windows: []
 
     readonly property var runningApps: windows.map(w => w.appName)
     readonly property string activeApp: windows.find(w => w.active)?.appName ?? ""
-
-    function appNameFor(appId) {
-        return appNames[appId] ?? appId;
-    }
 
     function raise(window) {
         window.minimized = false;
@@ -41,7 +27,7 @@ WaylandCompositor {
     function activate(app) {
         const own = windows.filter(w => w.appName === app);
         if (own.length === 0) {
-            const command = commands[app];
+            const command = AppCatalog.command(app);
             if (command)
                 AppLauncher.launch(command, socketName);
             else
@@ -71,11 +57,11 @@ WaylandCompositor {
                 id: desktop
 
                 anchors.fill: parent
-                apps: ["Terminal", "Dosyalar", "Tarayıcı", "Ayarlar", "Metin Düzenleyici", "Müzik",
-                    "Fotoğraflar", "Takvim", "Hesap Makinesi", "Sistem İzleyici", "Notlar", "Paket Merkezi"]
+                // Uygulama listesi /etc/ankaros/apps.json'dan (AppCatalog)
+                apps: AppCatalog.names
                 taskBarApps: {
                     // Sabitlenmiş uygulamalar ve sırayla, sabitlenmemiş ama çalışan uygulamalar
-                    const pinned = ["Terminal", "Dosyalar", "Tarayıcı", "Metin Düzenleyici"];
+                    const pinned = AppCatalog.pinned;
                     return pinned.concat(compositor.runningApps.filter(
                         (app, i, all) => !pinned.includes(app) && all.indexOf(app) === i));
                 }
@@ -103,7 +89,7 @@ WaylandCompositor {
                 y: 60 + offset
             });
             window.workArea = Qt.binding(() => desktop.workArea);
-            window.appName = Qt.binding(() => compositor.appNameFor(window.appId));
+            window.appName = Qt.binding(() => AppCatalog.nameForAppId(window.appId));
             window.raiseRequested.connect(() => compositor.raise(window));
             window.gone.connect(() => {
                 compositor.windows = compositor.windows.filter(w => w !== window);

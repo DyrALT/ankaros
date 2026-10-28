@@ -1,0 +1,21 @@
+{
+    "apps": [
+        {
+            "name": "Terminal",
+            "command": "weston-terminal",
+            "appIds": ["org.freedesktop.weston.wayland-terminal", "weston-terminal"],
+            "pinned": true
+        },
+        { "name": "Dosyalar", "pinned": true },
+        { "name": "Tarayıcı", "pinned": true },
+        { "name": "Ayarlar" },
+        { "name": "Metin Düzenleyici", "pinned": true },
+        { "name": "Müzik" },
+        { "name": "Fotoğraflar" },
+        { "name": "Takvim" },
+        { "name": "Hesap Makinesi" },
+        { "name": "Sistem İzleyici" },
+        { "name": "Notlar" },
+        { "name": "Paket Merkezi" }
+    ]
+}

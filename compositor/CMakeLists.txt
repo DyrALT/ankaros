@@ -20,6 +20,8 @@ qt_add_qml_module(ankaros-compositor
         Main.qml
         WaylandWindow.qml
     SOURCES
+        appcatalog.h
+        appcatalog.cpp
         applauncher.h
         applauncher.cpp
 )
