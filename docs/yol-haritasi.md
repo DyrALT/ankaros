@@ -54,7 +54,7 @@ Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
 - ~~E: Kendi uygulama paketimiz, F: Paket Merkezi~~: yerine Faz 4'teki uyumluluk katmanları
   ([karar 0016](kararlar/0016-uyumluluk-katmanlari.md))
 - [ ] E: Figma'da masaüstü cilası (Alt+Tab, yaslama, hızlı ayarlar, takvim, tüm uygulamalar, Klavye ve dil)
-- [ ] F: Pencere yönetimi: boyutlandırma, yaslama, Alt+Tab, animasyonlar, kısayollar
+- [x] F: Pencere yönetimi: boyutlandırma, yaslama, Alt+Tab, animasyonlar, kısayollar
 - [ ] G: Alt çubuk ve başlat paneli
 - [ ] H: Ayarlar › Klavye ve dil
 - [ ] `v0.4.0`

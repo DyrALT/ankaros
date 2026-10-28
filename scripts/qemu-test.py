@@ -136,8 +136,9 @@ def click(path, x, y):
         time.sleep(0.08)
 
 
-def drag(path, x1, y1, x2, y2, steps=12):
-    """Sol düğme basılıyken (x1, y1)'den (x2, y2)'ye adım adım sürükler."""
+def drag(path, x1, y1, x2, y2, steps=12, release=True):
+    """Sol düğme basılıyken (x1, y1)'den (x2, y2)'ye adım adım sürükler. release=False ise düğme
+    basılı kalır (ör. bırakmadan önce ekran görüntüsü almak için), sonra "up" ile bırakılır."""
     move(path, x1, y1)
     time.sleep(0.6)
     button(path, True)
@@ -145,7 +146,15 @@ def drag(path, x1, y1, x2, y2, steps=12):
         time.sleep(0.05)
         move(path, x1 + (x2 - x1) * step / steps, y1 + (y2 - y1) * step / steps)
     time.sleep(0.2)
-    button(path, False)
+    if release:
+        button(path, False)
+
+
+def hold_key(path, key, down):
+    """Tek bir tuşu basılı tutar ya da bırakır (ör. Alt+Tab için Alt)."""
+    event = {"type": "key", "data": {"down": down, "key": {"type": "qcode", "data": key}}}
+    qmp(path, "input-send-event", {"events": [event]})
+    time.sleep(0.08)
 
 
 def read_ppm(path):
@@ -222,8 +231,12 @@ def run_actions(actions, qmp_path, console, log, screenshot):
     """Eylemler ";" ile ayrılır:
     click X Y      sol tıklama (1440x900 koordinatları)
     drag X1 Y1 X2 Y2  sol düğme basılıyken sürükle
+    hold X1 Y1 X2 Y2  sürükle ama düğmeyi bırakma
+    up             basılı tutulan sol düğmeyi bırak
+    move X Y       imleci taşı
     sleep SANIYE   bekle
     key TUŞLAR     tuş kombinasyonu, QEMU adlarıyla: ret, esc, meta_l-l
+    keydown TUŞ    tuşu basılı tut (ör. alt), keyup TUŞ ile bırak
     type METİN     küçük harf, rakam ve . / - , yaz (ör. IP adresi)
     run KOMUT      seri konsolda (root) komut çalıştır
     link on|off    sanal ağ kablosunu tak ya da çıkar
@@ -236,6 +249,16 @@ def run_actions(actions, qmp_path, console, log, screenshot):
             click(qmp_path, float(values[0]), float(values[1]))
         elif name == "drag":
             drag(qmp_path, *(float(v) for v in values[:4]))
+        elif name == "hold":
+            drag(qmp_path, *(float(v) for v in values[:4]), release=False)
+        elif name == "move":
+            move(qmp_path, float(values[0]), float(values[1]))
+        elif name == "up":
+            button(qmp_path, False)
+        elif name == "keydown":
+            hold_key(qmp_path, values[0], True)
+        elif name == "keyup":
+            hold_key(qmp_path, values[0], False)
         elif name == "sleep":
             wait_for(console, b"\x00", float(values[0]), log)
         elif name == "key":

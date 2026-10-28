@@ -22,6 +22,8 @@ qt_add_qml_module(ankaros-compositor
     SOURCES
         applauncher.h
         applauncher.cpp
+        globalkeys.h
+        globalkeys.cpp
 )
 
 target_link_libraries(ankaros-compositor PRIVATE Qt6::Quick Qt6::WaylandCompositor)

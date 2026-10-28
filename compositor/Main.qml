@@ -15,6 +15,13 @@ WaylandCompositor {
 
     // Açık pencereler (WaylandWindow), açılış sırasıyla
     property var windows: []
+    // Pencereler son odaklanandan başlayarak (Alt+Tab bu sırayla gezer)
+    property var focusHistory: []
+    // Alt+Tab sürerken gösterilen pencereler ve seçili olanın sırası (-1: kapalı)
+    property var switcherList: []
+    property int switcherIndex: -1
+    // Süper+D'nin küçülttüğü pencereler, ikinci basışta geri gelir
+    property var hiddenByShowDesktop: []
 
     readonly property var runningApps: windows.map(w => w.appName)
     readonly property string activeApp: windows.find(w => w.active)?.appName ?? ""
@@ -27,6 +34,67 @@ WaylandCompositor {
             own[own.length - 1].takeFocus();
         } else {
             AppLauncher.launch(AppCatalog.command("Ayarlar") + " --page " + page, socketName);
+        }
+    }
+
+    // Bir noktada en üstte görünen pencere
+    function windowAt(position) {
+        let top = null;
+        for (const w of windows) {
+            if (w.visible && !w.closing && position.x >= w.x && position.x < w.x + w.width
+                    && position.y >= w.y && position.y < w.y + w.height && (!top || w.z > top.z))
+                top = w;
+        }
+        return top;
+    }
+
+    function activeWindow() {
+        return windows.find(w => w.active && !w.minimized) ?? null;
+    }
+
+    // Küçültülen pencerenin odağını en son kullanılan görünür pencereye ver
+    function focusNext(previous) {
+        const next = focusHistory.find(w => w !== previous && !w.minimized);
+        if (next)
+            next.takeFocus();
+    }
+
+    // Süper+D: bütün pencereleri küçült, ikinci basışta geri getir
+    function showDesktop() {
+        const shown = windows.filter(w => !w.minimized);
+        if (shown.length > 0) {
+            hiddenByShowDesktop = shown;
+            shown.forEach(w => w.minimized = true);
+            return;
+        }
+        const hidden = hiddenByShowDesktop.filter(w => windows.includes(w)).sort((a, b) => a.z - b.z);
+        hidden.forEach(w => raise(w));
+        if (hidden.length > 0)
+            hidden[hidden.length - 1].takeFocus();
+        hiddenByShowDesktop = [];
+    }
+
+    function switchWindow(backward) {
+        if (switcherIndex < 0) {
+            const list = focusHistory.concat(windows.filter(w => !focusHistory.includes(w)));
+            if (list.length === 0)
+                return;
+            switcherList = list;
+            // İlk basışta bir önceki pencere seçilir, Alt hemen bırakılırsa ikisi yer değiştirir.
+            switcherIndex = list.length === 1 ? 0 : backward ? list.length - 1 : 1;
+        } else {
+            const count = switcherList.length;
+            switcherIndex = (switcherIndex + (backward ? -1 : 1) + count) % count;
+        }
+    }
+
+    function finishSwitch(commit) {
+        const window = switcherList[switcherIndex];
+        switcherIndex = -1;
+        switcherList = [];
+        if (commit && window && windows.includes(window)) {
+            raise(window);
+            window.takeFocus();
         }
     }
 
@@ -101,8 +169,23 @@ WaylandCompositor {
                 session: Session
                 network: Network
                 visible: !Session.greeter
+                snapPreview: {
+                    const dragged = compositor.windows.find(w => w.snapZone !== "");
+                    return dragged ? dragged.snapRect : Qt.rect(0, 0, 0, 0);
+                }
+                switcherWindows: compositor.switcherList.map(w => ({
+                    app: w.appName,
+                    title: w.title,
+                    item: w,
+                    minimized: w.minimized
+                }))
+                switcherIndex: compositor.switcherIndex
                 onAppLaunched: app => compositor.activate(app)
                 onSettingsRequested: page => compositor.openSettings(page)
+                onSwitcherActivated: index => {
+                    compositor.switcherIndex = index;
+                    compositor.finishSwitch(true);
+                }
             }
 
             // Giriş ekranı (ankaros-compositor --login). Şifre doğruysa oturum yöneticisi bu süreci
@@ -129,10 +212,86 @@ WaylandCompositor {
                 }
             }
 
+            // Kısayollar (docs/faz-3-plani.md › Pencere yönetimi). Süper tek başına ve Alt+Tab
+            // GlobalKeys'te, çünkü Shortcut tuşun bırakılmasını göremiyor.
             Shortcut {
                 sequence: "Meta+L"
                 enabled: !Session.greeter
                 onActivated: desktop.lock()
+            }
+
+            Shortcut {
+                sequence: "Meta+D"
+                enabled: GlobalKeys.enabled
+                onActivated: compositor.showDesktop()
+            }
+
+            Shortcut {
+                sequence: "Meta+Left"
+                enabled: GlobalKeys.enabled
+                onActivated: compositor.activeWindow()?.tile("left")
+            }
+
+            Shortcut {
+                sequence: "Meta+Right"
+                enabled: GlobalKeys.enabled
+                onActivated: compositor.activeWindow()?.tile("right")
+            }
+
+            Shortcut {
+                sequence: "Meta+Up"
+                enabled: GlobalKeys.enabled
+                onActivated: {
+                    const window = compositor.activeWindow();
+                    if (window && !window.maximized)
+                        window.maximize();
+                }
+            }
+
+            Shortcut {
+                sequence: "Meta+Down"
+                enabled: GlobalKeys.enabled
+                onActivated: {
+                    const window = compositor.activeWindow();
+                    if (!window)
+                        return;
+                    if (window.maximized || window.tiled !== "")
+                        window.restore();
+                    else
+                        window.minimized = true;
+                }
+            }
+
+            Shortcut {
+                sequence: "Alt+F4"
+                enabled: GlobalKeys.enabled
+                onActivated: compositor.activeWindow()?.toplevel.sendClose()
+            }
+
+            Connections {
+                target: GlobalKeys
+
+                function onSuperTapped() {
+                    desktop.startMenuOpen = !desktop.startMenuOpen;
+                }
+
+                function onSwitchRequested(backward: bool) {
+                    compositor.switchWindow(backward);
+                }
+
+                function onSwitchCommitted() {
+                    compositor.finishSwitch(true);
+                }
+
+                function onSwitchCancelled() {
+                    compositor.finishSwitch(false);
+                }
+            }
+
+            Binding {
+                target: GlobalKeys
+                property: "enabled"
+                value: !Session.greeter && !desktop.locked
             }
         }
     }
@@ -154,9 +313,22 @@ WaylandCompositor {
             });
             window.workArea = Qt.binding(() => desktop.workArea);
             window.appName = Qt.binding(() => AppCatalog.nameForAppId(window.appId));
+            window.minimizeTarget = () => desktop.taskIconCenter(window.appName);
+            window.isTopAt = position => compositor.windowAt(position) === window;
             window.raiseRequested.connect(() => compositor.raise(window));
+            window.activeChanged.connect(() => {
+                if (window.active)
+                    compositor.focusHistory = [window].concat(compositor.focusHistory.filter(w => w !== window));
+            });
+            window.minimizedChanged.connect(() => {
+                if (window.minimized)
+                    compositor.focusNext(window);
+            });
             window.gone.connect(() => {
                 compositor.windows = compositor.windows.filter(w => w !== window);
+                compositor.focusHistory = compositor.focusHistory.filter(w => w !== window);
+                if (compositor.switcherList.includes(window))
+                    compositor.finishSwitch(false);
             });
             compositor.windows = compositor.windows.concat([window]);
             compositor.raise(window);
