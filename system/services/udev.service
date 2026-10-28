@@ -1,0 +1,8 @@
+# Aygıt yöneticisi: /dev altındaki aygıt dosyalarının izinleri, girdi aygıtları, ekran kartı.
+# udevd --daemon hazır olunca döner, sonra açılışta var olan aygıtlar için olaylar tetiklenir.
+description = Aygıt yöneticisi (eudev)
+type = oneshot
+exec = udevd --daemon
+exec = udevadm trigger --type=subsystems --action=add
+exec = udevadm trigger --type=devices --action=add
+exec = udevadm settle --timeout=30

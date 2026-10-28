@@ -1,0 +1,4 @@
+# Rastgele sayı üretecini önceki açılıştan kalan tohumla besler
+description = Rastgele sayı tohumu
+type = oneshot
+exec = seedrng

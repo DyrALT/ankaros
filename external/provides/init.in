@@ -1,0 +1,8 @@
+config BR2_INIT_ANKAROS
+	bool "ankaros-init"
+	depends on BR2_INSTALL_LIBSTDCPP
+	depends on BR2_TOOLCHAIN_USES_GLIBC
+	select BR2_PACKAGE_ANKAROS_SYSTEM
+	select BR2_PACKAGE_SKELETON_INIT_NONE if BR2_ROOTFS_SKELETON_DEFAULT
+	help
+	  ankaros'un kendi init sistemi (C++). Bkz. docs/init.md

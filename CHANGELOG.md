@@ -8,6 +8,14 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 ### Eklendi
 
 - Uygulama listesi `/etc/ankaros/apps.json`'dan okunuyor (`docs/uygulama-listesi.md`)
+- Kendi init sistemimiz `ankaros-init` (`docs/init.md`): servis dosyaları, bağımlılık sırasıyla paralel
+  başlatma, çöken servisi yeniden başlatma, servis başına günlük, düzgün kapatma. Servisleri denetleyen
+  `ankarosctl` komutu, açılışta her adımın süresini gösteren `ankarosctl boot`.
+
+### Değişti
+
+- BusyBox init ve `/etc/init.d` betikleri kaldırıldı. Masaüstünü yeniden başlatmak için:
+  `ankarosctl restart ankaros-compositor`
 
 ## [0.2.0] - 2026-10-28
 

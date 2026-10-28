@@ -30,10 +30,11 @@ define ANKAROS_COMPOSITOR_INSTALL_APPS
 endef
 ANKAROS_COMPOSITOR_POST_INSTALL_TARGET_HOOKS += ANKAROS_COMPOSITOR_INSTALL_APPS
 
-# Açılışta masaüstünü başlatan init betiği
-define ANKAROS_COMPOSITOR_INSTALL_INIT_SYSV
-	$(INSTALL) -D -m 755 $(ANKAROS_COMPOSITOR_PKGDIR)/S90ankaros-desktop \
-		$(TARGET_DIR)/etc/init.d/S90ankaros-desktop
+# Açılışta masaüstünü başlatan servis (ankaros-init)
+define ANKAROS_COMPOSITOR_INSTALL_SERVICE
+	$(INSTALL) -D -m 644 $(ANKAROS_COMPOSITOR_PKGDIR)/ankaros-compositor.service \
+		$(TARGET_DIR)/etc/ankaros/services/ankaros-compositor.service
 endef
+ANKAROS_COMPOSITOR_POST_INSTALL_TARGET_HOOKS += ANKAROS_COMPOSITOR_INSTALL_SERVICE
 
 $(eval $(cmake-package))

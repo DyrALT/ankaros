@@ -1,0 +1,4 @@
+# Seri konsolda giriş istemi. Oturum kapanınca yeniden başlar.
+description = Seri konsolda giriş
+exec = /sbin/getty -L console 0 vt100
+restart = always
