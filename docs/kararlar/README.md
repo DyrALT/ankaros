@@ -17,3 +17,6 @@ kayıt değiştirilmez. Karar değişirse yeni bir kayıt yazılır ve eskisinin
 | [0006](0006-qt-wayland-compositor-ve-eglfs.md) | Compositor için Qt Wayland Compositor ve eglfs | Kabul edildi |
 | [0007](0007-sunucu-tarafi-pencere-kenarliklari.md) | Pencere kenarlıklarını compositor çizer, kullanıcı özelleştirebilir | Kabul edildi |
 | [0008](0008-kullanici-ayarlari.md) | Kullanıcı ayarları QtCore Settings ile ~/.config/ankaros altında | Kabul edildi |
+| [0009](0009-kendi-init-sistemimiz.md) | Kendi init sistemimiz | Kabul edildi |
+| [0010](0010-oturum-yonetimi.md) | Oturum yönetimi ve giriş ekranı | Kabul edildi |
+| [0011](0011-ag-servisi.md) | Kablolu ağ için kendi servisimiz | Kabul edildi |
