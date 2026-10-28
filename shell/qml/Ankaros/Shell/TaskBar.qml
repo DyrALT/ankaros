@@ -16,11 +16,17 @@ GlassPanel {
     property bool startMenuOpen: false
     // Ağ durumu (Desktop.network). null ise ağ simgesi soluk görünür.
     property var network: null
+    // Pil (Desktop.battery). Pil yoksa simgesi görünmez.
+    property var battery: null
+    property bool quickSettingsOpen: false
+    property bool calendarOpen: false
 
     signal startClicked
     signal searchClicked
     signal appClicked(string app)
-    signal networkClicked
+    // Durum simgelerine tıklandı (hızlı ayarlar)
+    signal statusClicked
+    signal clockClicked
 
     // Uygulamanın simgesinin ortası, sahne koordinatında. Çubukta yoksa çubuğun ortası.
     function iconCenter(app) {
@@ -38,7 +44,7 @@ GlassPanel {
     RowLayout {
         anchors.fill: parent
         anchors.leftMargin: Theme.spacing.sm
-        anchors.rightMargin: Theme.spacing.lg
+        anchors.rightMargin: Theme.spacing.sm
         spacing: Theme.spacing.sm
 
         HoverButton {
@@ -108,13 +114,14 @@ GlassPanel {
             Layout.fillWidth: true
         }
 
-        // Durum simgeleri. Her simge kendi tıklamasını alır (ör. ağ simgesi Ayarlar › Ağ'ı açar), bu yüzden
-        // grup HoverButton değil: onun fare alanı simgelerin üstünde kalırdı.
+        // Durum simgeleri: tıklayınca hızlı ayarlar açılır. Simgelerin üzerine gelince ayrıntı balonu
+        // çıkar, bu yüzden grup HoverButton değil: onun fare alanı simgelerin üstünde kalırdı.
         Rectangle {
             Layout.preferredWidth: trayRow.implicitWidth + 2 * Theme.spacing.md
             Layout.preferredHeight: 34
             radius: Theme.radius.md
-            color: trayHover.hovered ? Theme.color.surfaceHover : "transparent"
+            color: trayTap.pressed ? Theme.color.surfacePressed
+                 : trayHover.hovered || root.quickSettingsOpen ? Theme.color.surfaceHover : "transparent"
 
             Behavior on color {
                 ColorAnimation { duration: Theme.motion.fast }
@@ -124,18 +131,19 @@ GlassPanel {
                 id: trayHover
             }
 
+            TapHandler {
+                id: trayTap
+
+                onTapped: root.statusClicked()
+            }
+
             Row {
                 id: trayRow
 
                 anchors.centerIn: parent
                 spacing: 14
 
-                Icon {
-                    name: "bell"
-                    size: Theme.size.statusIcon
-                }
-
-                // Kablolu ağ: bağlı değilse soluk. Üzerine gelince durum, tıklayınca Ayarlar › Ağ.
+                // Kablolu ağ: bağlı değilse soluk. Üzerine gelince durumu gösterir.
                 Icon {
                     id: networkIcon
 
@@ -147,10 +155,6 @@ GlassPanel {
 
                     HoverHandler {
                         id: networkHover
-                    }
-
-                    TapHandler {
-                        onTapped: root.networkClicked()
                     }
 
                     Bubble {
@@ -170,19 +174,44 @@ GlassPanel {
                 }
 
                 Icon {
-                    name: "volume"
-                    size: Theme.size.statusIcon
-                }
+                    id: batteryIcon
 
-                Icon {
+                    visible: root.battery !== null && root.battery.present
                     name: "battery"
                     size: Theme.size.statusIcon
+
+                    HoverHandler {
+                        id: batteryHover
+                    }
+
+                    Bubble {
+                        readonly property point position: batteryHover.hovered && parent
+                            ? batteryIcon.mapToItem(parent, (batteryIcon.width - width) / 2, -height - 14)
+                            : Qt.point(0, 0)
+
+                        parent: batteryIcon.Window.contentItem
+                        x: position.x
+                        y: position.y
+                        shown: batteryHover.hovered
+                        text: !root.battery ? "" : root.battery.charging
+                            ? qsTr("%%1 · şarj oluyor").arg(root.battery.level) : qsTr("%%1").arg(root.battery.level)
+                    }
                 }
             }
         }
 
-        Clock {
-            Layout.leftMargin: Theme.spacing.xs
+        HoverButton {
+            Layout.preferredWidth: clock.implicitWidth + 2 * Theme.spacing.sm
+            Layout.preferredHeight: 38
+            radius: Theme.radius.md
+            checked: root.calendarOpen
+            onClicked: root.clockClicked()
+
+            Clock {
+                id: clock
+
+                anchors.centerIn: parent
+            }
         }
     }
 }

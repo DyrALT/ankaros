@@ -16,6 +16,10 @@
 //   --size <GxY>         ekran görüntüsünün boyutu, ör. --size 1024x720
 //   --window             masaüstünde sahte bir uygulama penceresi göster (pencere tasarımı için)
 //   --switcher           Alt+Tab pencere geçişini göster (sahte pencereyle)
+//   --all-apps           başlat panelini bütün uygulamalar görünümünde aç
+//   --search <metin>     başlat panelini bu aramayla aç, ör. --search koyu
+//   --calendar           takvimi açık göster
+//   --quick-settings     hızlı ayarları açık göster
 //   --login              giriş ekranını göster (compositor --login gibi). Şifre: ankaros
 //   --lock               masaüstünü kilitli olarak başla. Şifre: ankaros
 //   --error              giriş ya da kilit ekranını "Şifre yanlış" durumunda göster
@@ -67,8 +71,11 @@ Window {
         visible: !window.args.includes("--login")
         session: Session
         network: Network
+        battery: Battery
         locked: window.args.includes("--lock")
         startMenuOpen: window.args.includes("--launcher")
+        calendarOpen: window.args.includes("--calendar")
+        quickSettingsOpen: window.args.includes("--quick-settings")
 
         // Sahte veriler. ankaros'ta compositor ve sistem servislerinden gelecek.
         apps: ["Terminal", "Dosyalar", "Tarayıcı", "Ayarlar", "Metin Düzenleyici", "Müzik",
@@ -76,11 +83,11 @@ Window {
         taskBarApps: ["Dosyalar", "Terminal", "Tarayıcı", "Metin Düzenleyici", "Müzik", "Fotoğraflar"]
         running: ["Dosyalar", "Terminal"]
         activeApp: "Dosyalar"
-        recommended: [
-            { app: "Metin Düzenleyici", title: "rapor.md", subtitle: qsTr("2 dakika önce") },
-            { app: "Dosyalar", title: "ankaros", subtitle: qsTr("Dün") },
-            { app: "Terminal", title: "build.sh", subtitle: qsTr("Dün") },
-            { app: "Takvim", title: "Ekim 2026", subtitle: qsTr("3 gün önce") }
+        recentApps: [
+            { app: "Terminal", time: new Date() },
+            { app: "Ayarlar", time: new Date(Date.now() - 12 * 60000) },
+            { app: "Tarayıcı", time: new Date(Date.now() - 26 * 3600000) },
+            { app: "Metin Düzenleyici", time: new Date(Date.now() - 50 * 3600000) }
         ]
         userName: Session.userName
         switcherWindows: window.args.includes("--switcher") ? [
@@ -90,6 +97,14 @@ Window {
         switcherIndex: window.args.includes("--switcher") ? 1 : -1
         onAppLaunched: app => console.log("Başlatılacak uygulama:", app)
         onSettingsRequested: page => console.log("Ayarlar açılacak:", page)
+
+        Component.onCompleted: {
+            const search = window.args.indexOf("--search");
+            if (search >= 0)
+                showStartMenu("home", window.args[search + 1]);
+            else if (window.args.includes("--all-apps"))
+                showStartMenu("all", "");
+        }
     }
 
     Loader {

@@ -1,5 +1,6 @@
 #include "appearance.h"
 
+#include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
 #include <QStandardPaths>
@@ -64,6 +65,8 @@ void Appearance::load()
     const bool customPinnedApps = m_settings.contains(QStringLiteral("pinnedApps"));
     const QString clockFormat = text("clockFormat", "24");
     const bool showDate = flag("showDate", true);
+    const QStringList recentApps = m_settings.value(QStringLiteral("recentApps")).toStringList();
+    const QString settingsRequest = text("settingsRequest", "");
     m_settings.endGroup();
 
     // Giriş ekranı: oturum yöneticisinin ilettiği kullanıcı tercihleri (bkz. appearance.h)
@@ -75,7 +78,8 @@ void Appearance::load()
     if (darkMode == m_darkMode && side == m_windowButtonSide && style == m_windowButtonStyle &&
         wallpaper == m_wallpaper && wallpaperOnLock == m_wallpaperOnLock &&
         pinnedApps == m_pinnedApps && customPinnedApps == m_customPinnedApps &&
-        clockFormat == m_clockFormat && showDate == m_showDate)
+        clockFormat == m_clockFormat && showDate == m_showDate && recentApps == m_recentApps &&
+        settingsRequest == m_settingsRequest)
         return;
     m_darkMode = darkMode;
     m_windowButtonSide = side;
@@ -86,6 +90,8 @@ void Appearance::load()
     m_customPinnedApps = customPinnedApps;
     m_clockFormat = clockFormat;
     m_showDate = showDate;
+    m_recentApps = recentApps;
+    m_settingsRequest = settingsRequest;
     emit changed();
 }
 
@@ -172,4 +178,42 @@ void Appearance::setShowDate(bool show)
         write(QStringLiteral("showDate"), show);
         emit changed();
     }
+}
+
+QVariantList Appearance::recentApps() const
+{
+    QVariantList apps;
+    for (const QString &entry : m_recentApps) {
+        const qsizetype separator = entry.indexOf(u'|');
+        if (separator <= 0)
+            continue;
+        apps.append(QVariantMap{
+            {QStringLiteral("app"), entry.mid(separator + 1)},
+            {QStringLiteral("time"),
+             QDateTime::fromMSecsSinceEpoch(entry.left(separator).toLongLong())},
+        });
+    }
+    return apps;
+}
+
+void Appearance::noteAppUsed(const QString &app)
+{
+    // Panelde en fazla dört gösterilir, biraz fazlası saklanır (uygulamalardan biri kaldırılırsa
+    // diye)
+    constexpr qsizetype limit = 8;
+    QStringList apps{QString::number(QDateTime::currentMSecsSinceEpoch()) + u'|' + app};
+    for (const QString &entry : std::as_const(m_recentApps)) {
+        if (apps.size() < limit && entry.section(u'|', 1) != app)
+            apps.append(entry);
+    }
+    m_recentApps = apps;
+    write(QStringLiteral("recentApps"), apps);
+    emit changed();
+}
+
+void Appearance::requestSettingsPage(const QString &page)
+{
+    m_settingsRequest = page + u'|' + QString::number(QDateTime::currentMSecsSinceEpoch());
+    write(QStringLiteral("settingsRequest"), m_settingsRequest);
+    emit changed();
 }

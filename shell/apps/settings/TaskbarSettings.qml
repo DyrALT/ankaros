@@ -19,8 +19,8 @@ SettingsPage {
     // Sabitlenmiş uygulamalar sırasıyla önde, diğerleri listedeki sırasıyla arkada
     function fill() {
         const pinned = Appearance.customPinnedApps ? Appearance.pinnedApps : AppCatalog.pinned;
-        const names = pinned.filter(name => AppCatalog.names.includes(name))
-            .concat(AppCatalog.names.filter(name => !pinned.includes(name)));
+        const names = pinned.filter(name => AppCatalog.launchable.includes(name))
+            .concat(AppCatalog.launchable.filter(name => !pinned.includes(name)));
         apps.clear();
         for (const name of names)
             apps.append({ name: name, pinned: pinned.includes(name) });

@@ -1,4 +1,4 @@
-// Başlat panelindeki önerilen öğe: son kullanılan bir dosya ya da uygulama.
+// Başlat panelindeki son kullanılan öğe: simge, ad ve ne zaman kullanıldığı.
 import QtQuick
 
 import Ankaros.UI

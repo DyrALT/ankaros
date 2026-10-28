@@ -29,6 +29,8 @@ var paths = {
     minimize: "M6 12h12",
     maximize: "M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2Z",
     chevronRight: "M9 6l6 6-6 6",
+    chevronLeft: "M15 6l-6 6 6 6",
+    moon: "M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z",
     power: "M12 3v8 M6.3 6.6a8 8 0 1 0 11.4 0",
     lock: "M7.5 11h9a2.5 2.5 0 0 1 2.5 2.5v5a2.5 2.5 0 0 1 -2.5 2.5h-9a2.5 2.5 0 0 1 -2.5 -2.5v-5a2.5 2.5 0 0 1 2.5 -2.5Z M8 11V8a4 4 0 0 1 8 0v3",
     // Faz 2: bilgi balonu, yeniden başlatma, oturumu kapatma (Figma: Icon/Bilgi, Icon/Yeniden, Icon/Cikis)

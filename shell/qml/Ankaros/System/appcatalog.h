@@ -18,12 +18,17 @@ class AppCatalog : public QObject
     Q_PROPERTY(QStringList names READ names CONSTANT)
     // Alt çubuğa sabitlenmiş uygulamalar
     Q_PROPERTY(QStringList pinned READ pinned CONSTANT)
+    // Komutu olan, yani gerçekten açılabilen uygulamalar (dosyadaki sırayla). Başlat panelinde ve
+    // alt çubukta yalnızca bunlar gösterilir, diğerleri ileride yazılacak uygulamaların yer
+    // tutucusudur.
+    Q_PROPERTY(QStringList launchable READ launchable CONSTANT)
 
 public:
     explicit AppCatalog(QObject *parent = nullptr);
 
     QStringList names() const { return m_names; }
     QStringList pinned() const { return m_pinned; }
+    QStringList launchable() const;
 
     // Uygulamanın komutu. Komutu olmayan (henüz yazılmamış) uygulamalar için boş döner.
     Q_INVOKABLE QString command(const QString &name) const;

@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QVariantList>
 #include <QtQml/qqmlregistration.h>
 
 // Kullanıcının görünüm ayarları (karar 0015): tema, pencere düğmeleri, duvar kağıdı, alt çubuk.
@@ -38,6 +39,14 @@ class Appearance : public QObject
     // Saat biçimi: "24" ya da "12"
     Q_PROPERTY(QString clockFormat READ clockFormat WRITE setClockFormat NOTIFY changed)
     Q_PROPERTY(bool showDate READ showDate WRITE setShowDate NOTIFY changed)
+    // Son kullanılan uygulamalar, en yeniden eskiye: [{ app: "Terminal", time: Date }, ...]
+    // Başlat panelinin "Son kullanılanlar" bölümü. noteAppUsed() ile eklenir.
+    Q_PROPERTY(QVariantList recentApps READ recentApps NOTIFY changed)
+    // Ayarlar uygulamasından açık penceresinde bir sayfaya geçmesi istendiğinde ("sayfa|zaman").
+    // Başlat panelinde bir ayar arandığında Ayarlar zaten açıksa compositor bunu yazar, Ayarlar
+    // dosyayı izlediği için hemen o sayfaya geçer. Zaman, aynı sayfa ikinci kez istendiğinde de
+    // değişiklik olsun diyedir.
+    Q_PROPERTY(QString settingsRequest READ settingsRequest NOTIFY changed)
 
 public:
     explicit Appearance(QObject *parent = nullptr);
@@ -51,6 +60,8 @@ public:
     bool customPinnedApps() const { return m_customPinnedApps; }
     QString clockFormat() const { return m_clockFormat; }
     bool showDate() const { return m_showDate; }
+    QVariantList recentApps() const;
+    QString settingsRequest() const { return m_settingsRequest; }
 
     void setDarkMode(bool darkMode);
     void setWindowButtonSide(const QString &side);
@@ -60,6 +71,8 @@ public:
     void setPinnedApps(const QStringList &apps);
     void setClockFormat(const QString &format);
     void setShowDate(bool show);
+    Q_INVOKABLE void noteAppUsed(const QString &app);
+    Q_INVOKABLE void requestSettingsPage(const QString &page);
 
     static QString filePath();
 
@@ -78,6 +91,9 @@ private:
     QString m_windowButtonStyle = QStringLiteral("icons");
     QString m_wallpaper = QStringLiteral("ankara-tasi");
     bool m_wallpaperOnLock = true;
+    // "zaman (ms)|uygulama" biçiminde, en yeniden eskiye
+    QStringList m_recentApps;
+    QString m_settingsRequest;
     QStringList m_pinnedApps;
     bool m_customPinnedApps = false;
     QString m_clockFormat = QStringLiteral("24");

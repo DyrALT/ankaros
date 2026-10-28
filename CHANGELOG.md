@@ -16,6 +16,9 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Düzeltildi
 
+- Başlat panelinde ve alt çubukta henüz yazılmamış uygulamalar görünüyordu, tıklayınca bir şey olmuyordu.
+  Artık yalnızca açılabilen uygulamalar var. Karşılığı olmayan zil ve ses simgeleri kalktı, pil simgesi
+  yalnızca sistemde pil varsa görünüyor.
 - Bir pencerenin içinde sürükleyince arkasında kalan pencere taşınabiliyordu (ör. terminalde metin seçerken)
 - Uygulama pencereleri bazen bir sonraki tıklamaya kadar eski görüntüde kalıyordu (ör. Terminal'de komut
   çıktısı, Ayarlar'da tıklamanın gecikmesi). Compositor "kare çizildi" bildirimini geç gönderiyordu, Qt
@@ -26,6 +29,12 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Başlat paneli ve alt çubuk:
+  - "Tümü" bütün uygulamaları alfabetik listeliyor, "Önerilenler" yerine son kullanılan uygulamalar var.
+  - Arama Ayarlar'daki ayarları da buluyor ("koyu" → Görünüm). Ayarlar açıksa istenen sayfaya geçiyor.
+    Oklarla seçilip Enter ile açılıyor.
+  - Saate tıklayınca takvim, durum simgelerine tıklayınca hızlı ayarlar açılıyor (ağ, koyu tema, kilitle,
+    Ayarlar, güç menüsü).
 - Pencere yönetimi (`docs/pencere-yonetimi.md`): kenarlardan ve köşelerden boyutlandırma, ekranın
   yarısına ya da tamamına yaslama (önizlemeli), Alt+Tab ile pencere geçişi, açılma, kapanma ve küçültme
   animasyonları. Kısayollar: Süper (başlat paneli), Süper+D, Süper+oklar, Alt+F4.

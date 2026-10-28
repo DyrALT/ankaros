@@ -54,6 +54,16 @@ bool AppCatalog::load(const QString &path)
     return true;
 }
 
+QStringList AppCatalog::launchable() const
+{
+    QStringList names;
+    for (const QString &name : m_names) {
+        if (m_commands.contains(name))
+            names.append(name);
+    }
+    return names;
+}
+
 QString AppCatalog::command(const QString &name) const
 {
     return m_commands.value(name);
