@@ -22,6 +22,11 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   denetlenir, ekran görüntüsü yüklenir
 - UTM'de GPU hızlandırmalı sanal makineyi tek komutla kuran `scripts/utm-olustur.sh` ve rehberi (`docs/utm.md`)
 
+### Değişti
+
+- CI'daki imaj derlemesi ayrı iş akışına (`imaj.yml`) taşındı. Yalnızca imajı etkileyen dosyalar
+  değişince çalışıyor, PR'lar onu beklemiyor.
+
 ## [0.1.0] - 2026-10-28
 
 Faz 0: QEMU'da açılan en küçük ankaros sistemi ve Mac'te çalışan masaüstü kabuğu.

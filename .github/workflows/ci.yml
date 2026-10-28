@@ -1,5 +1,5 @@
-# ankaros CI: kod stili denetimi, kabuğun derlenip qmllint'ten geçmesi, aarch64 imaj derlemesi ve
-# imajın QEMU'da masaüstüne kadar açılması.
+# ankaros CI: kod stili denetimi, kabuğun ve compositor'ın derlenip qmllint'ten geçmesi. Birkaç dakika
+# sürer, PR'ı birleştirmek için yeşil olması yeter. İmaj derlemesi ayrı iş akışında: imaj.yml
 name: CI
 
 on:
@@ -54,52 +54,3 @@ jobs:
           cmake --build build/compositor
       - name: Compositor qmllint
         run: cmake --build build/compositor --target all_qmllint
-
-  image:
-    name: İmaj (aarch64)
-    # Derleme makinemiz gibi arm64: Buildroot kendi araç zincirini yerel olarak derler.
-    runs-on: ubuntu-24.04-arm
-    # İlk derleme Qt 6 ve Mesa ile birlikte birkaç saat sürer, sonrakiler önbellekten hızlanır.
-    timeout-minutes: 360
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Bağımlılıklar
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential file wget cpio unzip rsync bc python3 libncurses-dev
-      - name: Önbellek (kaynak paketleri ve ccache)
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/ankaros-dl
-            ~/.buildroot-ccache
-          key: buildroot-${{ hashFiles('external/configs/*_defconfig', '.gitmodules') }}-${{ github.sha }}
-          restore-keys: buildroot-${{ hashFiles('external/configs/*_defconfig', '.gitmodules') }}-
-      - name: Derle
-        run: ./scripts/build.sh
-      - name: Açılış testi (QEMU)
-        # İmaj ekransız açılır, masaüstü görünene kadar ekran görüntüsü alınır. Bu makinede KVM yok,
-        # işlemci yazılımla taklit edilir: Mac'te 20 saniye süren açılış burada birkaç dakika sürebilir.
-        run: |
-          sudo apt-get install -y qemu-system-arm
-          ./scripts/qemu-test.py --boot-timeout 600 --expect-desktop --wait 900 \
-            --screenshot acilis-testi.png --log acilis-testi.log
-      - name: Açılış testinin ekran görüntüsü ve günlüğü
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: acilis-testi
-          path: |
-            acilis-testi.png
-            acilis-testi.log
-          if-no-files-found: ignore
-          retention-days: 14
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ankaros-qemu-aarch64
-          path: |
-            ~/ankaros-output/images/Image
-            ~/ankaros-output/images/rootfs.ext4
-          retention-days: 14
