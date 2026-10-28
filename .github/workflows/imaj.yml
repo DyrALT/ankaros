@@ -22,9 +22,11 @@ on:
     paths: *imaj-dosyalari
   workflow_dispatch:
 
+# PR'da yeni push eskisini iptal eder. main'de iptal edilmez: çalışan derleme biter, en son push sıraya
+# girer (aradaki push'lar atlanır). Yoksa sık birleştirmede main'deki derleme hiç tamamlanmaz.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   image:
