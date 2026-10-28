@@ -2,13 +2,20 @@
 # ankaros imajı için UTM'de GPU hızlandırmalı (virtio-gpu-gl, virgl) bir sanal makine oluşturur.
 # Ayrıntılar ve elle kurulum: docs/utm.md
 #
-#   ./scripts/utm-olustur.sh            "ankaros" adıyla
-#   ./scripts/utm-olustur.sh deneme     başka bir adla
+#   ./scripts/utm-olustur.sh                    "ankaros" adıyla
+#   ./scripts/utm-olustur.sh deneme             başka bir adla
+#   ./scripts/utm-olustur.sh --guncelle deneme  var olan sanal makinenin diskini ve kernel'ini yeni
+#                                               imajla değiştir (sanal makinedeki değişiklikler silinir)
 #
 # UTM'nin betik arayüzü (AppleScript) kernel ile açılışı ayarlayamıyor. Bu yüzden sanal makine önce
 # AppleScript ile oluşturulur, sonra UTM kapatılıp yapılandırma dosyasına kernel, açılış argümanları
 # ve virtio girdi aygıtları eklenir. Çalışan bir sanal makine varken betik UTM'yi kapatmaz, durur.
 set -e
+UPDATE=0
+if [ "$1" = "--guncelle" ]; then
+  UPDATE=1
+  shift
+fi
 NAME="${1:-ankaros}"
 IMAGES="${IMAGES:-$HOME/OrbStack/ankaros-build/home/$USER/ankaros-output/images}"
 BUNDLE="$HOME/Library/Containers/com.utmapp.UTM/Data/Documents/$NAME.utm"
@@ -25,6 +32,23 @@ utm() {
 [ -d /Applications/UTM.app ] || fail "UTM kurulu değil: https://mac.getutm.app"
 if [ ! -f "$IMAGES/Image" ] || [ ! -f "$IMAGES/rootfs.ext4" ]; then
   fail "İmaj bulunamadı: $IMAGES"
+fi
+if [ "$UPDATE" = 1 ]; then
+  [ -d "$BUNDLE" ] || fail "\"$NAME\" adında bir sanal makine yok."
+  command -v qemu-img >/dev/null || fail "qemu-img gerekli: brew install qemu"
+  if pgrep -xq UTM && utm "get status of virtual machine \"$NAME\"" | grep -qv stopped; then
+    fail "\"$NAME\" çalışıyor. Önce UTM'den kapat."
+  fi
+  DISK=$(plutil -extract Drive json -o - "$BUNDLE/config.plist" \
+    | python3 -c 'import json,sys; print(next(d["ImageName"] for d in json.load(sys.stdin) if d.get("ImageType") == "Disk"))')
+  echo "Disk ($DISK) ve kernel yeni imajla değiştiriliyor, sanal makinedeki değişiklikler silinir..."
+  # OrbStack klasörü dosya kilidini desteklemiyor, kilitlemeden okunur (run-qemu.sh'deki gibi)
+  qemu-img convert -O qcow2 --image-opts \
+    "driver=raw,file.driver=file,file.filename=$IMAGES/rootfs.ext4,file.locking=off" \
+    "$BUNDLE/Data/$DISK"
+  cp "$IMAGES/Image" "$BUNDLE/Data/Image"
+  echo "Hazır: UTM'de \"$NAME\" sanal makinesini başlat."
+  exit 0
 fi
 [ ! -e "$BUNDLE" ] || fail "\"$NAME\" adında bir sanal makine zaten var. UTM'den sil ya da başka bir ad ver."
 if pgrep -xq UTM && utm "get status of every virtual machine" | grep -qv stopped; then
