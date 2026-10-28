@@ -81,6 +81,10 @@ ankarosctl restart ankaros-session        # giriş ekranını ya da masaüstün�
 
 - **Giriş ekranı** (`LoginScreen.qml`): compositor `--login` ile açıldığında ekranın kendisidir. uid'si
   1000 ve üstü olan ilk kullanıcıyı gösterir. Sağ altta yeniden başlat ve kapat düğmeleri vardır.
+  Giriş ekranı kullanıcının dosyalarını okuyamaz. Oturum yöneticisi bu kullanıcının temasını ve duvar
+  kağıdını (`~/.config/ankaros/shell.conf`) okuyup `ANKAROS_DARK_MODE` ve `ANKAROS_WALLPAPER` ortam
+  değişkenleriyle giriş ekranına verir. Ayarlar › Duvar kağıdı'nda "Kilit ve giriş ekranında da kullan"
+  kapalıysa giriş ve kilit ekranında Ankara Taşı görünür.
 - **Kilit ekranı** (`LockScreen.qml`): Süper+L ya da başlat panelindeki güç menüsünden Kilitle. Masaüstünün
   kilitlendiği andaki görüntüsü bulanık arka plan olur, arkadaki uygulamaların değişen içeriği görünmez.
   Tıklamalar ve tuşlar uygulamalara ulaşmaz.

@@ -9,7 +9,6 @@ qt_add_qml_module(ankaros_shell
     VERSION 1.0
     DEPENDENCIES Ankaros.UI
     QML_FILES
-        Wallpaper.qml
         Desktop.qml
         TaskBar.qml
         TaskItem.qml

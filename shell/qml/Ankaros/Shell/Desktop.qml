@@ -128,12 +128,21 @@ Item {
     }
 
     // Kilit ekranı her şeyin üstünde. Arkasındaki sahne bulanık görünür.
+    // Kilit ekranının arka planı, kullanıcı duvar kağıdını kilitte istemiyorsa (Ayarlar › Duvar kağıdı)
+    Wallpaper {
+        id: defaultWallpaper
+
+        anchors.fill: parent
+        visible: false
+        name: "ankara-tasi"
+    }
+
     LockScreen {
         id: lockScreen
 
         anchors.fill: parent
         opacity: root.locked ? 1 : 0
-        backdrop: scene
+        backdrop: Appearance.wallpaperOnLock ? scene : defaultWallpaper
         userName: root.userName
         onSubmitted: password => {
             if (root.session)

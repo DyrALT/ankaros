@@ -62,7 +62,7 @@ jobs:
             xvfb-run -a -s "-screen 0 1440x900x24" build/shell/preview/ankaros-shell-preview $args \
               --screenshot "duman-testi/$name.png"
           done
-          for page in appearance network user; do
+          for page in appearance wallpaper taskbar network user about; do
             xvfb-run -a build/shell/apps/settings/ankaros-settings --page $page \
               --screenshot "duman-testi/ayarlar_$page.png"
           done

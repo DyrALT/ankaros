@@ -1,5 +1,5 @@
 # Ankaros.System: sistem servislerinin istemcileri (karar 0013). Session (ankaros-session), Network
-# (ankaros-network), AppCatalog (uygulama listesi). Compositor, kabuk ve uygulamalar bunları kullanır.
+# (ankaros-network), AppCatalog (uygulama listesi), SystemInfo (Ayarlar › Hakkında). Compositor, kabuk ve uygulamalar bunları kullanır.
 # Linux'ta C++ sınıfları servislerin Unix soketlerine bağlanır. Mac önizlemesinde aynı adlı sahte QML
 # nesneleri (Session.qml, Network.qml) kullanılır, böylece arayüz servisler olmadan da denenebilir.
 if(ANKAROS_SHELL_SHARED)
@@ -21,15 +21,18 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
             session.cpp
             socketrequest.h
             socketrequest.cpp
+            systeminfo.h
+            systeminfo.cpp
     )
 else()
-    set_source_files_properties(Session.qml Network.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+    set_source_files_properties(Session.qml Network.qml SystemInfo.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
     qt_add_qml_module(ankaros_system
         URI Ankaros.System
         VERSION 1.0
         QML_FILES
             Session.qml
             Network.qml
+            SystemInfo.qml
         SOURCES
             appcatalog.h
             appcatalog.cpp

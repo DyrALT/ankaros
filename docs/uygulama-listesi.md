@@ -24,7 +24,7 @@ gömülü kopyası kullanılır.
 | `name` | Başlat panelinde ve alt çubukta görünen ad. Simgesi de bu adla seçilir (`shell/.../IconData.js`). |
 | `command` | Uygulamaya tıklanınca çalıştırılan komut. Yoksa uygulama listede görünür ama açılmaz (henüz yazılmamış uygulamalar). |
 | `appIds` | Uygulamanın pencerelerinin Wayland `app_id`'leri. Açık pencerenin hangi uygulamaya ait olduğu, alt çubukta hangi simgenin altında "çalışıyor" göstergesi yanacağı buna göre bulunur. |
-| `pinned` | `true` ise uygulama, çalışmasa da alt çubukta durur. |
+| `pinned` | `true` ise uygulama, çalışmasa da alt çubukta durur. Varsayılandır: kullanıcı Ayarlar › Alt çubuk'ta seçim yapınca onun listesi (`shell.conf`, `pinnedApps`) kullanılır. |
 
 - Uygulamalar başlat panelinde dosyadaki sırayla, alt çubukta sabitlenmişler önce olmak üzere görünür.
 - Listede olmayan bir uygulamanın penceresi alt çubukta `app_id`'siyle görünür. Yeni bir uygulamanın

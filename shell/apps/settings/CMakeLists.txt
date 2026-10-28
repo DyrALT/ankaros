@@ -11,6 +11,11 @@ qt_add_qml_module(ankaros-settings
         AppearanceSettings.qml
         NetworkSettings.qml
         UserSettings.qml
+        WallpaperSettings.qml
+        TaskbarSettings.qml
+        AboutSettings.qml
+        OptionCard.qml
+        Radio.qml
 )
 
 target_link_libraries(ankaros-settings PRIVATE Qt6::Quick)
