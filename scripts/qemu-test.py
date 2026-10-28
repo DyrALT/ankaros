@@ -3,7 +3,7 @@
 
 Kullanım:
     ./scripts/qemu-test.py --command "ankaros-shell-preview" --wait 20 --screenshot ekran.ppm
-    ./scripts/qemu-test.py --command "ankaros-compositor" --wait 15 \
+    ./scripts/qemu-test.py --command "true" --wait 15 \
         --actions "click 326 860; sleep 10" --screenshot ekran.ppm
 
 Adımlar: imaj açılır (değişiklikler kaydedilmez, -snapshot), giriş isteminde root olarak girilir,

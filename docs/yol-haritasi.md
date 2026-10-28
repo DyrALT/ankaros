@@ -24,7 +24,7 @@ Ayrıntılı plan: [faz-1-plani.md](faz-1-plani.md)
 - [x] B: Qt Wayland Compositor ile compositor: pencere açma, taşıma, odak, kapatma, ankaros başlık çubuğu
 - [x] C: Pencere katmanı, gerçek çalışma göstergeleri, uygulama açma, küçültme/büyütme, Görünüm ayarları
   - [ ] Uygulama listesinin `/etc/ankaros/apps.json`'dan okunması (şimdilik compositor'da sabit liste)
-- [ ] D: Açılışta giriş istemi yerine doğrudan masaüstü
+- [x] D: Açılışta giriş istemi yerine doğrudan masaüstü
 - [ ] E: QEMU'da otomatik açılış testi, UTM'de GPU hızlandırmalı test
 
 ## Faz 2: Sistem servisleri (`v0.3.0`)
