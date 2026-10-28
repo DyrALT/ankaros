@@ -5,30 +5,36 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+## [0.3.0] - 2026-10-28
+
+Faz 2: Sistem servisleri. ankaros kendi init sistemiyle açılıyor, masaüstü bir kullanıcı hesabıyla
+çalışıyor, giriş ve kilit ekranı, kablolu ağ ayarları ve açılış süresi raporu var.
+
 ### Eklendi
 
-- Uygulama listesi `/etc/ankaros/apps.json`'dan okunuyor (`docs/uygulama-listesi.md`)
 - Kendi init sistemimiz `ankaros-init` (`docs/init.md`): servis dosyaları, bağımlılık sırasıyla paralel
   başlatma, çöken servisi yeniden başlatma, servis başına günlük, düzgün kapatma. Servisleri denetleyen
-  `ankarosctl` komutu, açılışta her adımın süresini gösteren `ankarosctl boot`.
-
+  `ankarosctl` komutu.
 - Kullanıcı hesapları ve oturum yöneticisi `ankaros-session` (`docs/oturum.md`): masaüstü root yerine
   `ankaros` kullanıcısıyla (şifre `ankaros`) çalışıyor, geliştirme imajında otomatik giriş açık
 - Giriş ekranı, kilit ekranı (Süper+L), başlat panelinde güç menüsü (Kilitle, Oturumu kapat, Yeniden
   başlat, Kapat) ve Ayarlar › Kullanıcı (otomatik giriş, şifre değiştirme)
-- Ayarlarda bilgi balonları: açıklamalar sayfaya yazılmıyor, ayar adının yanındaki ⓘ simgesinde
-- `qemu-test.py`'ye tuş, yazı, seri konsol komutu, ağ kablosu ve ara ekran görüntüsü eylemleri
+- Kablolu ağ servisi `ankaros-network` (`docs/ag.md`): DHCP ya da statik IP, durum değişince
+  abonelere bildirim. Ayarlar › Ağ ve alt çubukta gerçek durumu gösteren kablolu ağ simgesi
 - Açılış süresi raporu (`docs/acilis-suresi.md`): `ankarosctl boot` çekirdeği, servisleri ve
   masaüstünün ilk karesini gösteriyor, `qemu-test.py` ve CI raporu yazdırıyor. Mac'te (QEMU, hvf)
   masaüstü yaklaşık 1,1 saniyede geliyor.
-- Kablolu ağ servisi `ankaros-network` (`docs/ag.md`): DHCP ya da statik IP, durum değişince
-  abonelere bildirim. Ayarlar › Ağ ve alt çubukta gerçek durumu gösteren kablolu ağ simgesi
+- Uygulama listesi `/etc/ankaros/apps.json`'dan okunuyor (`docs/uygulama-listesi.md`)
+- Ayarlarda bilgi balonları: açıklamalar sayfaya yazılmıyor, ayar adının yanındaki ⓘ simgesinde.
+  Bütün sistem için ortak tasarım ilkeleri (`docs/tasarim-akisi.md`).
+- `qemu-test.py`'ye tuş, yazı, seri konsol komutu, ağ kablosu ve ara ekran görüntüsü eylemleri
 
 ### Değişti
 
 - BusyBox init ve `/etc/init.d` betikleri kaldırıldı
 - Masaüstünü init değil `ankaros-session` başlatıyor. Yeniden başlatmak için:
   `ankarosctl restart ankaros-session`
+- CI'da `main`'deki imaj derlemesi yeni birleştirmelerde yarıda kesilmiyor
 - `build.sh` değişen defconfig'i (ör. `git pull` sonrası) kendiliğinden yeniden uyguluyor
 
 ## [0.2.0] - 2026-10-28
@@ -78,6 +84,7 @@ Faz 0: QEMU'da açılan en küçük ankaros sistemi ve Mac'te çalışan masaüs
 
 - `run-qemu.sh`: OrbStack klasöründeki imaj açılırken çıkan disk kilidi hatası
 
-[Yayınlanmamış]: https://github.com/DyrALT/ankaros/compare/v0.2.0...HEAD
+[Yayınlanmamış]: https://github.com/DyrALT/ankaros/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/DyrALT/ankaros/releases/tag/v0.3.0
 [0.2.0]: https://github.com/DyrALT/ankaros/releases/tag/v0.2.0
 [0.1.0]: https://github.com/DyrALT/ankaros/releases/tag/v0.1.0

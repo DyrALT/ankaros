@@ -31,7 +31,7 @@ Ayrıntılı plan: [faz-1-plani.md](faz-1-plani.md)
   - [x] UTM'de virgl ile GPU hızlandırmasının doğrulanması (`scripts/utm-olustur.sh`)
   - [x] `v0.2.0`
 
-## Faz 2: Sistem servisleri (`v0.3.0`), sıradaki
+## Faz 2: Sistem servisleri (`v0.3.0`), tamamlandı
 
 Ayrıntılı plan: [faz-2-plani.md](faz-2-plani.md)
 
@@ -41,9 +41,9 @@ Ayrıntılı plan: [faz-2-plani.md](faz-2-plani.md)
 - [x] D: Oturum yönetimi: kullanıcı hesabı, giriş ve kilit ekranı, otomatik giriş
 - [x] E: Kablolu ağ servisi ve Ayarlar › Ağ
 - [x] F: Açılış süresinin ölçülüp raporlanması ([acilis-suresi.md](acilis-suresi.md))
-- [ ] `v0.3.0`
+- [x] `v0.3.0`
 
-## Faz 3: Paketler ve uygulamalar (`v0.4.0`)
+## Faz 3: Paketler ve uygulamalar (`v0.4.0`), sıradaki
 
 - [ ] Paket formatı ve paket yöneticisi
 - [ ] Temel uygulamalar: terminal, dosya yöneticisi, ayarlar
