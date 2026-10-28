@@ -14,6 +14,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   ankaros çerçevesiyle açılıyor, taşınıyor, öne geliyor, küçültülüp büyütülüyor, kapanıyor. Alt
   çubuktaki göstergeler gerçek pencerelerden geliyor, Terminal alt çubuktan açılıyor.
 - Kabuğa pencere çerçevesi (`WindowChrome`, `WindowTitleBar`) ve pencere katmanı
+- Ayarlar › Görünüm: tema, pencere düğmelerinin konumu (sol/sağ) ve stili (simge/renkli daire).
+  Bütün pencerelere anında uygulanıyor, `~/.config/ankaros/shell.conf`'ta saklanıyor.
 - `run-qemu.sh --gui` ve ekran görüntüsü alan otomatik test betiği `scripts/qemu-test.py`
 
 ## [0.1.0] - 2026-10-28

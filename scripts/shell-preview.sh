@@ -16,21 +16,16 @@ else
   APP="$BUILD/preview/ankaros-shell-preview"
 fi
 
-ARGS=""
 while :; do
   until cmake --build "$BUILD"; do
     printf '\nDerleme başarısız. Hatayı düzeltip Enter tuşuna basın (çıkmak için Ctrl+C).\n'
     read -r _
   done
-  # Uygulamanın çıkış kodu ne yapılacağını söyler: 42/43 yeniden yükle (açık/koyu mod), diğerleri çık.
+  # Uygulamanın çıkış kodu ne yapılacağını söyler: 42 yeniden derle ve aç, diğerleri çık.
+  # Ek argümanlar (ör. --window) her açılışta uygulamaya geçer.
   set +e
-  # shellcheck disable=SC2086 # ARGS bilerek bölünüyor
-  "$APP" $ARGS
+  "$APP" "$@"
   CODE=$?
   set -e
-  case $CODE in
-    42) ARGS="" ;;
-    43) ARGS="--dark" ;;
-    *) exit "$CODE" ;;
-  esac
+  [ "$CODE" -eq 42 ] || exit "$CODE"
 done
