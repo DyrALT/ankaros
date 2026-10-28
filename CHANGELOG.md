@@ -14,6 +14,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 - Kullanıcı hesapları ve oturum yöneticisi `ankaros-session` (`docs/oturum.md`): masaüstü root yerine
   `ankaros` kullanıcısıyla (şifre `ankaros`) çalışıyor, geliştirme imajında otomatik giriş açık
+- Giriş ekranı, kilit ekranı (Süper+L), başlat panelinde güç menüsü (Kilitle, Oturumu kapat, Yeniden
+  başlat, Kapat) ve Ayarlar › Kullanıcı (otomatik giriş, şifre değiştirme)
+- Ayarlarda bilgi balonları: açıklamalar sayfaya yazılmıyor, ayar adının yanındaki ⓘ simgesinde
+- `qemu-test.py`'ye tuş, yazı, seri konsol komutu ve ara ekran görüntüsü eylemleri
 
 ### Değişti
 

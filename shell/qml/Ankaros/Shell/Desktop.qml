@@ -16,6 +16,13 @@ Item {
     // Başlat panelindeki öneriler: [{ app, title, subtitle }, ...]
     property var recommended: []
     property string userName
+    // Oturum işlemleri: kilit açma, oturumu kapatma, kapatma, otomatik giriş, şifre (docs/oturum.md).
+    // Compositor'da C++ Session nesnesi, Mac önizlemesinde sahte bir oturum verilir. Beklenen üyeler:
+    // userName, autologin, unlock(), logout(), reboot(), poweroff(), setAutologin(), changePassword()
+    // ve unlocked, unlockFailed, passwordUpdated, passwordUpdateFailed sinyalleri.
+    property var session: null
+    // Ekran kilitli mi. lock() kilitler, kilidi doğru şifre açar.
+    property bool locked: false
 
     // Başlat panelinin açık olup olmadığı. Compositor'da Super tuşu bunu değiştirecek.
     property alias startMenuOpen: startMenu.open
@@ -29,6 +36,8 @@ Item {
     // kabuğun parçası. Bu yüzden çalışma ve odak durumu burada tutulur.
     property bool settingsOpen: false
     property bool settingsFocused: false
+    // Ayarlar penceresinde açık sayfa ("appearance", "user")
+    property alias settingsPanelPage: settingsPanel.page
 
     // Pencerelerin üst üste sırası. Compositor da kendi pencerelerini öne getirirken bunu kullanır,
     // böylece Ayarlar penceresiyle uygulama pencereleri aynı sıralamayı paylaşır.
@@ -40,6 +49,11 @@ Item {
 
     function nextZ() {
         return ++topZ;
+    }
+
+    function lock() {
+        startMenu.open = false;
+        locked = true;
     }
 
     function launch(app) {
@@ -98,8 +112,11 @@ Item {
                 onCloseClicked: root.settingsOpen = false
                 onMinimizeClicked: root.settingsOpen = false
 
-                AppearanceSettings {
+                SettingsPanel {
+                    id: settingsPanel
+
                     anchors.fill: parent
+                    session: root.session
                 }
             }
         }
@@ -126,6 +143,10 @@ Item {
             open = false;
             root.launch(app);
         }
+        onLockRequested: root.lock()
+        onLogoutRequested: root.session?.logout()
+        onRebootRequested: root.session?.reboot()
+        onPoweroffRequested: root.session?.poweroff()
     }
 
     TaskBar {
@@ -147,5 +168,34 @@ Item {
             startMenu.focusSearch();
         }
         onAppClicked: app => root.launch(app)
+    }
+
+    // Kilit ekranı her şeyin üstünde. Arkasındaki sahne bulanık görünür.
+    LockScreen {
+        id: lockScreen
+
+        anchors.fill: parent
+        opacity: root.locked ? 1 : 0
+        backdrop: scene
+        userName: root.userName
+        onSubmitted: password => {
+            if (root.session)
+                root.session.unlock(password);
+            else
+                root.locked = false;
+        }
+    }
+
+    Connections {
+        target: root.session
+        ignoreUnknownSignals: true
+
+        function onUnlocked() {
+            root.locked = false;
+        }
+
+        function onUnlockFailed(message: string) {
+            lockScreen.fail(message);
+        }
     }
 }

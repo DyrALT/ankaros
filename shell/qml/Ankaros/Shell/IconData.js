@@ -30,6 +30,10 @@ var paths = {
     chevronRight: "M9 6l6 6-6 6",
     power: "M12 3v8 M6.3 6.6a8 8 0 1 0 11.4 0",
     lock: "M7.5 11h9a2.5 2.5 0 0 1 2.5 2.5v5a2.5 2.5 0 0 1 -2.5 2.5h-9a2.5 2.5 0 0 1 -2.5 -2.5v-5a2.5 2.5 0 0 1 2.5 -2.5Z M8 11V8a4 4 0 0 1 8 0v3",
+    // Faz 2: bilgi balonu, yeniden başlatma, oturumu kapatma (Figma: Icon/Bilgi, Icon/Yeniden, Icon/Cikis)
+    info: "M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0Z M12 16v-4 M12 8h.01",
+    restart: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8 M3 3v5h5",
+    logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9",
 };
 
 // Uygulama adı -> simge, degrade renkleri (üst, alt), koyu simge rengi gerekip gerekmediği, kısa ad

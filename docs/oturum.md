@@ -77,7 +77,35 @@ ankarosctl session login ankaros ankaros  # giriş ekranındayken oturum açar
 ankarosctl restart ankaros-session        # giriş ekranını ya da masaüstünü yeniden başlatır
 ```
 
+## Arayüz
+
+- **Giriş ekranı** (`LoginScreen.qml`): compositor `--login` ile açıldığında ekranın kendisidir. uid'si
+  1000 ve üstü olan ilk kullanıcıyı gösterir. Sağ altta yeniden başlat ve kapat düğmeleri vardır.
+- **Kilit ekranı** (`LockScreen.qml`): Süper+L ya da başlat panelindeki güç menüsünden Kilitle. Masaüstünün
+  kilitlendiği andaki görüntüsü bulanık arka plan olur, arkadaki uygulamaların değişen içeriği görünmez.
+  Tıklamalar ve tuşlar uygulamalara ulaşmaz.
+- **Güç menüsü** (`PowerMenu.qml`, başlat panelinin sağ altı): Kilitle, Oturumu kapat, Yeniden başlat,
+  Kapat.
+- **Ayarlar › Kullanıcı** (`UserSettings.qml`): otomatik giriş anahtarı ve şifre değiştirme.
+
+| Kilit ekranı, hatalı şifre | Ayarlar › Kullanıcı |
+|---|---|
+| ![Kilit ekranı](gorseller/vm-kilit-ekrani.png) | ![Ayarlar › Kullanıcı](gorseller/vm-ayarlar-kullanici.png) |
+
+Kabuk oturum işlemlerini `Desktop.session` nesnesi üzerinden yapar. ankaros'ta bu, compositor'daki
+C++ `Session` sınıfıdır (`compositor/session.cpp`) ve denetim soketine bağlanır. Mac önizlemesinde
+`preview/FakeSession.qml` aynı üyeleri sahte olarak karşılar (şifre `ankaros`).
+
 ## Geliştirme
 
 Şifre hash'i, `/etc/shadow` güncellemesi ve `session.conf` birim testleriyle denenir
-(`system/tests/session_test.cpp`). Akışın tamamı QEMU'da denenir.
+(`system/tests/session_test.cpp`). Akışın tamamı QEMU'da `qemu-test.py`'nin tuş ve tıklama eylemleriyle
+denenir. Örnek: kilitle, yanlış şifre gir, ekran görüntüsü al:
+
+```bash
+./scripts/qemu-test.py --expect-desktop --actions \
+  "key meta_l-l; sleep 10; type yanlis; key ret; sleep 10" --screenshot kilit.png
+```
+
+Arayüz Mac önizlemesinde de denenebilir: `--login`, `--lock`, `--settings --user`
+([tasarim-akisi.md](tasarim-akisi.md)).

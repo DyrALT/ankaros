@@ -1,15 +1,14 @@
-// Ayarlar penceresinin içeriği: kenar çubuğu ve Görünüm bölümü (tema, pencere düğmelerinin konumu
-// ve stili). Seçimler ShellSettings'e yazılır, açık pencerelere hemen uygulanır.
-// Figma: "B · Pencereler ve Ayarlar" sayfası. Diğer bölümler (Duvar kağıdı, Ağ...) sonraki fazlarda.
+// Ayarlar › Görünüm: tema, pencere düğmelerinin konumu ve stili. Seçimler ShellSettings'e yazılır,
+// açık pencerelere hemen uygulanır. Figma: "B · Pencereler ve Ayarlar" sayfası.
 pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
 
-Rectangle {
+SettingsPage {
     id: root
 
-    color: Theme.color.surfaceWindow
+    title: qsTr("Görünüm")
 
     component Radio: Rectangle {
         id: radio
@@ -131,225 +130,102 @@ Rectangle {
         }
     }
 
-    component SectionTitle: Label {
-        font.weight: Font.DemiBold
-    }
+    ColumnLayout {
+        spacing: 10
 
-    RowLayout {
-        anchors.fill: parent
-        spacing: 0
+        SectionTitle {
+            text: qsTr("Tema")
+        }
 
-        Rectangle {
-            Layout.fillHeight: true
-            Layout.preferredWidth: 200
-            color: Theme.color.surfaceSidebar
+        Row {
+            spacing: Theme.spacing.md
 
-            Column {
-                anchors.fill: parent
-                anchors.margins: 10
-                anchors.topMargin: 8
-                spacing: 2
+            OptionCard {
+                label: qsTr("Açık")
+                // Kartlar o an geçerli temayı gösterir (önizlemenin --dark seçeneği ayarı değiştirmez)
+                selected: !Theme.dark
+                onChosen: {
+                    ShellSettings.darkMode = false;
+                    Theme.dark = Qt.binding(() => ShellSettings.darkMode);
+                }
 
-                Repeater {
-                    model: [qsTr("Görünüm"), qsTr("Duvar kağıdı"), qsTr("Alt çubuk"), qsTr("Bildirimler"),
-                        qsTr("Ağ"), qsTr("Hakkında")]
+                ThemePreview {
+                    dark: false
+                }
+            }
 
-                    Rectangle {
-                        id: item
+            OptionCard {
+                label: qsTr("Koyu")
+                selected: Theme.dark
+                onChosen: {
+                    ShellSettings.darkMode = true;
+                    Theme.dark = Qt.binding(() => ShellSettings.darkMode);
+                }
 
-                        required property string modelData
-                        required property int index
-
-                        width: parent.width
-                        height: 34
-                        radius: Theme.radius.sm
-                        color: index === 0 ? Theme.color.accentSoft : "transparent"
-
-                        Label {
-                            anchors.verticalCenter: parent.verticalCenter
-                            x: 10
-                            text: item.modelData
-                            color: item.index === 0 ? Theme.color.accent : Theme.color.textPrimary
-                            font.weight: item.index === 0 ? Font.DemiBold : Font.Normal
-                            // Diğer bölümler henüz yok
-                            opacity: item.index === 0 ? 1 : 0.5
-                        }
-                    }
+                ThemePreview {
+                    dark: true
                 }
             }
         }
+    }
 
-        ColumnLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.leftMargin: 32
-            Layout.rightMargin: 32
-            Layout.topMargin: Theme.spacing.xl
-            spacing: 22
+    ColumnLayout {
+        spacing: 14
 
-            Label {
-                text: qsTr("Görünüm")
-                font.pixelSize: Theme.font.title
-                font.weight: Font.Bold
+        SectionTitle {
+            text: qsTr("Pencere düğmeleri")
+        }
+
+        RowLayout {
+            spacing: Theme.spacing.lg
+
+            SettingLabel {
+                Layout.preferredWidth: 200
+                text: qsTr("Konum")
+                info: qsTr("Kapat, küçült ve büyüt düğmelerinin başlık çubuğunun hangi tarafında duracağı. Değişiklik açık pencerelere hemen uygulanır.")
             }
 
-            ColumnLayout {
-                spacing: 10
-
-                SectionTitle {
-                    text: qsTr("Tema")
-                }
-
-                Row {
-                    spacing: Theme.spacing.md
-
-                    OptionCard {
-                        label: qsTr("Açık")
-                        // Kartlar o an geçerli temayı gösterir (önizlemenin --dark seçeneği ayarı değiştirmez)
-                        selected: !Theme.dark
-                        onChosen: {
-                            ShellSettings.darkMode = false;
-                            Theme.dark = Qt.binding(() => ShellSettings.darkMode);
-                        }
-
-                        ThemePreview {
-                            dark: false
-                        }
-                    }
-
-                    OptionCard {
-                        label: qsTr("Koyu")
-                        selected: Theme.dark
-                        onChosen: {
-                            ShellSettings.darkMode = true;
-                            Theme.dark = Qt.binding(() => ShellSettings.darkMode);
-                        }
-
-                        ThemePreview {
-                            dark: true
-                        }
-                    }
-                }
+            SegmentedControl {
+                options: [{ value: "left", label: qsTr("Sol") }, { value: "right", label: qsTr("Sağ") }]
+                value: ShellSettings.windowButtonSide
+                onSelected: value => ShellSettings.windowButtonSide = value
             }
+        }
 
-            ColumnLayout {
-                spacing: 14
+        Row {
+            spacing: Theme.spacing.md
 
-                SectionTitle {
-                    text: qsTr("Pencere düğmeleri")
-                }
+            Repeater {
+                model: [{ value: "icons", label: qsTr("Simgeler") },
+                    { value: "colored", label: qsTr("Renkli daireler") }]
 
-                RowLayout {
-                    spacing: Theme.spacing.lg
+                OptionCard {
+                    id: styleCard
 
-                    Column {
-                        Layout.preferredWidth: 200
-                        spacing: 2
+                    required property var modelData
 
-                        Label {
-                            text: qsTr("Konum")
-                            font.weight: Font.Medium
-                        }
-
-                        Label {
-                            text: qsTr("Başlık çubuğunun hangi tarafında")
-                            color: Theme.color.textSecondary
-                            font.pixelSize: Theme.font.caption
-                        }
-                    }
+                    label: modelData.label
+                    selected: ShellSettings.windowButtonStyle === modelData.value
+                    onChosen: ShellSettings.windowButtonStyle = modelData.value
 
                     Rectangle {
-                        implicitWidth: segments.implicitWidth + 6
-                        implicitHeight: 36
-                        radius: 10
-                        color: Theme.color.surfaceHover
+                        width: 250
+                        height: 46
+                        radius: Theme.radius.sm
+                        color: Theme.color.surfaceWindow
+                        border.color: Theme.color.border
+                        clip: true
 
-                        Row {
-                            id: segments
-
-                            anchors.centerIn: parent
-                            spacing: 2
-
-                            Repeater {
-                                model: [{ value: "left", label: qsTr("Sol") }, { value: "right", label: qsTr("Sağ") }]
-
-                                Rectangle {
-                                    id: segment
-
-                                    required property var modelData
-                                    readonly property bool selected: ShellSettings.windowButtonSide === modelData.value
-
-                                    width: 84
-                                    height: 30
-                                    radius: Theme.radius.sm
-                                    color: selected ? Theme.color.surfaceWindow : "transparent"
-
-                                    Behavior on color {
-                                        ColorAnimation { duration: Theme.motion.fast }
-                                    }
-
-                                    Label {
-                                        anchors.centerIn: parent
-                                        text: segment.modelData.label
-                                        color: segment.selected ? Theme.color.textPrimary : Theme.color.textSecondary
-                                        font.weight: segment.selected ? Font.DemiBold : Font.Medium
-                                    }
-
-                                    TapHandler {
-                                        onTapped: ShellSettings.windowButtonSide = segment.modelData.value
-                                    }
-                                }
-                            }
+                        WindowTitleBar {
+                            anchors.fill: parent
+                            anchors.margins: 1
+                            color: "transparent"
+                            app: "Dosyalar"
+                            title: qsTr("Ev")
+                            buttonStyle: styleCard.modelData.value
                         }
                     }
                 }
-
-                Row {
-                    spacing: Theme.spacing.md
-
-                    Repeater {
-                        model: [{ value: "icons", label: qsTr("Simgeler") },
-                            { value: "colored", label: qsTr("Renkli daireler") }]
-
-                        OptionCard {
-                            id: styleCard
-
-                            required property var modelData
-
-                            label: modelData.label
-                            selected: ShellSettings.windowButtonStyle === modelData.value
-                            onChosen: ShellSettings.windowButtonStyle = modelData.value
-
-                            Rectangle {
-                                width: 250
-                                height: 46
-                                radius: Theme.radius.sm
-                                color: Theme.color.surfaceWindow
-                                border.color: Theme.color.border
-                                clip: true
-
-                                WindowTitleBar {
-                                    anchors.fill: parent
-                                    anchors.margins: 1
-                                    color: "transparent"
-                                    app: "Dosyalar"
-                                    title: qsTr("Ev")
-                                    buttonStyle: styleCard.modelData.value
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Label {
-                text: qsTr("Değişiklikler açık pencerelere hemen uygulanır.")
-                color: Theme.color.textSecondary
-                font.pixelSize: Theme.font.small
-            }
-
-            Item {
-                Layout.fillHeight: true
             }
         }
     }
