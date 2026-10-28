@@ -22,7 +22,15 @@ masaüstü gelir. Başka bir ad için: `./scripts/utm-olustur.sh deneme`.
 - UTM'nin betik arayüzü kernel ile açılışı ayarlayamadığı için betik UTM'yi bir kez kapatıp açar.
   Çalışan bir sanal makine varken betik durur, hiçbir şeyi kapatmaz.
 - Kök dosya sistemi sanal makinenin klasörüne kopyalanır. Sonradan yeni bir imaj derlemek sanal
-  makineyi değiştirmez, yeni imajı denemek için sanal makineyi UTM'den silip betiği yeniden çalıştır.
+  makineyi değiştirmez. Yeni imajı denemek için sanal makineyi UTM'den kapatıp diskini ve kernel'ini
+  güncelle:
+
+  ```bash
+  ./scripts/utm-olustur.sh --guncelle            # "ankaros" sanal makinesi
+  ./scripts/utm-olustur.sh --guncelle deneme     # başka bir ad
+  ```
+
+  Sanal makinenin içinde yapılan değişiklikler (değiştirilen şifre, ağ ayarı) bu işlemde silinir.
 
 ## Sanal makinenin ayarları
 

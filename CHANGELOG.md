@@ -5,6 +5,15 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+### Düzeltildi
+
+- Simgeler UTM'de (virgl, Mac'in GPU'su) kesik kesik çiziliyordu. Qt Shapes'in CurveRenderer'ı yerine
+  klasik çizici kullanılıyor, kenarlar süper örneklemeyle yumuşatılıyor.
+
+### Eklendi
+
+- `utm-olustur.sh --guncelle`: var olan UTM sanal makinesinin diskini ve kernel'ini yeni imajla değiştirir
+
 ## [0.3.0] - 2026-10-28
 
 Faz 2: Sistem servisleri. ankaros kendi init sistemiyle açılıyor, masaüstü bir kullanıcı hesabıyla
