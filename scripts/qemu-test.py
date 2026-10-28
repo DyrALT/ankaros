@@ -2,14 +2,20 @@
 """ankaros imajını QEMU'da ekransız açar, seri konsoldan komut çalıştırır ve ekran görüntüsü alır.
 
 Kullanım:
+    ./scripts/qemu-test.py --expect-desktop --wait 120 --screenshot masaustu.png
     ./scripts/qemu-test.py --command "ankaros-shell-preview" --wait 20 --screenshot ekran.ppm
-    ./scripts/qemu-test.py --command "true" --wait 15 \
-        --actions "click 326 860; sleep 10" --screenshot ekran.ppm
+    ./scripts/qemu-test.py --wait 15 --actions "click 326 860; sleep 10" --screenshot ekran.png
 
 Adımlar: imaj açılır (değişiklikler kaydedilmez, -snapshot), giriş isteminde root olarak girilir,
 --command arka planda çalıştırılır, --wait saniye beklenir, --actions sırayla uygulanır (ekran
 koordinatları 1440x900'e göre: "click X Y", "sleep SANIYE"), QEMU'nun screendump komutuyla ekran
 görüntüsü alınır ve sanal makine kapatılır. Seri konsol çıktısı --log dosyasına yazılır.
+
+--expect-desktop ile açılış testi yapılır (CI'da bu kullanılır): --wait süresi boyunca birkaç saniyede bir
+ekran görüntüsü alınır, ekran masaüstüne benzediğinde test geçer. Masaüstü hiç gelmezse betik 1 ile
+çıkar. Kapanmadan önce compositor'ın günlüğü de seri konsol günlüğüne eklenir.
+
+Ekran görüntüsü .ppm ya da .png olabilir (PNG'ye dönüştürme ek paket istemez).
 
 GPU 2D sanal karttır (virtio-gpu-pci), Mesa yazılımsal çizer (softpipe). Hız ölçmek için değil,
 "ekranda doğru şey görünüyor mu" sorusunu cevaplamak için.
@@ -20,15 +26,20 @@ import json
 import os
 import platform
 import socket
+import struct
 import subprocess
 import sys
 import tempfile
 import time
+import zlib
 
 
 def default_images():
-    user = os.environ.get("USER", "")
-    return os.path.expanduser(f"~/OrbStack/ankaros-build/home/{user}/ankaros-output/images")
+    """Mac'te OrbStack'teki derleme makinesinin çıktısı, Linux'ta (derleme makinesi ve CI) doğrudan."""
+    if platform.system() == "Darwin":
+        user = os.environ.get("USER", "")
+        return os.path.expanduser(f"~/OrbStack/ankaros-build/home/{user}/ankaros-output/images")
+    return os.path.expanduser("~/ankaros-output/images")
 
 
 def wait_for(sock, needle, timeout, log):
@@ -83,6 +94,58 @@ def click(path, x, y):
         time.sleep(0.08)
 
 
+def read_ppm(path):
+    """QEMU'nun screendump çıktısını (P6 PPM) okur: (genişlik, yükseklik, RGB baytları)."""
+    with open(path, "rb") as f:
+        data = f.read()
+    # Başlık: "P6", genişlik, yükseklik, en büyük değer, ardından tek bir boşluk ve pikseller
+    fields = data.split(maxsplit=4)
+    if fields[0] != b"P6":
+        raise ValueError("PPM (P6) değil")
+    return int(fields[1]), int(fields[2]), fields[4]
+
+
+def write_png(path, width, height, rgb):
+    def chunk(kind, body):
+        return (struct.pack(">I", len(body)) + kind + body
+                + struct.pack(">I", zlib.crc32(kind + body) & 0xFFFFFFFF))
+
+    stride = width * 3
+    rows = b"".join(b"\x00" + rgb[y * stride:(y + 1) * stride] for y in range(height))
+    with open(path, "wb") as f:
+        f.write(b"\x89PNG\r\n\x1a\n")
+        f.write(chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)))
+        f.write(chunk(b"IDAT", zlib.compress(rows, 6)))
+        f.write(chunk(b"IEND", b""))
+
+
+def looks_like_desktop(width, height, rgb):
+    """Ekran masaüstüne benziyor mu? Açılışta ekran siyah zemin üzerinde birkaç renkli konsol yazısıdır.
+    Masaüstünde duvar kâğıdının geçişleri yüzlerce renk üretir, koyu alan yalnızca açık pencerelerdir.
+    Piksel piksel karşılaştırma yapılmaz, saat ve tasarım değiştikçe test bozulmasın."""
+    def pixel(x, y):
+        i = (y * width + x) * 3
+        return rgb[i], rgb[i + 1], rgb[i + 2]
+
+    samples = [pixel(x, y) for y in range(0, height, 15) for x in range(0, width, 15)]
+    dark = sum(1 for p in samples if max(p) < 24) / len(samples)
+    colors = len(set(samples))
+    return dark < 0.6 and colors > 200
+
+
+def save_screenshot(qmp_path, target):
+    """Ekran görüntüsünü alır, target .png ise dönüştürür. (genişlik, yükseklik, RGB) döner."""
+    ppm = target if target.endswith(".ppm") else target + ".ppm"
+    reply = qmp(qmp_path, "screendump", {"filename": os.path.abspath(ppm)})
+    if "error" in reply:
+        raise RuntimeError(f"Ekran görüntüsü alınamadı: {reply['error']}")
+    image = read_ppm(ppm)
+    if ppm != target:
+        write_png(target, *image)
+        os.remove(ppm)
+    return image
+
+
 def run_actions(actions, qmp_path, console, log):
     for action in filter(None, (a.strip() for a in actions.split(";"))):
         name, *values = action.split()
@@ -97,19 +160,32 @@ def run_actions(actions, qmp_path, console, log):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--images", default=os.environ.get("IMAGES", default_images()))
-    parser.add_argument("--command", required=True, help="giriş yapıldıktan sonra arka planda çalıştırılacak komut")
-    parser.add_argument("--wait", type=float, default=20, help="ekran görüntüsünden önce beklenecek saniye")
+    parser.add_argument("--command", default="", help="giriş yapıldıktan sonra arka planda çalıştırılacak komut")
+    parser.add_argument("--wait", type=float, default=20,
+                        help="ekran görüntüsünden önce beklenecek saniye (--expect-desktop ile: en fazla)")
+    parser.add_argument("--expect-desktop", action="store_true",
+                        help="masaüstü ekrana gelene kadar bekle, gelmezse başarısız ol")
     parser.add_argument("--actions", default="", help='ör. "click 326 860; sleep 5" (1440x900 koordinatları)')
-    parser.add_argument("--screenshot", required=True, help="ekran görüntüsünün kaydedileceği .ppm dosyası")
+    parser.add_argument("--screenshot", required=True, help="ekran görüntüsünün kaydedileceği .ppm ya da .png")
     parser.add_argument("--log", default=None, help="seri konsol günlüğü (varsayılan: ekran görüntüsünün yanında)")
     parser.add_argument("--boot-timeout", type=float, default=120)
+    parser.add_argument("--accel", choices=["hvf", "kvm", "tcg"], help="varsayılan: makineye göre seçilir")
     args = parser.parse_args()
 
     workdir = tempfile.mkdtemp(prefix="ankaros-qemu-")
     serial_path = os.path.join(workdir, "serial.sock")
     qmp_path = os.path.join(workdir, "qmp.sock")
     log_path = args.log or os.path.splitext(args.screenshot)[0] + ".log"
-    accel = "hvf" if platform.system() == "Darwin" else "kvm" if os.path.exists("/dev/kvm") else "tcg"
+    # CI'daki arm64 makinelerde KVM yok, işlemci yazılımla taklit edilir (tcg): çalışır ama yavaştır.
+    if args.accel:
+        accel = args.accel
+    elif platform.system() == "Darwin":
+        accel = "hvf"
+    elif os.access("/dev/kvm", os.R_OK | os.W_OK):
+        accel = "kvm"
+    else:
+        accel = "tcg"
+    print(f"Hızlandırma: {accel}", flush=True)
 
     qemu = subprocess.Popen([
         "qemu-system-aarch64",
@@ -141,23 +217,37 @@ def main():
                 return 1
             console.sendall(b"root\n")
             wait_for(console, b"# ", 15, log)
-            # Komutun çıktısı da günlüğe düşsün diye seri konsola yönlendirilir.
-            console.sendall(f"({args.command}) > /dev/ttyAMA0 2>&1 &\n".encode())
-            wait_for(console, b"\x00", args.wait, log)  # süre boyunca konsolu okumaya devam et
+            if args.command:
+                # Komutun çıktısı da günlüğe düşsün diye seri konsola yönlendirilir.
+                console.sendall(f"({args.command}) > /dev/ttyAMA0 2>&1 &\n".encode())
+            if args.expect_desktop:
+                started = time.time()
+                deadline = started + args.wait
+                ok = False
+                while not ok and time.time() < deadline:
+                    wait_for(console, b"\x00", 5, log)
+                    ok = looks_like_desktop(*save_screenshot(qmp_path, args.screenshot))
+                if ok:
+                    print(f"Masaüstü {time.time() - started:.0f} saniyede göründü", flush=True)
+                else:
+                    print(f"Masaüstü {args.wait:.0f} saniyede görünmedi", file=sys.stderr)
+            else:
+                wait_for(console, b"\x00", args.wait, log)  # süre boyunca konsolu okumaya devam et
+                ok = True
             run_actions(args.actions, qmp_path, console, log)
-            reply = qmp(qmp_path, "screendump", {"filename": os.path.abspath(args.screenshot)})
-            if "error" in reply:
-                print("Ekran görüntüsü alınamadı:", reply["error"], file=sys.stderr)
-                return 1
-            console.sendall(b"poweroff\n")
-            wait_for(console, b"Power down", 20, log)
-            ok = True
+            save_screenshot(qmp_path, args.screenshot)
+            console.sendall(b"echo '--- compositor gunlugu ---'; cat /var/log/ankaros-compositor.log; poweroff\n")
+            wait_for(console, b"Power down", 30, log)
     finally:
-        qemu.terminate()
+        # Sanal makine kapandıysa QEMU kendisi çıkar, kapanmadıysa durdurulur.
         try:
             qemu.wait(timeout=10)
         except subprocess.TimeoutExpired:
-            qemu.kill()
+            qemu.terminate()
+            try:
+                qemu.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                qemu.kill()
     print(f"Ekran görüntüsü: {args.screenshot}\nSeri konsol: {log_path}")
     return 0 if ok else 1
 
