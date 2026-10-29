@@ -56,7 +56,7 @@ Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
 - [ ] E: Figma'da masaüstü cilası (Alt+Tab, yaslama, hızlı ayarlar, takvim, tüm uygulamalar, Klavye ve dil)
 - [x] F: Pencere yönetimi: boyutlandırma, yaslama, Alt+Tab, animasyonlar, kısayollar
 - [x] G: Alt çubuk ve başlat paneli
-- [ ] H: Ayarlar › Klavye ve dil
+- [x] H: Ayarlar › Klavye ve dil
 - [ ] `v0.4.0`
 
 ## Faz 4: Başka sistemlerin uygulamaları (`v0.5.0`)

@@ -21,6 +21,8 @@ const entries = [
       keywords: "şifre parola kullanıcı hesap değiştir" },
     { title: "Otomatik giriş", page: "user", pageTitle: "Kullanıcı",
       keywords: "otomatik giriş oturum açılış kullanıcı" },
+    { title: "Klavye düzeni", page: "keyboard", pageTitle: "Klavye ve dil",
+      keywords: "klavye düzen türkçe q f ingilizce us dil yazı tuş" },
     { title: "Sistem bilgisi", page: "about", pageTitle: "Hakkında",
       keywords: "hakkında sürüm çekirdek işlemci bellek disk ekran kartı açılış süresi" }
 ];

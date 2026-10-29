@@ -296,6 +296,26 @@ WaylandCompositor {
                 }
             }
 
+            // Klavye düzeni (Ayarlar › Klavye ve dil): uygulamalara Wayland klavye haritasıyla,
+            // compositor'ın kendi arayüzüne KeyboardLayout ile anında uygulanır.
+            Binding {
+                target: KeyboardLayout
+                property: "layout"
+                value: Appearance.keyboardLayout
+            }
+
+            Binding {
+                target: compositor.defaultSeat ? compositor.defaultSeat.keymap : null
+                property: "layout"
+                value: KeyboardLayout.xkbLayout
+            }
+
+            Binding {
+                target: compositor.defaultSeat ? compositor.defaultSeat.keymap : null
+                property: "variant"
+                value: KeyboardLayout.xkbVariant
+            }
+
             Binding {
                 target: GlobalKeys
                 property: "enabled"

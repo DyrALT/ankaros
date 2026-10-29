@@ -7,7 +7,8 @@ if [ -z "$WAYLAND_DISPLAY" ]; then
   export QT_QPA_PLATFORM=eglfs
   export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
 fi
-# Klavye düzeni (libinput + xkbcommon). Farklı bir düzen için: XKB_DEFAULT_LAYOUT=us
+# Varsayılan klavye düzeni (libinput + xkbcommon). Kullanıcı Ayarlar › Klavye ve dil'den seçtiyse oturum
+# yöneticisi XKB_DEFAULT_LAYOUT'u kendisi verir (docs/oturum.md).
 export XKB_DEFAULT_LAYOUT="${XKB_DEFAULT_LAYOUT:-tr}"
 
 # Wayland ve Qt'nin çalışma zamanı dosyaları için kullanıcıya özel klasör

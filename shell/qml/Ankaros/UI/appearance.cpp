@@ -65,6 +65,7 @@ void Appearance::load()
     const bool customPinnedApps = m_settings.contains(QStringLiteral("pinnedApps"));
     const QString clockFormat = text("clockFormat", "24");
     const bool showDate = flag("showDate", true);
+    QString keyboardLayout = text("keyboardLayout", "tr");
     const QStringList recentApps = m_settings.value(QStringLiteral("recentApps")).toStringList();
     const QString settingsRequest = text("settingsRequest", "");
     m_settings.endGroup();
@@ -74,11 +75,14 @@ void Appearance::load()
         darkMode = qEnvironmentVariable("ANKAROS_DARK_MODE") == QLatin1String("true");
     if (qEnvironmentVariableIsSet("ANKAROS_WALLPAPER"))
         wallpaper = qEnvironmentVariable("ANKAROS_WALLPAPER");
+    if (qEnvironmentVariableIsSet("ANKAROS_KEYBOARD_LAYOUT"))
+        keyboardLayout = qEnvironmentVariable("ANKAROS_KEYBOARD_LAYOUT");
 
     if (darkMode == m_darkMode && side == m_windowButtonSide && style == m_windowButtonStyle &&
         wallpaper == m_wallpaper && wallpaperOnLock == m_wallpaperOnLock &&
         pinnedApps == m_pinnedApps && customPinnedApps == m_customPinnedApps &&
-        clockFormat == m_clockFormat && showDate == m_showDate && recentApps == m_recentApps &&
+        clockFormat == m_clockFormat && showDate == m_showDate &&
+        keyboardLayout == m_keyboardLayout && recentApps == m_recentApps &&
         settingsRequest == m_settingsRequest)
         return;
     m_darkMode = darkMode;
@@ -90,6 +94,7 @@ void Appearance::load()
     m_customPinnedApps = customPinnedApps;
     m_clockFormat = clockFormat;
     m_showDate = showDate;
+    m_keyboardLayout = keyboardLayout;
     m_recentApps = recentApps;
     m_settingsRequest = settingsRequest;
     emit changed();
@@ -176,6 +181,14 @@ void Appearance::setShowDate(bool show)
 {
     if (assign(m_showDate, show)) {
         write(QStringLiteral("showDate"), show);
+        emit changed();
+    }
+}
+
+void Appearance::setKeyboardLayout(const QString &layout)
+{
+    if (assign(m_keyboardLayout, layout)) {
+        write(QStringLiteral("keyboardLayout"), layout);
         emit changed();
     }
 }

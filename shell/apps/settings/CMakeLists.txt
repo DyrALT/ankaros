@@ -14,6 +14,7 @@ qt_add_qml_module(ankaros-settings
         WallpaperSettings.qml
         TaskbarSettings.qml
         AboutSettings.qml
+        KeyboardSettings.qml
         OptionCard.qml
         Radio.qml
 )

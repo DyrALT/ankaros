@@ -22,6 +22,12 @@ SessionConfig parseSessionConfig(const std::string &text);
 // kağıdını kilitte de istiyorsa ANKAROS_WALLPAPER. Giriş ekranı başka bir kullanıcıyla çalıştığı
 // için dosyayı kendisi okuyamaz (karar 0015).
 std::vector<std::string> greeterAppearance(const std::string &shellConf);
+
+// Kullanıcının klavye düzeni (shell.conf, [appearance] keyboardLayout: "tr", "tr-f" ya da "us")
+// için compositor'ın ortam değişkenleri: XKB_DEFAULT_LAYOUT ve gerekirse XKB_DEFAULT_VARIANT. Seçim
+// yoksa ya da bilinmiyorsa boş döner, /etc/profile.d'deki varsayılan (Türkçe Q) kullanılır. Giriş
+// ekranı için ayrıca ANKAROS_KEYBOARD_LAYOUT (giriş ekranı kullanıcının dosyasını okuyamaz).
+std::vector<std::string> keyboardEnvironment(const std::string &shellConf, bool greeter);
 std::string formatSessionConfig(const SessionConfig &config);
 
 // Arayüz ölçeği. session.conf'ta elle seçildiyse (configured 1 ya da 2) o, değilse ekranın tercih
