@@ -65,7 +65,7 @@ Ayrıntılı plan: [faz-4-plani.md](faz-4-plani.md)
 
 - [ ] A: Ses (PipeWire) ve D-Bus
 - [ ] B: Compositor'ın eksik Wayland protokolleri
-- [ ] C: Kapsayıcı başlatıcısı ve Debian katmanı
+- [x] C: Veri diski, kapsayıcı başlatıcısı ve Debian katmanı (uygulama penceresi B adımını bekliyor)
 - [ ] D: `ankaros-apps` servisi ve `ank` komutu: `.deb` kurma (hedef: VS Code)
 - [ ] E: Figma'da Paket Merkezi
 - [ ] F: Paket Merkezi
