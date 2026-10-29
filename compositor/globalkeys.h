@@ -1,11 +1,14 @@
 #pragma once
 
 #include <QObject>
+#include <QPointF>
 #include <QtQml/qqmlregistration.h>
 
-// Uygulamaya gitmeden önce yakalanması gereken tuşlar. QML Shortcut'larının yapamadığı iki şey var:
-// tek başına basılıp bırakılan Süper tuşu ve Alt bırakılana kadar süren Alt+Tab geçişi.
-// Basit kısayollar (Süper+D, Alt+F4...) Main.qml'de Shortcut olarak duruyor.
+// Uygulamaya gitmeden önce yakalanması gereken girdiler. QML Shortcut'larının yapamadığı iki şey
+// var: tek başına basılıp bırakılan Süper tuşu ve Alt bırakılana kadar süren Alt+Tab geçişi. Basit
+// kısayollar (Süper+D, Alt+F4...) Main.qml'de Shortcut olarak duruyor. Fareye basılınca da haber
+// verir: tıklanan pencere öne gelsin diye. Uygulamanın yüzeyi tıklamayı aldığında pencere
+// çerçevesindeki tutucular bunu her zaman göremiyor.
 class GlobalKeys : public QObject
 {
     Q_OBJECT
@@ -35,6 +38,9 @@ signals:
     void switchCommitted();
     // Geçiş sırasında Esc: hiçbir şey değişmesin
     void switchCancelled();
+    // Fareye basıldı (ekran koordinatında), olay pencerelere ulaşmadan önce. Giriş ve kilit
+    // ekranında da gönderilir, kullanan karar verir.
+    void pointerPressed(QPointF position);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;

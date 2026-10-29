@@ -16,6 +16,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Düzeltildi
 
+- Alttaki bir pencerenin içine tıklamak onu öne getirmiyor ve klavye odağını vermiyordu, yalnızca başlık
+  çubuğundan tıklanınca çalışıyordu
 - Başlat panelinde ve alt çubukta henüz yazılmamış uygulamalar görünüyordu, tıklayınca bir şey olmuyordu.
   Artık yalnızca açılabilen uygulamalar var. Karşılığı olmayan zil ve ses simgeleri kalktı, pil simgesi
   yalnızca sistemde pil varsa görünüyor.

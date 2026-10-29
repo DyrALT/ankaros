@@ -2,6 +2,7 @@
 
 #include <QGuiApplication>
 #include <QKeyEvent>
+#include <QMouseEvent>
 
 namespace {
 
@@ -38,6 +39,8 @@ void GlobalKeys::setSwitching(bool switching)
 
 bool GlobalKeys::eventFilter(QObject *watched, QEvent *event)
 {
+    if (event->type() == QEvent::MouseButtonPress && watched->isWindowType())
+        emit pointerPressed(static_cast<QMouseEvent *>(event)->scenePosition());
     if (!m_enabled)
         return false;
 

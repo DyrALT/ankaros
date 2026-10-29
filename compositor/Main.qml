@@ -40,12 +40,14 @@ WaylandCompositor {
         }
     }
 
-    // Bir noktada en üstte görünen pencere
-    function windowAt(position) {
+    // Bir noktada en üstte görünen pencere. margin: çerçevenin dışındaki boyutlandırma tutamakları da
+    // sayılsın diye pencerenin çevresinde ne kadar pay bırakılacağı
+    function windowAt(position, margin = 0) {
         let top = null;
         for (const w of windows) {
-            if (w.visible && !w.closing && position.x >= w.x && position.x < w.x + w.width
-                    && position.y >= w.y && position.y < w.y + w.height && (!top || w.z > top.z))
+            const m = w.resizable ? margin : 0;
+            if (w.visible && !w.closing && position.x >= w.x - m && position.x < w.x + w.width + m
+                    && position.y >= w.y - m && position.y < w.y + w.height + m && (!top || w.z > top.z))
                 top = w;
         }
         return top;
@@ -293,6 +295,19 @@ WaylandCompositor {
 
                 function onSwitchCancelled() {
                     compositor.finishSwitch(false);
+                }
+
+                // Bir pencerenin herhangi bir yerine (uygulamanın içi dahil) basılınca öne gelsin ve
+                // klavye odağını alsın. Alt çubuğa ya da açık bir panele basıldıysa dokunma.
+                function onPointerPressed(position: point) {
+                    if (Session.greeter || desktop.locked || desktop.shellAt(position))
+                        return;
+                    const window = compositor.windowAt(position, 6);
+                    if (!window)
+                        return;
+                    if (window.z !== desktop.topZ)
+                        compositor.raise(window);
+                    window.takeFocus();
                 }
             }
 
