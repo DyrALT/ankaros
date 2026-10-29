@@ -20,7 +20,6 @@ Rectangle {
         { id: "appearance", label: qsTr("Görünüm"), ready: true },
         { id: "wallpaper", label: qsTr("Duvar kağıdı"), ready: true },
         { id: "taskbar", label: qsTr("Alt çubuk"), ready: true },
-        { id: "notifications", label: qsTr("Bildirimler"), ready: false },
         { id: "network", label: qsTr("Ağ"), ready: true },
         { id: "user", label: qsTr("Kullanıcı"), ready: true },
         { id: "keyboard", label: qsTr("Klavye ve dil"), ready: true },
