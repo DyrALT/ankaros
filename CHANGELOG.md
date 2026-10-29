@@ -5,6 +5,15 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+### Değişti
+
+- Ayarlar'daki soluk "Bildirimler" öğesi kalktı (bildirim sistemi henüz yok)
+- Giriş ekranının sol altındaki klavye düğmesi seçilen düzeni gösteriyor (TR, F ya da US)
+
+### Düzeltildi
+
+- Terminal sekmesinin başlığı klasör değişince güncellenmiyordu, hep `~` kalıyordu
+
 ## [0.4.0] - 2026-10-29
 
 ### Değişti

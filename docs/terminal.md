@@ -12,8 +12,10 @@ ankaros'un kendi terminali `ankaros-terminal`. Kodu `shell/apps/terminal/` klas�
 
 - xterm öykünmesi (`TERM=xterm-256color`): 16, 256 ve 24 bit renk, kalın, italik, altı çizili, ters renk,
   geniş karakterler (漢), tam ekran uygulamalar (`vi`, `less`, `top`)
-- Sekmeler. Sekmenin başlığı programın verdiği başlık, yoksa ev klasöründe `kullanıcı@makine: ~`, başka bir
-  klasörde klasörün adı.
+- Sekmeler. Sekmenin başlığı programın verdiği başlık. ankaros'un kabuk istemi başlığı
+  `kullanıcı@makine: klasör` olarak ayarlar (`/etc/profile.d/ankaros-kabuk.sh`). Başlık verilmezse
+  Terminal kabuğun klasörünü `/proc` üzerinden okumayı dener. Busybox setuid kurulu olduğu için bu ankaros'un
+  kendi kabuğunda (`/bin/sh`) çalışmaz, başka kabuklarda çalışır.
 - Fareyle seçme (çift tıklama kelimeyi seçer), kopyalama ve yapıştırma. Pano compositor üzerinden diğer
   uygulamalarla paylaşılır. Kabuk istediyse yapıştırılan metin işaretlenir ("bracketed paste").
 - 5000 satırlık kaydırma geçmişi (fare tekerleği, Shift+PageUp/PageDown)

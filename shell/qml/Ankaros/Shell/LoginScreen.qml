@@ -100,8 +100,10 @@ Item {
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         anchors.margins: 32
-        label: "TR"
-        tooltip: qsTr("Türkçe Q klavye")
+        // Kullanıcının klavye düzeni (oturum yöneticisi ANKAROS_KEYBOARD_LAYOUT ile iletir)
+        label: ({ "tr-f": "F", "us": "US" })[Appearance.keyboardLayout] ?? "TR"
+        tooltip: ({ "tr-f": qsTr("Türkçe F klavye"), "us": qsTr("İngilizce (ABD) klavye") })[Appearance.keyboardLayout]
+                 ?? qsTr("Türkçe Q klavye")
     }
 
     Row {
