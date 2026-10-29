@@ -62,6 +62,36 @@ Her adım ayrı bir PR'dır. PR'lar üst üste dizilmez.
 
 A, B ve C birbirinden bağımsızdır, sırayla ama birbirini beklemeden yapılabilir. D, C'den sonra gelir.
 
+## A adımı: ses ve D-Bus (ayrıntılı plan)
+
+Durum (2026-10-29): Buildroot'ta PipeWire 1.2.8, WirePlumber 0.5.10, D-Bus 1.14 ve ALSA hazır. Çekirdekte
+ses desteği yok, QEMU'da ve UTM'de ses aygıtı tanımlı değil.
+
+1. **Tasarım:** Figma'da "Faz 3 · Masaüstü cilası" sayfasındaki Hızlı ayarlar ekranına ses kaydırıcısı ve alt
+   çubuğa ses simgesi (ses aygıtı yoksa görünmez). **Onayın alınır.**
+2. **Çekirdek ve sanal makineler:**
+   - Çekirdek yapılandırma parçası (`BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES`): `CONFIG_SND`,
+     `CONFIG_SND_VIRTIO`, `CONFIG_SND_HDA_INTEL` ve genel HDA kodeği.
+   - `run-qemu.sh` ve `qemu-test.py`: `-device virtio-sound-pci` ile ses aygıtı. Mac'te `coreaudio`, CI'da
+     `none` ses sürücüsü.
+   - `utm-olustur.sh`: UTM'ye ses aygıtı.
+3. **Paketler:** `dbus`, `pipewire`, `wireplumber` (Lua 5.4), `alsa-lib`, denemeler için `alsa-utils`.
+4. **Servisler:**
+   - Sistem D-Bus'ı ankaros-init'te bir servis.
+   - Oturum yöneticisi her oturumda kullanıcının D-Bus'ını (`dbus-daemon --session`), PipeWire'ı ve
+     WirePlumber'ı başlatır, oturum kapanınca durdurur.
+   - Compositor ve uygulamalar `DBUS_SESSION_BUS_ADDRESS`'i alır.
+5. **Ses denetimi:**
+   - `Ankaros.System`'e `Audio` sınıfı: varsayılan çıkışın ses düzeyi ve sessiz durumu, okuma ve değiştirme.
+   - İlk sürüm `wpctl` üzerinden çalışır, çıktısını çözümleyen kısma birim testi yazılır.
+   - Mac önizlemesi için sahte `Audio.qml`.
+6. **Arayüz:** Hızlı ayarlarda ses kaydırıcısı ve sessiz düğmesi, alt çubukta ses simgesi ve düzey balonu.
+7. **Test:**
+   - QEMU: seri konsoldan `wpctl status` ile ses aygıtının görünmesi, kaydırıcının düzeyi değiştirmesi.
+   - UTM: gerçek ses.
+
+Tahmini imaj büyümesi 10-15 MB. Çekirdeğin ve PipeWire'ın derlenmesi uzun sürer.
+
 ## Compositor'ın eksikleri
 
 Dış uygulamalar Qt 6.9'un compositor'ının sunduğundan yeni protokoller isteyebilir (Faz 1'de foot
