@@ -43,7 +43,7 @@ Ayrıntılı plan: [faz-2-plani.md](faz-2-plani.md)
 - [x] F: Açılış süresinin ölçülüp raporlanması ([acilis-suresi.md](acilis-suresi.md))
 - [x] `v0.3.0`
 
-## Faz 3: Uygulamalar (`v0.4.0`), sıradaki
+## Faz 3: Uygulamalar (`v0.4.0`), tamamlandı
 
 Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
 
@@ -53,13 +53,13 @@ Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
 - [x] D: Terminal (libvterm)
 - ~~E: Kendi uygulama paketimiz, F: Paket Merkezi~~: yerine Faz 4'teki uyumluluk katmanları
   ([karar 0016](kararlar/0016-uyumluluk-katmanlari.md))
-- [ ] E: Figma'da masaüstü cilası (Alt+Tab, yaslama, hızlı ayarlar, takvim, tüm uygulamalar, Klavye ve dil)
+- [x] E: Figma'da masaüstü cilası (Alt+Tab, yaslama, hızlı ayarlar, takvim, tüm uygulamalar, Klavye ve dil)
 - [x] F: Pencere yönetimi: boyutlandırma, yaslama, Alt+Tab, animasyonlar, kısayollar
 - [x] G: Alt çubuk ve başlat paneli
 - [x] H: Ayarlar › Klavye ve dil
-- [ ] `v0.4.0`
+- [x] `v0.4.0`
 
-## Faz 4: Başka sistemlerin uygulamaları (`v0.5.0`)
+## Faz 4: Başka sistemlerin uygulamaları (`v0.5.0`), sıradaki
 
 Ayrıntılı plan: [faz-4-plani.md](faz-4-plani.md)
 
