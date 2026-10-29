@@ -3,6 +3,7 @@ config BR2_PACKAGE_ANKAROS_SYSTEM
 	depends on BR2_INSTALL_LIBSTDCPP
 	depends on BR2_TOOLCHAIN_USES_GLIBC
 	select BR2_PACKAGE_LIBXCRYPT # şifre doğrulama (crypt)
+	select BR2_PACKAGE_E2FSPROGS # veri diski: mkfs.ext4, e2fsck (karar 0017)
 	help
 	  ankaros sistem servisleri: init sistemi (ankaros-init, PID 1),
 	  oturum yöneticisi (ankaros-session), ankarosctl ve temel

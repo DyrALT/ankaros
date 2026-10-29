@@ -59,6 +59,7 @@ Repodaki servisler:
 |---|---|---|
 | `syslogd`, `klogd` | `system/services/` | Sistem ve çekirdek günlüğü, `/var/log/messages` |
 | `seedrng` | `system/services/` | Rastgele sayı üretecini besler |
+| `veri` | `system/services/`, `system/scripts/veri-diski` | Veri diskini `/var/lib/ankaros`'a bağlar, yeni ve boşsa biçimlendirir ([karar 0017](kararlar/0017-veri-diski.md)) |
 | `udev` | `system/services/` | Aygıt yöneticisi |
 | `ankaros-network` | `system/services/` | Kablolu ağ: DHCP ya da statik IP ([ag.md](ag.md)) |
 | `getty` | `system/services/` | Seri konsolda giriş istemi |

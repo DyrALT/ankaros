@@ -44,6 +44,19 @@ set_display() {
   plutil -replace Display.0.DynamicResolution -bool NO "$BUNDLE/config.plist"
 }
 
+# Veri diski (karar 0017): sanal makinenin klasöründe 16 GB'lık, yer kapladıkça büyüyen bir disk.
+# Sistem diskinden sonra eklenir, ankaros onu /dev/vdb olarak görür ve ilk açılışta biçimlendirir.
+# Güncellemede dokunulmaz, kurulan uygulamalar korunur. Sanal makinede yoksa eklenir.
+add_data_disk() {
+  plutil -extract Drive json -o - "$BUNDLE/config.plist" | grep -q '"veri.qcow2"' && return
+  qemu-img create -q -f qcow2 "$BUNDLE/Data/veri.qcow2" 16G
+  count=$(plutil -extract Drive json -o - "$BUNDLE/config.plist" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))')
+  plutil -insert "Drive.$count" -json \
+    '{"Identifier":"'"$(uuidgen)"'","ImageName":"veri.qcow2","ImageType":"Disk","Interface":"VirtIO","InterfaceVersion":1,"ReadOnly":false}' \
+    "$BUNDLE/config.plist"
+  echo "Veri diski eklendi (veri.qcow2, 16 GB)."
+}
+
 [ -d /Applications/UTM.app ] || fail "UTM kurulu değil: https://mac.getutm.app"
 if [ ! -f "$IMAGES/Image" ] || [ ! -f "$IMAGES/rootfs.ext4" ]; then
   fail "İmaj bulunamadı: $IMAGES"
@@ -65,10 +78,12 @@ if [ "$UPDATE" = 1 ]; then
   # Eski sanal makinelerin ekran ayarları ve argümanları da güncellenir. UTM açıkken yapılandırmayı
   # kendi kopyasıyla ezer, bu yüzden yalnızca UTM kapalıyken değiştirilir.
   if pgrep -xq UTM; then
-    echo "Not: UTM açık olduğu için ekran ayarları güncellenmedi. UTM'yi kapatıp betiği yeniden çalıştır."
+    echo "Not: UTM açık olduğu için ekran ayarları ve veri diski güncellenmedi. UTM'yi kapatıp betiği"
+    echo "yeniden çalıştır."
   else
     plutil -replace QEMU.AdditionalArguments -json "$ARGUMENTS" "$BUNDLE/config.plist"
     set_display
+    add_data_disk
   fi
   echo "Hazır: UTM'de \"$NAME\" sanal makinesini başlat."
   exit 0
@@ -99,6 +114,8 @@ plutil -insert Drive.0 -json \
   "$BUNDLE/config.plist"
 plutil -replace QEMU.AdditionalArguments -json "$ARGUMENTS" "$BUNDLE/config.plist"
 set_display
+command -v qemu-img >/dev/null || fail "qemu-img gerekli: brew install qemu"
+add_data_disk
 
 open -g -a UTM
 echo "Hazır: UTM'de \"$NAME\" sanal makinesini başlat."

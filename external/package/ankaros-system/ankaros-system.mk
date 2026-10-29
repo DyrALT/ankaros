@@ -18,6 +18,7 @@ ANKAROS_SYSTEM_CONF_OPTS = -DANKAROS_SYSTEM_TESTS=OFF
 define ANKAROS_SYSTEM_INSTALL_SERVICES
 	$(INSTALL) -d -m 755 $(TARGET_DIR)/etc/ankaros/services
 	$(INSTALL) -m 644 $(@D)/services/*.service $(TARGET_DIR)/etc/ankaros/services/
+	$(INSTALL) -D -m 755 $(@D)/scripts/veri-diski $(TARGET_DIR)/usr/libexec/ankaros/veri-diski
 endef
 ANKAROS_SYSTEM_POST_INSTALL_TARGET_HOOKS += ANKAROS_SYSTEM_INSTALL_SERVICES
 

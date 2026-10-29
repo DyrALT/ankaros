@@ -7,6 +7,9 @@
 #
 # Çıkmak için: Ctrl-a ardından x
 #
+# Veri diski (karar 0017): $ANKAROS_DATA (varsayılan ~/.local/share/ankaros/veri.qcow2), yoksa 16 GB'lık
+# boş bir disk oluşturulur. İlk açılışta ankaros onu biçimlendirip /var/lib/ankaros'a bağlar.
+#
 # --gui modunda sanal GPU 2D'dir (virtio-gpu-pci), Mesa yazılımsal çizer (softpipe): çalışır ama
 # yavaştır. GPU hızlandırmalı test için UTM kullanılır (bkz. docs/utm.md).
 #
@@ -14,6 +17,12 @@
 # QEMU'nun bayt kilitlerini desteklemiyor ("Failed to lock byte 100").
 set -e
 IMAGES="${IMAGES:-$HOME/OrbStack/ankaros-build/home/$USER/ankaros-output/images}"
+
+DATA="${ANKAROS_DATA:-$HOME/.local/share/ankaros/veri.qcow2}"
+if [ ! -f "$DATA" ]; then
+  mkdir -p "$(dirname "$DATA")"
+  qemu-img create -q -f qcow2 "$DATA" 16G
+fi
 
 DISPLAY_ARGS="-nographic"
 if [ "$1" = "--gui" ]; then
@@ -31,5 +40,7 @@ exec qemu-system-aarch64 \
   -append "rootwait root=/dev/vda console=ttyAMA0" \
   -drive file="$IMAGES/rootfs.ext4",if=none,format=raw,id=hd0,file.locking=off \
   -device virtio-blk-device,drive=hd0 \
+  -drive file="$DATA",if=none,format=qcow2,id=veri \
+  -device virtio-blk-pci,drive=veri \
   -netdev user,id=eth0 -device virtio-net-device,netdev=eth0 \
   "$@"

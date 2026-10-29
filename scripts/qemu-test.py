@@ -25,6 +25,7 @@ import argparse
 import json
 import os
 import platform
+import shutil
 import socket
 import struct
 import subprocess
@@ -308,6 +309,16 @@ def main():
         accel = "tcg"
     print(f"Hızlandırma: {accel}", flush=True)
 
+    # Boş bir veri diski (karar 0017): ilk açılışta biçimlendirilip /var/lib/ankaros'a bağlanır.
+    # qemu-img yoksa (ör. CI'da) veri diski olmadan açılır, sistem /var/lib/ankaros'u kök dosya
+    # sisteminde kullanır.
+    data_disk = []
+    if shutil.which("qemu-img"):
+        data_path = os.path.join(workdir, "veri.qcow2")
+        subprocess.run(["qemu-img", "create", "-q", "-f", "qcow2", data_path, "4G"], check=True)
+        data_disk = ["-drive", f"file={data_path},if=none,format=qcow2,id=veri",
+                     "-device", "virtio-blk-pci,drive=veri"]
+
     qemu = subprocess.Popen([
         "qemu-system-aarch64",
         "-M", "virt", "-accel", accel, "-cpu", "host" if accel != "tcg" else "max", "-smp", "4", "-m", "2G",
@@ -319,6 +330,7 @@ def main():
         "-append", "rootwait root=/dev/vda console=ttyAMA0",
         "-drive", f"file={os.path.join(args.images, 'rootfs.ext4')},if=none,format=raw,id=hd0,file.locking=off",
         "-device", "virtio-blk-device,drive=hd0",
+        *data_disk,
         "-netdev", "user,id=eth0", "-device", "virtio-net-device,netdev=eth0,id=nic0",
         "-serial", f"unix:{serial_path},server=on,wait=off",
         "-qmp", f"unix:{qmp_path},server=on,wait=off",
@@ -370,6 +382,7 @@ def main():
                 qemu.wait(timeout=10)
             except subprocess.TimeoutExpired:
                 qemu.kill()
+        shutil.rmtree(workdir, ignore_errors=True)
     print(f"Ekran görüntüsü: {args.screenshot}\nSeri konsol: {log_path}")
     return 0 if ok else 1
 

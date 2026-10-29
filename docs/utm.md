@@ -31,6 +31,10 @@ masaüstü gelir. Başka bir ad için: `./scripts/utm-olustur.sh deneme`.
   ```
 
   Sanal makinenin içinde yapılan değişiklikler (değiştirilen şifre, ağ ayarı) bu işlemde silinir.
+- Sanal makinenin ikinci bir diski var: 16 GB'lık **veri diski** (`veri.qcow2`, yer kapladıkça büyür,
+  [karar 0017](kararlar/0017-veri-diski.md)). ankaros onu ilk açılışta biçimlendirip `/var/lib/ankaros`'a
+  bağlar. Kurulan uygulamalar ve katmanlar burada durur, `--guncelle` ona dokunmaz. Eski bir sanal makinede
+  yoksa `--guncelle` UTM kapalıyken ekler.
 
 ## Sanal makinenin ayarları
 
