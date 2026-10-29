@@ -8,6 +8,7 @@ boyutlandırma tutamakları) `Ankaros.Shell` modülündeki `WindowChrome`'dur. W
 
 | İş | Nasıl |
 |---|---|
+| Öne getirme | Pencerenin herhangi bir yerine (uygulamanın içi dahil) basınca pencere öne gelir ve klavye odağını alır. |
 | Taşıma | Başlık çubuğundan sürükleyerek. Başlık çubuğu ekranın üstünden dışarı çıkmaz. |
 | Boyutlandırma | Kenarlardan ve köşelerden sürükleyerek. Tutamaklar çerçevenin hemen dışındadır (6 px), uygulamanın içine taşmaz. Uygulamanın en küçük ve en büyük boyutu korunur. |
 | Yaslama | Pencere ekranın sol ya da sağ kenarına sürüklenince yarım ekrana, üst kenara sürüklenince tam ekrana yaslanır. Bırakmadan önce yarı saydam bir önizleme yerini gösterir. |
@@ -51,6 +52,14 @@ Kısayollar giriş ve kilit ekranında çalışmaz.
   bu yüzden köşelerini yuvarlamaya devam edebilirler.
 - **Kapanma animasyonu:** Uygulama yüzeyini yok edince son karesi ekranda tutulur (`bufferLocked`),
   pencere soluklaşarak kaybolur.
+
+### Tıklanan pencerenin öne gelmesi
+
+Uygulamanın Wayland yüzeyi bir tıklamayı alınca çerçevedeki `TapHandler` onu her zaman görmüyor, alttaki
+pencerenin içine tıklamak onu öne getirmiyordu. Bu yüzden fareye basılması `GlobalKeys` olay süzgecinde,
+olay pencerelere ulaşmadan yakalanır (`pointerPressed`). Compositor o noktadaki en üst pencereyi öne
+getirip odaklar. Alt çubuk, açık paneller ve pencere geçişi buna dahil değildir (`Desktop.shellAt`). Pencere
+olay dağıtılmadan önce öne geldiği için aynı tıklama artık öndeki uygulamaya gider.
 
 ### Örtülen pencerenin tıklama alması
 

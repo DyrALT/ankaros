@@ -97,6 +97,19 @@ Item {
         appLaunched(app);
     }
 
+    // Sahnedeki bir nokta masaüstünün kendi arayüzünde mi (alt çubuk, açık paneller, pencere geçişi).
+    // Öyleyse o noktaya tıklamak arkadaki pencereyi öne getirmez.
+    function shellAt(position) {
+        if (switcher.visible || root.locked)
+            return true;
+        for (const item of [taskBar, startMenu, calendar, quickSettings]) {
+            if (item.visible && item.contains(item.mapFromItem(null, position)))
+                return true;
+        }
+        // Açık bir panelin dışına tıklamak paneli kapatır, pencereye ulaşmaz
+        return startMenu.open || calendar.open || quickSettings.open;
+    }
+
     // Alt çubukta uygulamanın simgesinin ortası (küçültme animasyonu buraya uçar)
     function taskIconCenter(app) {
         return taskBar.iconCenter(app);
@@ -247,6 +260,8 @@ Item {
     }
 
     WindowSwitcher {
+        id: switcher
+
         anchors.fill: parent
         backdrop: scene
         windows: root.switcherWindows
