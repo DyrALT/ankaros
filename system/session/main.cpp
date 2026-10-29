@@ -212,20 +212,24 @@ bool SessionManager::spawn(Mode mode, const std::string &user)
     if (scale == 2)
         environment.push_back("QT_SCALE_FACTOR=2");
     say("ekran: %s, ölçek %d", screenMode.empty() ? "?" : screenMode.c_str(), scale);
+    // Giriş ekranında gösterilen kullanıcının (oturumda kullanıcının kendisinin) tema, duvar kağıdı
+    // ve klavye düzeni tercihi (karar 0015)
+    std::string conf;
+    const std::string owner = mode == Mode::Greeter ? firstLoginUser() : user;
+    if (const passwd *shown = owner.empty() ? nullptr : getpwnam(owner.c_str()))
+        readFile(std::string(shown->pw_dir) + "/.config/ankaros/shell.conf", conf);
     if (mode == Mode::Greeter) {
-        // Giriş ekranında gösterilen kullanıcının tema ve duvar kağıdı tercihi (karar 0015)
-        std::string conf;
-        const std::string user = firstLoginUser();
-        if (const passwd *shown = user.empty() ? nullptr : getpwnam(user.c_str()))
-            readFile(std::string(shown->pw_dir) + "/.config/ankaros/shell.conf", conf);
         for (const std::string &entry : greeterAppearance(conf))
             environment.push_back(entry);
     }
+    for (const std::string &entry : keyboardEnvironment(conf, mode == Mode::Greeter))
+        environment.push_back(entry);
     std::vector<char *> envp;
     for (std::string &entry : environment)
         envp.push_back(entry.data());
     envp.push_back(nullptr);
-    // Ortam değişkenlerinin geri kalanı (eglfs/KMS, dil, klavye) /etc/profile.d altından gelir
+    // Ortam değişkenlerinin geri kalanı (eglfs/KMS, dil, varsayılan klavye) /etc/profile.d altından
+    // gelir
     const char *argv[] = {"/bin/sh",
                           "-c",
                           ". /etc/profile; exec /usr/bin/ankaros-compositor \"$@\"",

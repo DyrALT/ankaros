@@ -13,10 +13,12 @@ SessionConfig parseSessionConfig(const std::string &text)
     return {config.value("autologin"), scale == "1" ? 1 : scale == "2" ? 2 : 0};
 }
 
-std::vector<std::string> greeterAppearance(const std::string &shellConf)
+namespace {
+
+// shell.conf'un (Qt'nin INI biçimi) [appearance] bölümündeki bir değer
+std::string appearanceValue(const std::string &shellConf, const std::string &wanted)
 {
-    std::string section, darkMode, wallpaper;
-    std::string onLock = "true";
+    std::string section, result;
     size_t start = 0;
     while (start < shellConf.size()) {
         const size_t end = std::min(shellConf.find('\n', start), shellConf.size());
@@ -27,17 +29,20 @@ std::vector<std::string> greeterAppearance(const std::string &shellConf)
             continue;
         }
         const size_t equals = line.find('=');
-        if (section != "appearance" || equals == std::string_view::npos)
-            continue;
-        const std::string key(trim(line.substr(0, equals)));
-        const std::string value(trim(line.substr(equals + 1)));
-        if (key == "darkMode")
-            darkMode = value;
-        else if (key == "wallpaper")
-            wallpaper = value;
-        else if (key == "wallpaperOnLock")
-            onLock = value;
+        if (section == "appearance" && equals != std::string_view::npos &&
+            trim(line.substr(0, equals)) == wanted)
+            result = std::string(trim(line.substr(equals + 1)));
     }
+    return result;
+}
+
+} // namespace
+
+std::vector<std::string> greeterAppearance(const std::string &shellConf)
+{
+    const std::string darkMode = appearanceValue(shellConf, "darkMode");
+    const std::string wallpaper = appearanceValue(shellConf, "wallpaper");
+    const std::string onLock = appearanceValue(shellConf, "wallpaperOnLock");
     std::vector<std::string> environment;
     if (darkMode == "true" || darkMode == "false")
         environment.push_back("ANKAROS_DARK_MODE=" + darkMode);
@@ -46,6 +51,23 @@ std::vector<std::string> greeterAppearance(const std::string &shellConf)
                        wallpaper == "kehribar" || wallpaper == "gece";
     if (onLock != "false" && known)
         environment.push_back("ANKAROS_WALLPAPER=" + wallpaper);
+    return environment;
+}
+
+std::vector<std::string> keyboardEnvironment(const std::string &shellConf, bool greeter)
+{
+    const std::string layout = appearanceValue(shellConf, "keyboardLayout");
+    std::vector<std::string> environment;
+    if (layout == "tr")
+        environment = {"XKB_DEFAULT_LAYOUT=tr"};
+    else if (layout == "tr-f")
+        environment = {"XKB_DEFAULT_LAYOUT=tr", "XKB_DEFAULT_VARIANT=f"};
+    else if (layout == "us")
+        environment = {"XKB_DEFAULT_LAYOUT=us"};
+    else
+        return {};
+    if (greeter)
+        environment.push_back("ANKAROS_KEYBOARD_LAYOUT=" + layout);
     return environment;
 }
 

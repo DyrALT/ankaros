@@ -41,7 +41,7 @@ jobs:
         # Qt'nin WaylandCompositor paketi sistemdeki libwayland'e bağlı, aqt onu getirmiyor.
         # libvterm: Terminal (karar 0014)
         run: |
-          sudo apt-get install -y ninja-build libwayland-dev libvterm-dev
+          sudo apt-get install -y ninja-build libwayland-dev libvterm-dev libxkbcommon-dev
           cmake -S shell -B build/shell -G Ninja -DANKAROS_SHELL_SHARED=ON \
             -DCMAKE_INSTALL_PREFIX="$QT_ROOT_DIR"
           cmake --build build/shell
@@ -66,7 +66,7 @@ jobs:
             xvfb-run -a -s "-screen 0 1440x900x24" build/shell/preview/ankaros-shell-preview $args \
               --screenshot "duman-testi/$name.png"
           done
-          for page in appearance wallpaper taskbar network user about; do
+          for page in appearance wallpaper taskbar network user keyboard about; do
             xvfb-run -a build/shell/apps/settings/ankaros-settings --page $page \
               --screenshot "duman-testi/ayarlar_$page.png"
           done

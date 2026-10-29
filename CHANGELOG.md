@@ -29,6 +29,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Ayarlar › Klavye ve dil: Türkçe Q, Türkçe F ya da İngilizce (ABD) klavye düzeni. Seçim uygulamalara ve
+  masaüstüne hemen uygulanıyor, giriş ve kilit ekranında da kullanılıyor.
 - Başlat paneli ve alt çubuk:
   - "Tümü" bütün uygulamaları alfabetik listeliyor, "Önerilenler" yerine son kullanılan uygulamalar var.
   - Arama Ayarlar'daki ayarları da buluyor ("koyu" → Görünüm). Ayarlar açıksa istenen sayfaya geçiyor.

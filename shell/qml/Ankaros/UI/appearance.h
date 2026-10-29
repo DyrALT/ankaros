@@ -13,8 +13,8 @@
 // (ör. Ayarlar uygulaması) değiştirince diğerleri (masaüstü, açık uygulamalar) hemen güncellenir.
 //
 // Giriş ekranı başka bir kullanıcıyla çalıştığı için kullanıcının dosyasını okuyamaz. Oturum
-// yöneticisi tema ve duvar kağıdını ona ANKAROS_DARK_MODE ve ANKAROS_WALLPAPER ortam
-// değişkenleriyle iletir.
+// yöneticisi tema, duvar kağıdı ve klavye düzenini ona ANKAROS_DARK_MODE, ANKAROS_WALLPAPER ve
+// ANKAROS_KEYBOARD_LAYOUT ortam değişkenleriyle iletir.
 class Appearance : public QObject
 {
     Q_OBJECT
@@ -39,6 +39,9 @@ class Appearance : public QObject
     // Saat biçimi: "24" ya da "12"
     Q_PROPERTY(QString clockFormat READ clockFormat WRITE setClockFormat NOTIFY changed)
     Q_PROPERTY(bool showDate READ showDate WRITE setShowDate NOTIFY changed)
+    // Klavye düzeni: "tr" (Türkçe Q), "tr-f" (Türkçe F) ya da "us" (İngilizce ABD). Compositor
+    // anında uygular, oturum yöneticisi sonraki açılışlarda (giriş ekranı dahil) baştan verir.
+    Q_PROPERTY(QString keyboardLayout READ keyboardLayout WRITE setKeyboardLayout NOTIFY changed)
     // Son kullanılan uygulamalar, en yeniden eskiye: [{ app: "Terminal", time: Date }, ...]
     // Başlat panelinin "Son kullanılanlar" bölümü. noteAppUsed() ile eklenir.
     Q_PROPERTY(QVariantList recentApps READ recentApps NOTIFY changed)
@@ -60,6 +63,7 @@ public:
     bool customPinnedApps() const { return m_customPinnedApps; }
     QString clockFormat() const { return m_clockFormat; }
     bool showDate() const { return m_showDate; }
+    QString keyboardLayout() const { return m_keyboardLayout; }
     QVariantList recentApps() const;
     QString settingsRequest() const { return m_settingsRequest; }
 
@@ -71,6 +75,7 @@ public:
     void setPinnedApps(const QStringList &apps);
     void setClockFormat(const QString &format);
     void setShowDate(bool show);
+    void setKeyboardLayout(const QString &layout);
     Q_INVOKABLE void noteAppUsed(const QString &app);
     Q_INVOKABLE void requestSettingsPage(const QString &page);
 
@@ -92,6 +97,7 @@ private:
     QString m_wallpaper = QStringLiteral("ankara-tasi");
     bool m_wallpaperOnLock = true;
     // "zaman (ms)|uygulama" biçiminde, en yeniden eskiye
+    QString m_keyboardLayout = QStringLiteral("tr");
     QStringList m_recentApps;
     QString m_settingsRequest;
     QStringList m_pinnedApps;

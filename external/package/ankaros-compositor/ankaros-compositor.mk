@@ -17,6 +17,8 @@ ANKAROS_COMPOSITOR_DEPENDENCIES = \
 	host-qt6declarative \
 	host-qt6wayland \
 	ankaros-shell \
+	host-pkgconf \
+	libxkbcommon \
 	qt6base \
 	qt6declarative \
 	qt6wayland

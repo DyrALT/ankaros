@@ -23,6 +23,7 @@ Rectangle {
         { id: "notifications", label: qsTr("Bildirimler"), ready: false },
         { id: "network", label: qsTr("Ağ"), ready: true },
         { id: "user", label: qsTr("Kullanıcı"), ready: true },
+        { id: "keyboard", label: qsTr("Klavye ve dil"), ready: true },
         { id: "about", label: qsTr("Hakkında"), ready: true }
     ]
 
@@ -89,6 +90,7 @@ Rectangle {
                     taskbar: taskbarPage,
                     network: networkPage,
                     user: userPage,
+                    keyboard: keyboardPage,
                     about: aboutPage
                 })[root.page] ?? appearancePage
         }
@@ -110,6 +112,12 @@ Rectangle {
         id: taskbarPage
 
         TaskbarSettings {}
+    }
+
+    Component {
+        id: keyboardPage
+
+        KeyboardSettings {}
     }
 
     Component {

@@ -7,7 +7,7 @@ import Ankaros.UI
 Window {
     id: window
 
-    // Açılış sayfası: appearance, network, user (bkz. SettingsPanel.pages)
+    // Açılış sayfası: appearance, network, keyboard... (bkz. SettingsPanel.pages)
     property string page: "appearance"
     // Boş değilse açılıştan kısa süre sonra pencerenin görüntüsü bu dosyaya kaydedilir ve uygulama kapanır
     property string screenshot

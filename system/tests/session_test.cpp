@@ -58,6 +58,23 @@ static void forwardsAppearanceToGreeter()
     CHECK(greeterAppearance("").empty());
 }
 
+static void forwardsKeyboardLayout()
+{
+    const auto f = keyboardEnvironment("[appearance]\nkeyboardLayout=tr-f\n", false);
+    CHECK_EQ(f.size(), 2u);
+    CHECK_EQ(f[0], "XKB_DEFAULT_LAYOUT=tr");
+    CHECK_EQ(f[1], "XKB_DEFAULT_VARIANT=f");
+    // Giriş ekranına seçim ayrıca iletilir (kendi Appearance'ı dosyayı okuyamaz)
+    const auto greeter = keyboardEnvironment("[appearance]\nkeyboardLayout=us\n", true);
+    CHECK_EQ(greeter.size(), 2u);
+    CHECK_EQ(greeter[0], "XKB_DEFAULT_LAYOUT=us");
+    CHECK_EQ(greeter[1], "ANKAROS_KEYBOARD_LAYOUT=us");
+    // Seçim yoksa ya da bilinmiyorsa varsayılan (/etc/profile.d) kalır
+    CHECK(keyboardEnvironment("[appearance]\ndarkMode=true\n", false).empty());
+    CHECK(keyboardEnvironment("[appearance]\nkeyboardLayout=tr;rm\n", true).empty());
+    CHECK(keyboardEnvironment("[General]\nkeyboardLayout=us\n", false).empty());
+}
+
 #ifdef __linux__
 static void hashesPasswords()
 {
@@ -92,6 +109,7 @@ int main()
     replacesShadowHash();
     readsAndWritesConfig();
     forwardsAppearanceToGreeter();
+    forwardsKeyboardLayout();
     choosesDisplayScale();
 #ifdef __linux__
     hashesPasswords();

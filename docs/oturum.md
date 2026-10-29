@@ -85,6 +85,16 @@ ankarosctl restart ankaros-session        # giriş ekranını ya da masaüstün�
   kağıdını (`~/.config/ankaros/shell.conf`) okuyup `ANKAROS_DARK_MODE` ve `ANKAROS_WALLPAPER` ortam
   değişkenleriyle giriş ekranına verir. Ayarlar › Duvar kağıdı'nda "Kilit ve giriş ekranında da kullan"
   kapalıysa giriş ve kilit ekranında Ankara Taşı görünür.
+- **Klavye düzeni:** Ayarlar › Klavye ve dil'den seçilir (Türkçe Q, Türkçe F, İngilizce ABD) ve
+  `shell.conf`'a (`keyboardLayout`) yazılır.
+  - **Anında uygulanması:** Compositor seçimi uygulamalara Wayland klavye haritasıyla hemen geçirir. Kendi
+    arayüzündeki (başlat panelinde arama, kilit ekranında şifre) tuşları da xkbcommon ile yeni düzene
+    çevirir (`compositor/keyboardlayout.cpp`). Bunun nedeni Qt'nin compositor'ın açılışta aldığı düzeni
+    çalışırken değiştirmemesi.
+  - **Sonraki açılışlar:** Oturum yöneticisi seçimi compositor'a baştan `XKB_DEFAULT_LAYOUT` ve
+    `XKB_DEFAULT_VARIANT` ile verir. Giriş ekranına ayrıca `ANKAROS_KEYBOARD_LAYOUT` iletilir, böylece
+    şifre kullanıcının düzeniyle yazılır.
+  - **Seçim yoksa:** `/etc/profile.d/ankaros-grafik.sh`'deki varsayılan (Türkçe Q) kullanılır.
 - **Ölçek:** Oturum yöneticisi ekranın çözünürlüğünü DRM'den okur (`/sys/class/drm/*/modes`). 2560 piksel ve
   daha geniş ekranlarda (Retina, UTM'nin Retina modu) compositor'ı `QT_SCALE_FACTOR=2` ile başlatır.
   Compositor ölçeği Wayland çıktısıyla uygulamalara bildirir, uygulamalar pencerelerini 2 kat
