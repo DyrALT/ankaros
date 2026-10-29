@@ -52,7 +52,7 @@ Her adım ayrı bir PR'dır. PR'lar üst üste dizilmez.
 |---|---|
 | **A** `feat(system)` | Ses: PipeWire ve WirePlumber, alt çubuktaki ses simgesi gerçek ses düzeyini gösterir. D-Bus (oturum ve sistem veri yolu). |
 | **B** `feat(compositor)` | Eksik Wayland protokolleri (aşağıdaki liste), dış uygulamaların GPU arabellekleri (linux-dmabuf). Wayland'li bir Debian uygulamasıyla denenir. |
-| **C** `feat(system)` | Kapsayıcı başlatıcısı ve Debian katmanı: indirme, imza denetimi, `ank katman` komutları. Katmanda `glxgears` ve bir GTK uygulaması ankaros'ta açılır. |
+| **C** `feat(system)` | Veri diski ([karar 0017](kararlar/0017-veri-diski.md)), kullanıcı ad alanları. Kapsayıcı başlatıcısı ve Debian katmanı: indirme, imza denetimi, `ank katman` komutları. Katmanda `glxgears` ve bir GTK uygulaması ankaros'ta açılır. |
 | **D** `feat(system)` | `ankaros-apps` servisi ve `ank`: `.deb` kurma ve kaldırma, uygulama listesine ekleme. **Hedef: VS Code çalışır.** |
 | **E** `design` | Figma: Paket Merkezi'nin yeni hali (dosyadan kurma, kurulu uygulamalar, katmanlar, ilerleme). **Onayın alınır.** |
 | **F** `feat(apps)` | Paket Merkezi. `.deb` dosyasına çift tıklama (dosya yöneticisi yokken Terminal'den `ank kur`). |

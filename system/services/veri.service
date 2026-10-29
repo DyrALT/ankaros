@@ -1,0 +1,5 @@
+# Veri diskini (etiket ankaros-veri) /var/lib/ankaros'a bağlar, yeni ve boşsa biçimlendirir (karar 0017)
+description = Veri diski
+type = oneshot
+exec = /usr/libexec/ankaros/veri-diski
+after = udev

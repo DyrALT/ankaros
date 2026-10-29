@@ -1,0 +1,41 @@
+#!/bin/sh
+# Veri diskini /var/lib/ankaros'a bağlar (karar 0017). Disk:
+#   - etiketi ankaros-veri olan dosya sistemi, yoksa
+#   - hiçbir dosya sistemi ya da bölüm tablosu olmayan ikinci virtio diski (/dev/vdb): biçimlendirilir.
+# Başka bir şey içeren bir diske dokunulmaz. Veri diski yoksa bir şey yapmaz, sistem yine açılır.
+set -u
+MOUNTPOINT=/var/lib/ankaros
+LABEL=ankaros-veri
+
+log() { echo "veri-diski: $*"; }
+
+device=$(blkid -L "$LABEL" 2>/dev/null || true)
+if [ -z "$device" ] && [ -b /dev/vdb ]; then
+  # Biçimlendirmeden önce diskin gerçekten boş olduğundan emin ol: blkid hiçbir imza bulmamalı,
+  # ilk 1 MB tamamen sıfır olmalı (bölüm tablosu, başka işletim sistemi, şifreli disk...)
+  if [ -n "$(blkid -o value -s TYPE /dev/vdb 2>/dev/null)" ] \
+    || [ "$(head -c 1048576 /dev/vdb | tr -d '\000' | head -c 1 | wc -c)" -ne 0 ]; then
+    log "/dev/vdb boş değil ve etiketi $LABEL değil, dokunulmadı"
+    exit 0
+  fi
+  log "/dev/vdb boş, ext4 olarak biçimlendiriliyor"
+  mkfs.ext4 -q -L "$LABEL" /dev/vdb || { log "biçimlendirilemedi"; exit 1; }
+  device=/dev/vdb
+fi
+if [ -z "$device" ]; then
+  log "veri diski yok, $MOUNTPOINT kök dosya sisteminde"
+  mkdir -p "$MOUNTPOINT"
+  exit 0
+fi
+
+e2fsck -p "$device" >/dev/null 2>&1
+# 0: sorun yok, 1: düzeltildi. Daha büyükse elle onarım gerekir, salt okunur bağlanır.
+status=$?
+mkdir -p "$MOUNTPOINT"
+if [ "$status" -le 1 ]; then
+  mount -t ext4 -o noatime "$device" "$MOUNTPOINT" || { log "bağlanamadı: $device"; exit 1; }
+else
+  log "$device üzerinde onarılamayan hatalar var (e2fsck $status), salt okunur bağlanıyor"
+  mount -t ext4 -o ro "$device" "$MOUNTPOINT" || exit 1
+fi
+log "$device -> $MOUNTPOINT"

@@ -5,6 +5,12 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+### Eklendi
+
+- Veri diski ([karar 0017](docs/kararlar/0017-veri-diski.md)): kurulan uygulamalar ve uyumluluk katmanları
+  ikinci bir diskte (`/var/lib/ankaros`) durur, sistem güncellense de korunur. Boş disk ilk açılışta
+  biçimlendirilir. `run-qemu.sh`, `qemu-test.py` ve `utm-olustur.sh` diski kendisi oluşturur.
+
 ### Değişti
 
 - Ayarlar'daki soluk "Bildirimler" öğesi kalktı (bildirim sistemi henüz yok)
