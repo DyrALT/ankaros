@@ -1,0 +1,99 @@
+#!/bin/sh
+# ank: başka sistemlerin uygulamaları için komut satırı (docs/katmanlar.md, karar 0016).
+#
+#   ank katman liste                    kurulu katmanlar
+#   ank katman kur debian               Debian katmanını indirip kurar (root)
+#   ank katman sil debian               katmanı ve içine kurulanları siler (root)
+#   ank katman calistir debian -- KOMUT  komutu katmanın içinde çalıştırır (root ise root olarak:
+#                                        ank katman calistir debian -- apt install foot)
+#
+# Katmanlar /var/lib/ankaros/katmanlar/<ad>/kok altındadır (veri diski, karar 0017).
+set -eu
+LAYERS=/var/lib/ankaros/katmanlar
+# Katmanların kaynağı: linuxcontainers.org'un hazır kök dosya sistemleri. Dosyanın SHA-256 özeti aynı
+# klasördeki SHA256SUMS'tan, HTTPS üzerinden denetlenir.
+SOURCE="${ANK_KAYNAK:-https://images.linuxcontainers.org/images}"
+
+fail() { echo "ank: $*" >&2; exit 1; }
+need_root() { [ "$(id -u)" = 0 ] || fail "bu komut root yetkisi ister"; }
+
+# Katman adı -> kaynaktaki dağıtım yolu
+distribution() {
+  case "$1" in
+    debian) echo "debian/trixie" ;;
+    *) fail "bilinmeyen katman: $1 (bilinenler: debian)" ;;
+  esac
+}
+
+architecture() {
+  case "$(uname -m)" in
+    aarch64) echo arm64 ;;
+    x86_64) echo amd64 ;;
+    *) fail "desteklenmeyen işlemci: $(uname -m)" ;;
+  esac
+}
+
+layer_list() {
+  [ -d "$LAYERS" ] || { echo "Kurulu katman yok."; return; }
+  found=0
+  for dir in "$LAYERS"/*/; do
+    [ -f "$dir/surum" ] || continue
+    found=1
+    echo "$(basename "$dir")  $(cat "$dir/surum")  $(du -sh "$dir/kok" 2>/dev/null | cut -f1)"
+  done
+  [ "$found" = 1 ] || echo "Kurulu katman yok."
+}
+
+layer_install() {
+  need_root
+  name="$1"
+  path="$(distribution "$name")/$(architecture)/default"
+  [ ! -d "$LAYERS/$name/kok" ] || fail "\"$name\" zaten kurulu (yeniden kurmak için önce: ank katman sil $name)"
+
+  echo "Sürümler okunuyor: $SOURCE/$path/"
+  # Klasör listesindeki en yeni yapım: 20261029_05:24 biçiminde
+  build=$(curl -fsSL "$SOURCE/$path/" | grep -o '[0-9]\{8\}_[0-9][0-9]:[0-9][0-9]' | sort -u | tail -n 1)
+  [ -n "$build" ] || fail "kaynakta $path için yapım bulunamadı"
+
+  work="$LAYERS/.indirme-$name"
+  rm -rf "$work"
+  mkdir -p "$work"
+  trap 'rm -rf "$work"' EXIT
+  echo "İndiriliyor: $name ($build)"
+  curl -fSL --progress-bar -o "$work/rootfs.tar.xz" "$SOURCE/$path/$build/rootfs.tar.xz"
+  curl -fsSL -o "$work/SHA256SUMS" "$SOURCE/$path/$build/SHA256SUMS"
+  expected=$(grep ' rootfs.tar.xz$' "$work/SHA256SUMS" | cut -d ' ' -f 1)
+  actual=$(sha256sum "$work/rootfs.tar.xz" | cut -d ' ' -f 1)
+  [ -n "$expected" ] && [ "$expected" = "$actual" ] || fail "SHA-256 özeti tutmuyor, katman kurulmadı"
+
+  echo "Açılıyor..."
+  mkdir -p "$work/kok"
+  unxz -c "$work/rootfs.tar.xz" | tar -x -C "$work/kok"
+  # ankaros-katman ad çözümü için ankaros'un /etc/resolv.conf'unu bunun üstüne bağlar: düz bir dosya
+  # olmalı (kök dosya sistemlerinde çoğu zaman systemd-resolved'a bağlantıdır)
+  rm -f "$work/kok/etc/resolv.conf"
+  : > "$work/kok/etc/resolv.conf"
+  echo "$build" > "$work/surum"
+  mkdir -p "$LAYERS/$name"
+  mv "$work/kok" "$LAYERS/$name/kok"
+  mv "$work/surum" "$LAYERS/$name/surum"
+  echo "Kuruldu: $name. Denemek için: ank katman calistir $name -- cat /etc/os-release"
+}
+
+layer_remove() {
+  need_root
+  [ -d "$LAYERS/$1" ] || fail "\"$1\" kurulu değil"
+  rm -rf "${LAYERS:?}/$1"
+  echo "Silindi: $1"
+}
+
+[ $# -ge 2 ] && [ "$1" = katman ] || { sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+command="$2"
+shift 2
+case "$command" in
+  liste) layer_list ;;
+  kur) [ $# = 1 ] || fail "kullanım: ank katman kur <ad>"; layer_install "$1" ;;
+  sil) [ $# = 1 ] || fail "kullanım: ank katman sil <ad>"; distribution "$1" >/dev/null; layer_remove "$1" ;;
+  calistir) [ $# -ge 1 ] || fail "kullanım: ank katman calistir <ad> -- <komut>"; exec ankaros-katman "$@" ;;
+  *) fail "bilinmeyen komut: $command" ;;
+esac

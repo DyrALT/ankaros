@@ -1,0 +1,4 @@
+# Buildroot'un QEMU çekirdek yapılandırmasına (board/qemu/aarch64-virt/linux.config) ankaros'un eklemeleri.
+# Uyumluluk katmanlarındaki uygulamalar kullanıcının kimliğiyle, root yetkisi olmadan kendi bağlama
+# ad alanlarında çalışır (karar 0016, ankaros-katman).
+CONFIG_USER_NS=y

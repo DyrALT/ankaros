@@ -7,6 +7,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Debian katmanı ([docs/katmanlar.md](docs/katmanlar.md)): `ank katman kur debian` Debian 13'ü indirip
+  özetini denetleyerek veri diskine kurar, `ank katman calistir` bir komutu katmanın içinde çalıştırır.
+  Kullanıcı uygulamaları root yetkisi olmadan, kullanıcı ad alanında açılır (`ankaros-katman`). İmaja
+  curl, OpenSSL ve CA sertifikaları eklendi, çekirdekte kullanıcı ad alanları açıldı.
 - Veri diski ([karar 0017](docs/kararlar/0017-veri-diski.md)): kurulan uygulamalar ve uyumluluk katmanları
   ikinci bir diskte (`/var/lib/ankaros`) durur, sistem güncellense de korunur. Boş disk ilk açılışta
   biçimlendirilir. `run-qemu.sh`, `qemu-test.py` ve `utm-olustur.sh` diski kendisi oluşturur.
