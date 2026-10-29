@@ -6,7 +6,7 @@ TARGET_DIR="$1"
 cat > "${TARGET_DIR}/usr/lib/os-release" <<OSREL
 NAME="ankaros"
 ID=ankaros
-PRETTY_NAME="ankaros 0.3 (Faz 2)"
-VERSION_ID=0.3
+PRETTY_NAME="ankaros 0.4 (Faz 3)"
+VERSION_ID=0.4
 OSREL
 ln -sf ../usr/lib/os-release "${TARGET_DIR}/etc/os-release"
