@@ -131,6 +131,23 @@ Mac'te de denenebilir.
 sistem neredeyse yerel hızda açılır. Ek QEMU argümanları betiğe eklenebilir. Örneğin
 `./scripts/run-qemu.sh -snapshot` imajda yapılan değişiklikleri kapanışta atar, deneme için kullanışlıdır.
 
+### x86_64 bilgisayarda
+
+Mac dışındaki adımlar aynıdır, derleme Linux'ta doğrudan çalışır ([karar 0018](kararlar/0018-x86-64-imaji.md)).
+Windows'ta WSL2 gerekir, henüz denenmedi. Derleme için bölüm 3'teki paketler kurulur, ardından:
+
+```bash
+./scripts/build.sh         # bilgisayarın mimarisini derler, çıktı ~/ankaros-output
+./scripts/run-qemu.sh --gui   # KVM varsa donanım hızlandırmasıyla açar
+./scripts/qemu-test.py --expect-desktop --wait 120 --screenshot masaustu.png
+```
+
+- `/dev/kvm`'ye yazma izni yoksa QEMU işlemciyi taklit eder, çok yavaştır. Kullanıcıyı `kvm` grubuna ekleyin.
+- Başka bir mimariyi derlemek için `ANKAROS_ARCH=x86_64 ./scripts/build.sh`. Buildroot o mimarinin araç zincirini
+  kendisi derler, Mac'teki arm64 makinede de çalışır. Çıktı `~/ankaros-output-x86_64`'e gider. İmajı `IMAGES`
+  değişkeniyle verin. Mac'te işlemci taklit edildiği için çok yavaş açılır.
+- İmaj yalnızca sanal makine içindir, gerçek bilgisayarda açılmaz (Faz 6). UTM Mac'e özgüdür.
+
 ## 5. Masaüstü kabuğunu Mac'te çalıştırmak
 
 Kabuk (QML arayüzü) imaj derlemeden, doğrudan Mac'te bir pencerede geliştirilir:
@@ -153,7 +170,9 @@ Ayrıntılar ve tasarım akışı için [tasarim-akisi.md](tasarim-akisi.md).
   Mac'in diskinden yer kullanır.
 - **Paket derlenirken `stdlib.h: No such file or directory`**: Derleme makinesine sistem `cmake`'i kurulmuşsa
   Buildroot onu seçer ve 3.25 sürümü başlık yollarını yanlış hesaplar. Makineden kaldırın ya da Buildroot'un
-  kendisininkini verin: `./scripts/build.sh BR2_CMAKE=$HOME/ankaros-output/host/bin/cmake`, sonra paketi
+  kendisininkini derleme makinesindeki tam yoluyla verin (`~` değil, Mac'ten çalıştırınca Mac'e açılır, önce
+  `./scripts/build.sh host-cmake` gerekir, klasör mimariye göre değişir):
+  `./scripts/build.sh BR2_CMAKE=/home/<kullanıcı>/ankaros-output/host/bin/cmake`. Sonra paketi
   `<paket>-dirclean` ile temizleyip yeniden derleyin.
 - **QEMU'da `Failed to lock byte 100`**: İmaj OrbStack'in paylaşılan klasöründen okunuyor ve bu klasör
   dosya kilitlerini desteklemiyor. `run-qemu.sh` kilitlemeyi bu yüzden kapatır (`file.locking=off`).

@@ -1,8 +1,9 @@
-# ankaros imajını (aarch64) derler ve QEMU'da masaüstüne kadar açıldığını denetler.
+# ankaros imajını (aarch64 ve x86_64, karar 0018) derler ve QEMU'da masaüstüne kadar açıldığını denetler.
 #
 # Önbellekle bile 45 dakikayı geçtiği için yalnızca imajı etkileyen dosyalar değişince çalışır. PR'lar
 # bunu beklemez: imaj yerelde derlenip denenir (docs/gelistirme-ortami.md), CI main'de bir kez daha
 # derleyip bozulmayı yakalar. Elle başlatmak için: gh workflow run imaj.yml --ref <dal>
+# x86_64 PR'larda çalışmaz: main'de ve elle başlatılınca derlenir, süreyi iki katına çıkarmasın.
 name: İmaj
 
 on:
@@ -30,9 +31,14 @@ concurrency:
 
 jobs:
   image:
-    name: İmaj (aarch64)
-    # Derleme makinemiz gibi arm64: Buildroot kendi araç zincirini yerel olarak derler.
-    runs-on: ubuntu-24.04-arm
+    name: İmaj (${{ matrix.arch }})
+    # Her mimari kendi işlemcisinde derlenir: Buildroot kendi araç zincirini yerel olarak derler.
+    # Bir mimari kırılsa da diğeri bitsin, hangisinin bozulduğu görünsün.
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(github.event_name == 'pull_request' && '[{"arch":"aarch64","runner":"ubuntu-24.04-arm","qemu":"qemu-system-arm","kernel":"Image"}]' || '[{"arch":"aarch64","runner":"ubuntu-24.04-arm","qemu":"qemu-system-arm","kernel":"Image"},{"arch":"x86_64","runner":"ubuntu-24.04","qemu":"qemu-system-x86","kernel":"bzImage"}]') }}
+    runs-on: ${{ matrix.runner }}
     # İlk derleme Qt 6 ve Mesa ile birlikte birkaç saat sürer, sonrakiler önbellekten hızlanır.
     timeout-minutes: 360
     steps:
@@ -49,21 +55,33 @@ jobs:
           path: |
             ~/ankaros-dl
             ~/.buildroot-ccache
-          key: buildroot-${{ hashFiles('external/configs/*_defconfig', '.gitmodules') }}-${{ github.sha }}
-          restore-keys: buildroot-${{ hashFiles('external/configs/*_defconfig', '.gitmodules') }}-
+          # Mimariler kendi önbelleğini kullanır. Son satır yalnızca bir mimarinin hiç önbelleği yokken işe
+          # yarar: kaynak paketlerini kurtarır, öteki mimarinin ccache kayıtları kullanılmaz ve zamanla silinir.
+          key: buildroot-${{ matrix.arch }}-${{ hashFiles(format('external/configs/ankaros_qemu_{0}_defconfig', matrix.arch), '.gitmodules') }}-${{ github.sha }}
+          restore-keys: |
+            buildroot-${{ matrix.arch }}-${{ hashFiles(format('external/configs/ankaros_qemu_{0}_defconfig', matrix.arch), '.gitmodules') }}-
+            buildroot-${{ matrix.arch }}-
+            buildroot-
       - name: Derle
         run: ./scripts/build.sh
       - name: Açılış testi (QEMU)
-        # İmaj ekransız açılır, masaüstü görünene kadar ekran görüntüsü alınır. Bu makinede KVM yok,
+        # İmaj ekransız açılır, masaüstü görünene kadar ekran görüntüsü alınır. arm64 makinede KVM yok,
         # işlemci yazılımla taklit edilir: Mac'te 20 saniye süren açılış burada birkaç dakika sürebilir.
+        # x86_64 makinede KVM var, kullanıcıya açılınca qemu-test.py kendisi seçer.
         # Açılış süresi raporu (ankarosctl boot) iş akışının özet sayfasına da yazılır, docs/acilis-suresi.md
         run: |
           set -o pipefail
-          sudo apt-get install -y qemu-system-arm
+          sudo apt-get install -y ${{ matrix.qemu }}
+          if [ -e /dev/kvm ]; then
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+              | sudo tee /etc/udev/rules.d/99-kvm.rules
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm
+          fi
           ./scripts/qemu-test.py --boot-timeout 600 --expect-desktop --wait 900 \
             --screenshot acilis-testi.png --log acilis-testi.log | tee acilis-testi.txt
           {
-            echo "### Açılış süresi (QEMU, tcg)"
+            echo "### Açılış süresi (QEMU, ${{ matrix.arch }})"
             echo '```text'
             sed -n '/^ADIM/,/^Toplam/p' acilis-testi.txt
             echo '```'
@@ -72,7 +90,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: acilis-testi
+          name: acilis-testi-${{ matrix.arch }}
           path: |
             acilis-testi.png
             acilis-testi.log
@@ -81,8 +99,8 @@ jobs:
           retention-days: 14
       - uses: actions/upload-artifact@v4
         with:
-          name: ankaros-qemu-aarch64
+          name: ankaros-qemu-${{ matrix.arch }}
           path: |
-            ~/ankaros-output/images/Image
+            ~/ankaros-output/images/${{ matrix.kernel }}
             ~/ankaros-output/images/rootfs.ext4
           retention-days: 14

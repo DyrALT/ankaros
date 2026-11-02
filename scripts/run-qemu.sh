@@ -1,5 +1,6 @@
 #!/bin/sh
-# ankaros imajını Mac'te QEMU ile, Apple Silicon donanım hızlandırmasıyla (HVF) açar.
+# ankaros imajını QEMU ile açar: Mac'te HVF, Linux'ta KVM donanım hızlandırmasıyla (yoksa taklit).
+# Mimari imajdan anlaşılır: bzImage varsa x86_64, Image varsa aarch64.
 #
 #   ./scripts/run-qemu.sh             yalnızca seri konsol (bu terminalde)
 #   ./scripts/run-qemu.sh --gui       ek olarak bir ekran penceresi, klavye ve fare
@@ -11,12 +12,46 @@
 # boş bir disk oluşturulur. İlk açılışta ankaros onu biçimlendirip /var/lib/ankaros'a bağlar.
 #
 # --gui modunda sanal GPU 2D'dir (virtio-gpu-pci), Mesa yazılımsal çizer (softpipe): çalışır ama
-# yavaştır. GPU hızlandırmalı test için UTM kullanılır (bkz. docs/utm.md).
+# yavaştır. GPU hızlandırmalı test için Mac'te UTM kullanılır (bkz. docs/utm.md).
 #
 # file.locking=off: imaj OrbStack'in paylaşılan dosya sisteminden okunuyor ve bu dosya sistemi
 # QEMU'nun bayt kilitlerini desteklemiyor ("Failed to lock byte 100").
 set -e
-IMAGES="${IMAGES:-$HOME/OrbStack/ankaros-build/home/$USER/ankaros-output/images}"
+if [ "$(uname)" = Darwin ]; then
+  IMAGES="${IMAGES:-$HOME/OrbStack/ankaros-build/home/$USER/ankaros-output/images}"
+  GUI=cocoa,zoom-to-fit=on
+else
+  IMAGES="${IMAGES:-$HOME/ankaros-output/images}"
+  GUI=gtk
+fi
+
+HOST_ARCH=$(uname -m)
+[ "$HOST_ARCH" = arm64 ] && HOST_ARCH=aarch64
+if [ -f "$IMAGES/bzImage" ]; then
+  ARCH=x86_64
+  KERNEL=bzImage
+  CONSOLE=ttyS0
+  MACHINE="-M q35 -vga none"
+  ROOT_DEVICE=virtio-blk-pci
+  NET_DEVICE=virtio-net-pci
+else
+  ARCH=aarch64
+  KERNEL=Image
+  CONSOLE=ttyAMA0
+  MACHINE="-M virt"
+  ROOT_DEVICE=virtio-blk-device
+  NET_DEVICE=virtio-net-device
+fi
+
+# Donanım hızlandırması yalnızca aynı mimaride ve varsa
+ACCEL="-accel tcg -cpu max"
+if [ "$ARCH" = "$HOST_ARCH" ]; then
+  if [ "$(uname)" = Darwin ]; then
+    ACCEL="-accel hvf -cpu host"
+  elif [ -w /dev/kvm ]; then
+    ACCEL="-accel kvm -cpu host"
+  fi
+fi
 
 DATA="${ANKAROS_DATA:-$HOME/.local/share/ankaros/veri.qcow2}"
 if [ ! -f "$DATA" ]; then
@@ -27,20 +62,20 @@ fi
 DISPLAY_ARGS="-nographic"
 if [ "$1" = "--gui" ]; then
   shift
-  DISPLAY_ARGS="-display cocoa,zoom-to-fit=on -serial mon:stdio
+  DISPLAY_ARGS="-display $GUI -serial mon:stdio
     -device virtio-gpu-pci,xres=1440,yres=900
     -device virtio-keyboard-pci -device virtio-tablet-pci"
 fi
 
 # shellcheck disable=SC2086 # DISPLAY_ARGS bilerek bölünüyor
-exec qemu-system-aarch64 \
-  -M virt -accel hvf -cpu host -smp 4 -m 2G \
+exec "qemu-system-$ARCH" \
+  $MACHINE $ACCEL -smp 4 -m 2G \
   $DISPLAY_ARGS \
-  -kernel "$IMAGES/Image" \
-  -append "rootwait root=/dev/vda console=ttyAMA0" \
+  -kernel "$IMAGES/$KERNEL" \
+  -append "rootwait root=/dev/vda console=$CONSOLE" \
   -drive file="$IMAGES/rootfs.ext4",if=none,format=raw,id=hd0,file.locking=off \
-  -device virtio-blk-device,drive=hd0 \
+  -device "$ROOT_DEVICE",drive=hd0 \
   -drive file="$DATA",if=none,format=qcow2,id=veri \
   -device virtio-blk-pci,drive=veri \
-  -netdev user,id=eth0 -device virtio-net-device,netdev=eth0 \
+  -netdev user,id=eth0 -device "$NET_DEVICE",netdev=eth0 \
   "$@"

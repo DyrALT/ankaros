@@ -19,7 +19,7 @@ ankaros-init
 | `ankaros-login` | yok, oturum açamaz | video, input | Giriş ekranını çalıştırır |
 | `root` | yok | | Yalnızca seri konsoldan girilir (geliştirme ve kurtarma) |
 
-- Hesaplar `external/board/qemu-aarch64/users.txt`'te tanımlıdır (Buildroot kullanıcı tablosu).
+- Hesaplar `external/board/qemu/users.txt`'te tanımlıdır (Buildroot kullanıcı tablosu).
 - Şifre derleme sırasında hash'lenir. Ayarlar › Kullanıcı'dan değiştirilebilir.
 - `video` ekran kartına, `input` klavye ve fareye erişim içindir. udev aygıt dosyalarını bu gruplara verir.
 
@@ -46,7 +46,7 @@ kalanı (eglfs/KMS, dil, klavye) `/etc/profile.d/ankaros-grafik.sh`'den gelir. C
 autologin = ankaros
 ```
 
-Geliştirme imajında otomatik giriş açıktır (`external/board/qemu-aarch64/rootfs-overlay/etc/ankaros/`).
+Geliştirme imajında otomatik giriş açıktır (`external/board/qemu/rootfs-overlay/etc/ankaros/`).
 Ayarlar › Kullanıcı'dan kapatılabilir.
 
 ## Denetim soketi

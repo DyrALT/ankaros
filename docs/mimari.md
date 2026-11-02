@@ -96,8 +96,8 @@ Kullanıcı hesabı ve giriş ekranı Faz 2'de.
 |---|---|
 | `buildroot/` | Buildroot, git submodule, LTS sürümüne sabitli. **İçinde değişiklik yapılmaz.** |
 | `external/` | Buildroot'a dışarıdan eklenen ankaros ağacı (BR2_EXTERNAL) |
-| `external/configs/` | `ankaros_qemu_aarch64_defconfig`: sistemin tüm yapılandırması |
-| `external/board/qemu-aarch64/` | Karta özel dosyalar: rootfs overlay, post-build betiği |
+| `external/configs/` | `ankaros_qemu_aarch64_defconfig`, `ankaros_qemu_x86_64_defconfig`: sistemin tüm yapılandırması ([karar 0018](kararlar/0018-x86-64-imaji.md)) |
+| `external/board/qemu/` | İki mimarinin ortak dosyaları: rootfs overlay, post-build betiği |
 | `external/package/` | ankaros'un kendi paketleri: `ankaros-shell`, `ankaros-compositor`, `ankaros-system` |
 | `external/provides/` | Buildroot'un init seçeneklerine eklenen `ankaros-init` |
 | `shell/` | QML modülleri (Ankaros.UI, Ankaros.System, Ankaros.Shell) ve Mac önizleme uygulaması (karar 0013) |
