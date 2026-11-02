@@ -22,6 +22,7 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Düzeltildi
 
+- Veri diski ikinci açılıştan itibaren bağlanmıyordu, kurulu katmanlar görünmüyordu
 - Terminal sekmesinin başlığı klasör değişince güncellenmiyordu, hep `~` kalıyordu
 
 ## [0.4.0] - 2026-10-29
