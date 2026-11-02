@@ -34,8 +34,8 @@ Kısıtlar:
 - **Uyumluluk katmanları (kapsayıcılar):** Her paket türü için o dağıtımın gerçek kullanıcı alanını taşıyan
   hafif bir kapsayıcı: `.deb` Debian'da `apt` ile, `.rpm` Fedora'da `dnf` ile kurulur. Bağımlılıkları o
   dağıtımın kendi deposu çözer. Uygulama ankaros'un ekranını, sesini, GPU'sunu ve ev klasörünü kullanır.
-  ChromeOS'un Linux desteği ve Distrobox bu yöntemi kullanır. Uyumluluk çok yüksek. Kapsayıcı ilk
-  kullanımda indirilir (birkaç yüz MB).
+  Distrobox bu yöntemi kullanır. ChromeOS'un Linux desteği de kapsayıcı kullanır ama onu bir sanal
+  makinenin içinde çalıştırır. Uyumluluk çok yüksek. Kapsayıcı ilk kullanımda indirilir (birkaç yüz MB).
 
 ## Karar
 
