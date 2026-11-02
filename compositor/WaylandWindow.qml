@@ -48,6 +48,8 @@ WindowChrome {
     property bool resizing: false
     property size resizeStart
     property size resizeTarget
+    // Uygulamaya son gönderilen boyut. Uygulama onu çizene kadar yenisi gönderilmez (sendResize).
+    property size resizeSent
     property point resizeAnchor
     // Taşınırken farenin pencere içindeki yeri
     property point grabOffset
@@ -71,6 +73,26 @@ WindowChrome {
         }
         x = Math.max(workArea.x, Math.min(x, workArea.x + workArea.width - width));
         y = Math.max(workArea.y, Math.min(y, workArea.y + workArea.height - height));
+    }
+
+    // Fare olayları uygulamanın çizebileceğinden çok daha sık gelir. Hepsi gönderilirse uygulamanın
+    // sırası birikir ve pencere fareyi geriden izler, fare durduktan sonra bile büyümeye devam eder.
+    // Bu yüzden bir seferde tek boyut bekletilir, uygulama çizince en son boyut gönderilir. Uygulama
+    // boyutu aynen uygulamayabileceği için (en küçük boyut gibi) bekleme bir süre sonra biter.
+    function sendResize() {
+        if (resizeThrottle.running || (resizeSent.width === resizeTarget.width
+                                       && resizeSent.height === resizeTarget.height))
+            return;
+        resizeSent = resizeTarget;
+        toplevel.sendResizing(resizeTarget);
+        resizeThrottle.restart();
+    }
+
+    function resizeDrawn() {
+        if (resizing && surfaceItem.width === resizeSent.width && surfaceItem.height === resizeSent.height) {
+            resizeThrottle.stop();
+            sendResize();
+        }
     }
 
     function finishResizeIfDone() {
@@ -190,12 +212,14 @@ WindowChrome {
         // Soldan boyutlandırırken sağ kenar yerinde kalsın (uygulama yeni boyutu sonradan gönderir)
         if (resizeEdges & Qt.LeftEdge)
             x = resizeAnchor.x - width;
+        resizeDrawn();
         finishResizeIfDone();
         place();
     }
     onHeightChanged: {
         if (resizeEdges & Qt.TopEdge)
             y = resizeAnchor.y - height;
+        resizeDrawn();
         finishResizeIfDone();
         place();
     }
@@ -241,6 +265,7 @@ WindowChrome {
         resizing = true;
         resizeStart = Qt.size(surfaceItem.width, surfaceItem.height);
         resizeTarget = resizeStart;
+        resizeSent = resizeStart;
         resizeAnchor = Qt.point(x + width, y + height);
     }
     onResizeUpdated: (dx, dy) => {
@@ -254,16 +279,14 @@ WindowChrome {
             w = Math.min(w, max.width);
         if (max.height > 0)
             h = Math.min(h, max.height);
-        const size = Qt.size(Math.round(w), Math.round(h));
-        if (size.width !== resizeTarget.width || size.height !== resizeTarget.height) {
-            resizeTarget = size;
-            toplevel.sendResizing(size);
-        }
+        resizeTarget = Qt.size(Math.round(w), Math.round(h));
+        sendResize();
     }
     onResizeFinished: {
         if (!resizing)
             return;
         resizing = false;
+        resizeThrottle.stop();
         toplevel.sendUnmaximized(resizeTarget);
         finishResizeIfDone();
     }
@@ -296,6 +319,13 @@ WindowChrome {
         function onRedraw() {
             frameCallbackTimer.restart();
         }
+    }
+
+    Timer {
+        id: resizeThrottle
+
+        interval: 50
+        onTriggered: root.sendResize()
     }
 
     Timer {

@@ -166,10 +166,11 @@ Item {
         }
     }
 
-    // Açılır paneller açıkken dışarı tıklamak onları kapatır.
+    // Açılır paneller açıkken dışarı tıklamak onları kapatır. Her MouseArea'nın bir imleci vardır:
+    // görünür kalırsa pencerelerin üstünde durduğu için tutamakların imlecini örter.
     MouseArea {
         anchors.fill: parent
-        enabled: startMenu.open || calendar.open || quickSettings.open
+        visible: startMenu.open || calendar.open || quickSettings.open
         onClicked: root.closePanels()
     }
 

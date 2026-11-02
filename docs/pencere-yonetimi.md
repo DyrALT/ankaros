@@ -45,7 +45,9 @@ Kısayollar giriş ve kilit ekranında çalışmaz.
 ### Wayland tarafı
 
 - **Boyutlandırma:** Fare hareket ettikçe uygulamaya `resizing` durumuyla yeni boyut gönderilir
-  (`XdgToplevel.sendResizing`). Uygulama yeni boyutta bir kare gönderince çerçeve büyür. Soldan ya da
+  (`XdgToplevel.sendResizing`). Uygulama yeni boyutta bir kare gönderince çerçeve büyür. Uygulamanın sırası
+  birikmesin diye bir seferde tek boyut bekletilir: uygulama onu çizince ya da en geç 50 ms sonra farenin
+  son konumu gönderilir (`sendResize`). Soldan ya da
   üstten boyutlandırırken karşı kenarın yerinde kalması için pencerenin konumu bu karede düzeltilir.
 - **Yaslama:** xdg-shell'in `tiled` durumları Qt 6.9'un compositor API'sinde yok. Yaslanmış pencereye
   yalnızca yeni boyutu gönderilir (`sendUnmaximized(boyut)`). Uygulamalar kendilerini normal pencere sanar,
@@ -67,6 +69,13 @@ Qt Quick, bir tıklamayı üstteki öğe alsa bile alttaki öğelerin sürüklem
 (`DragHandler`, `TapHandler`) da iletir. Önlem alınmazsa terminalde metin seçerken arkasında kalan bir
 pencerenin başlık çubuğu tutulup taşınabiliyordu. Bu yüzden başlık çubuğunun `containmentMask`'ı
 compositor'a "bu noktada en üstteki pencere ben miyim" diye sorar (`WindowChrome.isTopAt`).
+
+### İmleç
+
+İmleci compositor'ın Qt Quick sahnesi belirler (`MouseArea.cursorShape`), Qt onu en üstteki imleçli öğeden alır.
+Her `MouseArea`'nın varsayılan bir ok imleci vardır, bu yüzden pencerelerin üstünde kalan tam ekran bir
+`MouseArea` görünmez yapılmazsa (`visible: false`, `enabled: false` yetmedi) tutamakların imlecini örter.
+Uygulamaların kendi imleçleri (`wl_pointer.set_cursor`, ör. Terminal'in metin imleci) henüz çizilmiyor.
 
 ## Test
 

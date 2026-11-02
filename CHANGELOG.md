@@ -25,6 +25,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 ### Düzeltildi
 
 - Veri diski ikinci açılıştan itibaren bağlanmıyordu, kurulu katmanlar görünmüyordu
+- Pencere boyutlandırılırken çerçeve fareyi geriden izliyor, fare durduktan sonra da büyümeye devam ediyordu
+- İmleç pencere kenarlarında boyutlandırma imlecine dönmüyordu
 - Terminal sekmesinin başlığı klasör değişince güncellenmiyordu, hep `~` kalıyordu
 
 ## [0.4.0] - 2026-10-29
