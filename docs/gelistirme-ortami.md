@@ -151,6 +151,10 @@ Ayrıntılar ve tasarım akışı için [tasarim-akisi.md](tasarim-akisi.md).
 - **`orb: machine not found`**: Derleme makinesi oluşturulmamış ya da adı farklı. `orb list` ile kontrol edin.
 - **Derleme "No space left on device" ile duruyor**: Mac'te disk dolmuştur. OrbStack makinesinin diski
   Mac'in diskinden yer kullanır.
+- **Paket derlenirken `stdlib.h: No such file or directory`**: Derleme makinesine sistem `cmake`'i kurulmuşsa
+  Buildroot onu seçer ve 3.25 sürümü başlık yollarını yanlış hesaplar. Makineden kaldırın ya da Buildroot'un
+  kendisininkini verin: `./scripts/build.sh BR2_CMAKE=$HOME/ankaros-output/host/bin/cmake`, sonra paketi
+  `<paket>-dirclean` ile temizleyip yeniden derleyin.
 - **QEMU'da `Failed to lock byte 100`**: İmaj OrbStack'in paylaşılan klasöründen okunuyor ve bu klasör
   dosya kilitlerini desteklemiyor. `run-qemu.sh` kilitlemeyi bu yüzden kapatır (`file.locking=off`).
   QEMU'yu elle çalıştırıyorsanız aynı seçeneği ekleyin.

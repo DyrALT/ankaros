@@ -7,6 +7,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Compositor `wl_seat` sürüm 5 ve `wl_data_device_manager` sürüm 3 sunuyor (Qt 6.9.1'e yama,
+  `external/patches/qt6wayland/`). Debian katmanındaki `foot` artık penceresini açıyor.
 - Debian katmanı ([docs/katmanlar.md](docs/katmanlar.md)): `ank katman kur debian` Debian 13'ü indirip
   özetini denetleyerek veri diskine kurar, `ank katman calistir` bir komutu katmanın içinde çalıştırır.
   Kullanıcı uygulamaları root yetkisi olmadan, kullanıcı ad alanında açılır (`ankaros-katman`). İmaja
