@@ -1,0 +1,4 @@
+# Paket kurma ve kaldırma, uygulama listesi: ank kur, ank kaldir (docs/katmanlar.md)
+description = Uygulama servisi
+exec = /usr/sbin/ankaros-apps
+after = udev veri

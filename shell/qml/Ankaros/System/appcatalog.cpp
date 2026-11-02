@@ -1,6 +1,7 @@
 #include "appcatalog.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -14,7 +15,33 @@ AppCatalog::AppCatalog(QObject *parent)
     const QString path =
         qEnvironmentVariable("ANKAROS_APPS", QStringLiteral("/etc/ankaros/apps.json"));
     // Mac önizlemesinde /etc/ankaros yoktur, modüle gömülü liste kullanılır
-    load(QFile::exists(path) ? path : QStringLiteral(":/qt/qml/Ankaros/System/apps.json"));
+    m_systemPath = QFile::exists(path) ? path : QStringLiteral(":/qt/qml/Ankaros/System/apps.json");
+    m_userPath = qEnvironmentVariable("ANKAROS_USER_APPS",
+                                      QStringLiteral("/var/lib/ankaros/uygulamalar.json"));
+    reload();
+    // Servis dosyayı yeni bir dosyayla değiştirir (rename), bu yüzden klasör de izlenir
+    const QString directory = QFileInfo(m_userPath).absolutePath();
+    if (QFileInfo::exists(directory))
+        m_watcher.addPath(directory);
+    connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &AppCatalog::reload);
+    connect(&m_watcher, &QFileSystemWatcher::fileChanged, this, &AppCatalog::reload);
+}
+
+void AppCatalog::reload()
+{
+    const QStringList names = m_names;
+    const QHash<QString, QString> commands = m_commands;
+    m_names.clear();
+    m_pinned.clear();
+    m_commands.clear();
+    m_namesByAppId.clear();
+    load(m_systemPath);
+    if (QFile::exists(m_userPath)) {
+        load(m_userPath);
+        m_watcher.addPath(m_userPath);
+    }
+    if (m_names != names || m_commands != commands)
+        emit changed();
 }
 
 bool AppCatalog::load(const QString &path)
