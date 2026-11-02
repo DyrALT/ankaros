@@ -7,6 +7,9 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- `ank kur`, `ank kaldir` ve `ank liste` ([docs/katmanlar.md](docs/katmanlar.md)): `.deb` paketi şifre sorulduktan
+  sonra Debian katmanına kurulur, uygulaması başlat panelinde görünür. İşi root olarak çalışan `ankaros-apps`
+  servisi yapar.
 - Compositor `wl_seat` sürüm 5 ve `wl_data_device_manager` sürüm 3 sunuyor (Qt 6.9.1'e yama,
   `external/patches/qt6wayland/`). Debian katmanındaki `foot` artık penceresini açıyor.
 - Debian katmanı ([docs/katmanlar.md](docs/katmanlar.md)): `ank katman kur debian` Debian 13'ü indirip

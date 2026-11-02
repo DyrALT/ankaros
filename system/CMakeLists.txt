@@ -44,13 +44,16 @@ add_library(ankaros-network-core STATIC network/netconfig.cpp)
 target_include_directories(ankaros-network-core PUBLIC network)
 target_link_libraries(ankaros-network-core PUBLIC ankaros-common)
 
+add_library(ankaros-apps-core STATIC apps/appstore.cpp)
+target_include_directories(ankaros-apps-core PUBLIC apps)
+
 option(ANKAROS_SYSTEM_TESTS "Birim testlerini derle" ON)
 if(ANKAROS_SYSTEM_TESTS)
     enable_testing()
-    foreach(test config_test service_test session_test network_test katman_test)
+    foreach(test config_test service_test session_test network_test katman_test apps_test)
         add_executable(${test} tests/${test}.cpp)
         target_link_libraries(${test} PRIVATE ankaros-services ankaros-session-core ankaros-network-core
-            ankaros-katman-core)
+            ankaros-katman-core ankaros-apps-core)
         add_test(NAME ${test} COMMAND ${test})
     endforeach()
 endif()
@@ -76,10 +79,18 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_executable(ankaros-katman katman/main.cpp)
     target_link_libraries(ankaros-katman PRIVATE ankaros-katman-core)
 
+    add_executable(ankaros-apps apps/main.cpp)
+    target_link_libraries(ankaros-apps PRIVATE ankaros-apps-core ankaros-katman-core ankaros-session-core)
+
+    add_executable(ank-paket apps/client.cpp)
+    target_link_libraries(ank-paket PRIVATE ankaros-common)
+
     add_executable(ankarosctl ctl/main.cpp)
     target_link_libraries(ankarosctl PRIVATE ankaros-common)
 
-    install(TARGETS ankaros-init ankaros-session ankaros-network RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
+    install(TARGETS ankaros-init ankaros-session ankaros-network ankaros-apps
+        RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
+    install(TARGETS ank-paket RUNTIME DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/ankaros)
     install(TARGETS ankarosctl ankaros-katman RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(PROGRAMS scripts/ank DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

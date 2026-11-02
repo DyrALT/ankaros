@@ -5,6 +5,10 @@ kaynağı [shell/qml/Ankaros/System/apps.json](../shell/qml/Ankaros/System/apps.
 paketiyle kurulur. Okuyan sınıf Ankaros.System'deki `AppCatalog`'dur. Dosya yoksa (Mac önizlemesi) modüle
 gömülü kopyası kullanılır.
 
+`ank kur` ile kurulan uygulamalar aynı biçimde `/var/lib/ankaros/uygulamalar.json`'a yazılır
+([katmanlar.md](katmanlar.md)). `AppCatalog` bu dosyayı da okur ve izler, liste oturum açıkken güncellenir.
+Başka bir dosya `ANKAROS_USER_APPS` ortam değişkeniyle verilebilir.
+
 ```json
 {
     "apps": [

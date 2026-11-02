@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QFileSystemWatcher>
 #include <QHash>
 #include <QObject>
 #include <QString>
@@ -7,7 +8,9 @@
 #include <QtQml/qqmlregistration.h>
 
 // Başlat panelindeki ve alt çubuktaki uygulamaların listesi. /etc/ankaros/apps.json'dan okunur
-// (ANKAROS_APPS ortam değişkeniyle başka bir dosya verilebilir). Biçim: docs/uygulama-listesi.md
+// (ANKAROS_APPS ortam değişkeniyle başka bir dosya verilebilir). ank kur ile kurulanlar
+// /var/lib/ankaros/uygulamalar.json'dadır (ANKAROS_USER_APPS), dosya değişince liste güncellenir.
+// Biçim: docs/uygulama-listesi.md
 class AppCatalog : public QObject
 {
     Q_OBJECT
@@ -15,13 +18,13 @@ class AppCatalog : public QObject
     QML_SINGLETON
 
     // Bütün uygulamaların adları, dosyadaki sırayla
-    Q_PROPERTY(QStringList names READ names CONSTANT)
+    Q_PROPERTY(QStringList names READ names NOTIFY changed)
     // Alt çubuğa sabitlenmiş uygulamalar
-    Q_PROPERTY(QStringList pinned READ pinned CONSTANT)
+    Q_PROPERTY(QStringList pinned READ pinned NOTIFY changed)
     // Komutu olan, yani gerçekten açılabilen uygulamalar (dosyadaki sırayla). Başlat panelinde ve
     // alt çubukta yalnızca bunlar gösterilir, diğerleri ileride yazılacak uygulamaların yer
     // tutucusudur.
-    Q_PROPERTY(QStringList launchable READ launchable CONSTANT)
+    Q_PROPERTY(QStringList launchable READ launchable NOTIFY changed)
 
 public:
     explicit AppCatalog(QObject *parent = nullptr);
@@ -37,7 +40,15 @@ public:
 
     bool load(const QString &path);
 
+signals:
+    void changed();
+
 private:
+    void reload();
+
+    QString m_systemPath;
+    QString m_userPath;
+    QFileSystemWatcher m_watcher;
     QStringList m_names;
     QStringList m_pinned;
     QHash<QString, QString> m_commands;
