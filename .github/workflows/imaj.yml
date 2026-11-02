@@ -55,7 +55,8 @@ jobs:
           path: |
             ~/ankaros-dl
             ~/.buildroot-ccache
-          # Mimariler önbelleği paylaşmaz. Son satır yeni bir defconfig'de kaynak paketlerini kurtarır.
+          # Mimariler kendi önbelleğini kullanır. Son satır yalnızca bir mimarinin hiç önbelleği yokken işe
+          # yarar: kaynak paketlerini kurtarır, öteki mimarinin ccache kayıtları kullanılmaz ve zamanla silinir.
           key: buildroot-${{ matrix.arch }}-${{ hashFiles(format('external/configs/ankaros_qemu_{0}_defconfig', matrix.arch), '.gitmodules') }}-${{ github.sha }}
           restore-keys: |
             buildroot-${{ matrix.arch }}-${{ hashFiles(format('external/configs/ankaros_qemu_{0}_defconfig', matrix.arch), '.gitmodules') }}-

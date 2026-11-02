@@ -1,4 +1,13 @@
-# Buildroot'un QEMU çekirdek yapılandırmasına (board/qemu/aarch64-virt/linux.config) ankaros'un eklemeleri.
+# Buildroot'un QEMU çekirdek yapılandırmalarına (board/qemu/{aarch64-virt,x86_64}/linux.config) ankaros'un
+# eklemeleri. Her iki mimari için de geçerlidir.
 # Uyumluluk katmanlarındaki uygulamalar kullanıcının kimliğiyle, root yetkisi olmadan kendi bağlama
 # ad alanlarında çalışır (karar 0016, ankaros-katman).
 CONFIG_USER_NS=y
+# aarch64 yapılandırmasında zaten açık olup x86_64'te olmayanlar: iki imajda da aynı programlar
+# çalışsın, zamanlayıcılar aynı hassasiyette olsun.
+CONFIG_OVERLAY_FS=y
+CONFIG_FUSE_FS=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_BINFMT_MISC=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_NO_HZ_IDLE=y
