@@ -99,7 +99,7 @@ terminali bu yüzden açılmamıştı). B adımında ölçülecek, gerekenler ek
 
 | Protokol | Ne için | Durum |
 |---|---|---|
-| `wl_seat` sürüm 5+, `wl_data_device_manager` 3 | Klavye/fare olayları, sürükle-bırak | Qt 6.9'da eski sürüm |
+| `wl_seat` sürüm 5, `wl_data_device_manager` 3 | Klavye/fare olayları, sürükle-bırak | Var: Qt 6.9.1'e yama (`external/patches/qt6wayland/`). Dış uygulamayla sürükle-bırak denenmedi. |
 | `linux-dmabuf` | GPU ile çizilen arabellekler (VS Code, tarayıcılar) | Araştırılacak |
 | `xdg-decoration` | Pencere çerçevesini compositor'ın çizmesi | Var (karar 0007) |
 | `viewporter`, `fractional-scale` | Ölçekli ekranlar | Araştırılacak |

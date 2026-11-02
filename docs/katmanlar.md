@@ -38,9 +38,11 @@ ank katman sil debian                              # katmanı ve içine kurulanl
 
 ## Bilinen eksikler
 
-- **Compositor'ın protokol sürümleri (Faz 4 B):** Qt 6.9'un compositor'ı `wl_seat` sürüm 4 ve
-  `wl_data_device_manager` sürüm 1 sunuyor. `foot` gibi yeni uygulamalar 5 ve 3 istiyor, penceresini açmadan
-  çıkıyor.
+- **Compositor'ın eksik protokolleri (Faz 4 B):** `foot` penceresini açıyor ama compositor seçili metni orta
+  tuşla yapıştırma, `xdg-activation`, kesirli ölçek, imleç şekli ve `text-input` sunmuyor. `linux-dmabuf`
+  henüz açılmadı, uygulamalar ekran belleğini paylaşılan bellekle gönderiyor.
+- `ankaros-katman` ortam değişkenlerini temizlemiyor. ankaros'un bash biçimindeki `PS1`'i katmandaki
+  `/bin/sh`'a geçerse istem bozuk görünür.
 - Katmanda Türkçe yerel ayar (`tr_TR.UTF-8`) yok, uygulamalar `C.UTF-8`'e düşüyor. Katman kurulurken
   `locales` eklenecek.
 - ankaros'un yazı tipleri katmanla paylaşılmıyor, uygulamalar Debian'ın yazı tiplerini kullanıyor.

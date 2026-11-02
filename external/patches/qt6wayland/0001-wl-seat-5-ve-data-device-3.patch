@@ -1,0 +1,444 @@
+qtwaylandcompositor: wl_seat 5 ve wl_data_device_manager 3 sun
+
+Qt 6.9'un compositor'ı wl_seat 4 ve wl_data_device_manager 1 sunuyor. foot gibi yeni
+uygulamalar 5 ve 3 ister, penceresini açmadan çıkar (docs/faz-4-plani.md, B adımı).
+
+wl_seat 5: wl_pointer.frame ve axis_source gönderilir, wl_seat.release eklenir.
+wl_data_device_manager 3: nesneler istemcinin sürümüyle oluşturulur, sürükle-bırak
+eylemleri (set_actions, action, source_actions, finish, dnd_drop_performed, dnd_finished)
+ve wl_data_device.release eklenir.
+
+diff --git a/src/compositor/compositor_api/qwaylandpointer.cpp b/src/compositor/compositor_api/qwaylandpointer.cpp
+index ee2c79a..ae5a791 100644
+--- a/src/compositor/compositor_api/qwaylandpointer.cpp
++++ b/src/compositor/compositor_api/qwaylandpointer.cpp
+@@ -25,19 +25,29 @@ uint QWaylandPointerPrivate::sendButton(Qt::MouseButton button, uint32_t state)
+     wl_client *client = q->mouseFocus()->surface()->waylandClient();
+     uint32_t time = compositor()->currentTimeMsecs();
+     uint32_t serial = compositor()->nextSerial();
+-    for (auto resource : resourceMap().values(client))
++    for (auto resource : resourceMap().values(client)) {
+         send_button(resource->handle, serial, time, q->toWaylandButton(button), state);
++        sendFrame(resource->handle);
++    }
+     return serial;
+ }
+ 
++void QWaylandPointerPrivate::sendFrame(struct ::wl_resource *resource)
++{
++    if (wl_resource_get_version(resource) >= WL_POINTER_FRAME_SINCE_VERSION)
++        send_frame(resource);
++}
++
+ void QWaylandPointerPrivate::sendMotion()
+ {
+     Q_ASSERT(enteredSurface);
+     uint32_t time = compositor()->currentTimeMsecs();
+     wl_fixed_t x = wl_fixed_from_double(localPosition.x());
+     wl_fixed_t y = wl_fixed_from_double(localPosition.y());
+-    for (auto resource : resourceMap().values(enteredSurface->waylandClient()))
++    for (auto resource : resourceMap().values(enteredSurface->waylandClient())) {
+         wl_pointer_send_motion(resource->handle, time, x, y);
++        sendFrame(resource->handle);
++    }
+ }
+ 
+ void QWaylandPointerPrivate::sendEnter(QWaylandSurface *surface)
+@@ -51,8 +61,10 @@ void QWaylandPointerPrivate::sendEnter(QWaylandSurface *surface)
+ 
+     wl_fixed_t x = wl_fixed_from_double(localPosition.x());
+     wl_fixed_t y = wl_fixed_from_double(localPosition.y());
+-    for (auto resource : resourceMap().values(surface->waylandClient()))
++    for (auto resource : resourceMap().values(surface->waylandClient())) {
+         send_enter(resource->handle, enterSerial, surface->resource(), x, y);
++        sendFrame(resource->handle);
++    }
+ 
+     enteredSurface = surface;
+     enteredSurfaceDestroyListener.listenForDestruction(surface->resource());
+@@ -62,8 +74,10 @@ void QWaylandPointerPrivate::sendLeave()
+ {
+     Q_ASSERT(enteredSurface);
+     uint32_t serial = compositor()->nextSerial();
+-    for (auto resource : resourceMap().values(enteredSurface->waylandClient()))
++    for (auto resource : resourceMap().values(enteredSurface->waylandClient())) {
+         send_leave(resource->handle, serial, enteredSurface->resource());
++        sendFrame(resource->handle);
++    }
+     localPosition = QPointF();
+     enteredSurfaceDestroyListener.reset();
+     enteredSurface = nullptr;
+@@ -243,8 +257,12 @@ void QWaylandPointer::sendMouseWheelEvent(Qt::Orientation orientation, int delta
+     uint32_t axis = orientation == Qt::Horizontal ? WL_POINTER_AXIS_HORIZONTAL_SCROLL
+                                                   : WL_POINTER_AXIS_VERTICAL_SCROLL;
+ 
+-    for (auto resource : d->resourceMap().values(d->enteredSurface->waylandClient()))
++    for (auto resource : d->resourceMap().values(d->enteredSurface->waylandClient())) {
++        if (resource->version() >= WL_POINTER_AXIS_SOURCE_SINCE_VERSION)
++            d->send_axis_source(resource->handle, WL_POINTER_AXIS_SOURCE_WHEEL);
+         d->send_axis(resource->handle, time, axis, wl_fixed_from_int(-delta / 12));
++        d->sendFrame(resource->handle);
++    }
+ }
+ 
+ /*!
+@@ -294,6 +312,7 @@ void QWaylandPointer::addClient(QWaylandClient *client, uint32_t id, uint32_t ve
+         d->send_enter(resource, d->enterSerial, d->enteredSurface->resource(),
+                       wl_fixed_from_double(d->localPosition.x()),
+                       wl_fixed_from_double(d->localPosition.y()));
++        d->sendFrame(resource);
+     }
+ }
+ 
+@@ -324,6 +343,7 @@ uint QWaylandPointer::sendButton(struct wl_resource *resource, uint32_t time, Qt
+     Q_D(QWaylandPointer);
+     uint32_t serial = d->compositor()->nextSerial();
+     d->send_button(resource, serial, time, toWaylandButton(button), state);
++    d->sendFrame(resource);
+     return serial;
+ }
+ 
+diff --git a/src/compositor/compositor_api/qwaylandpointer_p.h b/src/compositor/compositor_api/qwaylandpointer_p.h
+index 7197035..623922f 100644
+--- a/src/compositor/compositor_api/qwaylandpointer_p.h
++++ b/src/compositor/compositor_api/qwaylandpointer_p.h
+@@ -54,6 +54,7 @@ protected:
+ private:
+     uint sendButton(Qt::MouseButton button, uint32_t state);
+     void sendMotion();
++    void sendFrame(struct ::wl_resource *resource);
+     void sendEnter(QWaylandSurface *surface);
+     void sendLeave();
+     void ensureEntered(QWaylandSurface *surface);
+diff --git a/src/compositor/compositor_api/qwaylandseat.cpp b/src/compositor/compositor_api/qwaylandseat.cpp
+index 15682f3..06188e4 100644
+--- a/src/compositor/compositor_api/qwaylandseat.cpp
++++ b/src/compositor/compositor_api/qwaylandseat.cpp
+@@ -72,12 +72,12 @@ void QWaylandSeatPrivate::setCapabilities(QWaylandSeat::CapabilityFlags caps)
+ }
+ 
+ #if QT_CONFIG(wayland_datadevice)
+-void QWaylandSeatPrivate::clientRequestedDataDevice(QtWayland::DataDeviceManager *, struct wl_client *client, uint32_t id)
++void QWaylandSeatPrivate::clientRequestedDataDevice(QtWayland::DataDeviceManager *, struct wl_client *client, uint32_t id, uint32_t version)
+ {
+     Q_Q(QWaylandSeat);
+     if (!data_device)
+         data_device.reset(new QtWayland::DataDevice(q));
+-    data_device->add(client, id, 1);
++    data_device->add(client, id, version);
+ }
+ #endif
+ 
+@@ -93,6 +93,11 @@ void QWaylandSeatPrivate::seat_bind_resource(wl_seat::Resource *resource)
+     wl_seat::send_capabilities(resource->handle, (uint32_t)capabilities);
+ }
+ 
++void QWaylandSeatPrivate::seat_release(wl_seat::Resource *resource)
++{
++    wl_resource_destroy(resource->handle);
++}
++
+ void QWaylandSeatPrivate::seat_get_pointer(wl_seat::Resource *resource, uint32_t id)
+ {
+     if (!pointer.isNull()) {
+@@ -183,7 +188,7 @@ QWaylandSeat::~QWaylandSeat()
+ void QWaylandSeat::initialize()
+ {
+     Q_D(QWaylandSeat);
+-    d->init(d->compositor->display(), 4);
++    d->init(d->compositor->display(), 5);
+ 
+     if (d->capabilities & QWaylandSeat::Pointer)
+         d->pointer.reset(QWaylandCompositorPrivate::get(d->compositor)->callCreatePointerDevice(this));
+diff --git a/src/compositor/compositor_api/qwaylandseat_p.h b/src/compositor/compositor_api/qwaylandseat_p.h
+index a96dccc..b39cd60 100644
+--- a/src/compositor/compositor_api/qwaylandseat_p.h
++++ b/src/compositor/compositor_api/qwaylandseat_p.h
+@@ -61,7 +61,7 @@ public:
+     static QWaylandSeatPrivate *get(QWaylandSeat *device) { return device->d_func(); }
+ 
+ #if QT_CONFIG(wayland_datadevice)
+-    void clientRequestedDataDevice(QtWayland::DataDeviceManager *dndSelection, struct wl_client *client, uint32_t id);
++    void clientRequestedDataDevice(QtWayland::DataDeviceManager *dndSelection, struct wl_client *client, uint32_t id, uint32_t version);
+     QtWayland::DataDevice *dataDevice() const { return data_device.data(); }
+ #endif
+ 
+@@ -76,6 +76,7 @@ protected:
+                         uint32_t id) override;
+ 
+     void seat_destroy_resource(wl_seat::Resource *resource) override;
++    void seat_release(wl_seat::Resource *resource) override;
+ 
+ private:
+     bool isInitialized = false;
+diff --git a/src/compositor/wayland_wrapper/qwldatadevice.cpp b/src/compositor/wayland_wrapper/qwldatadevice.cpp
+index 440401d..978f291 100644
+--- a/src/compositor/wayland_wrapper/qwldatadevice.cpp
++++ b/src/compositor/wayland_wrapper/qwldatadevice.cpp
+@@ -117,6 +117,8 @@ void DataDevice::drop()
+ {
+     if (m_dragFocusResource) {
+         send_drop(m_dragFocusResource->handle);
++        if (m_dragDataSource)
++            m_dragDataSource->dropPerformed();
+         setDragFocus(nullptr, QPoint());
+     } else if (m_dragDataSource) {
+         m_dragDataSource->cancel();
+@@ -155,6 +157,17 @@ void DataDevice::setDragIcon(QWaylandSurface *icon)
+ }
+ #endif // QT_CONFIG(draganddrop)
+ 
++void DataDevice::data_device_release(Resource *resource)
++{
++#if QT_CONFIG(draganddrop)
++    if (m_dragFocusResource == resource) {
++        m_dragFocus = nullptr;
++        m_dragFocusResource = nullptr;
++    }
++#endif
++    wl_resource_destroy(resource->handle);
++}
++
+ void DataDevice::data_device_set_selection(Resource *, struct ::wl_resource *source, uint32_t serial)
+ {
+     Q_UNUSED(serial);
+diff --git a/src/compositor/wayland_wrapper/qwldatadevice_p.h b/src/compositor/wayland_wrapper/qwldatadevice_p.h
+index 839d938..b9b0efd 100644
+--- a/src/compositor/wayland_wrapper/qwldatadevice_p.h
++++ b/src/compositor/wayland_wrapper/qwldatadevice_p.h
+@@ -54,6 +54,7 @@ protected:
+     void data_device_start_drag(Resource *resource, struct ::wl_resource *source, struct ::wl_resource *origin, struct ::wl_resource *icon, uint32_t serial) override;
+ #endif
+     void data_device_set_selection(Resource *resource, struct ::wl_resource *source, uint32_t serial) override;
++    void data_device_release(Resource *resource) override;
+ 
+ private:
+ #if QT_CONFIG(draganddrop)
+diff --git a/src/compositor/wayland_wrapper/qwldatadevicemanager.cpp b/src/compositor/wayland_wrapper/qwldatadevicemanager.cpp
+index dea68a5..42218b4 100644
+--- a/src/compositor/wayland_wrapper/qwldatadevicemanager.cpp
++++ b/src/compositor/wayland_wrapper/qwldatadevicemanager.cpp
+@@ -23,7 +23,7 @@ QT_BEGIN_NAMESPACE
+ namespace QtWayland {
+ 
+ DataDeviceManager::DataDeviceManager(QWaylandCompositor *compositor)
+-    : wl_data_device_manager(compositor->display(), 1)
++    : wl_data_device_manager(compositor->display(), 3)
+     , m_compositor(compositor)
+ {
+ }
+@@ -213,13 +213,13 @@ void DataDeviceManager::offerRetainedSelection(wl_resource *clientDataDeviceReso
+ 
+ void DataDeviceManager::data_device_manager_create_data_source(Resource *resource, uint32_t id)
+ {
+-    new DataSource(resource->client(), id, m_compositor->currentTimeMsecs());
++    new DataSource(resource->client(), id, m_compositor->currentTimeMsecs(), resource->version());
+ }
+ 
+ void DataDeviceManager::data_device_manager_get_data_device(Resource *resource, uint32_t id, struct ::wl_resource *seat)
+ {
+     QWaylandSeat *input_device = QWaylandSeat::fromSeatResource(seat);
+-    QWaylandSeatPrivate::get(input_device)->clientRequestedDataDevice(this, resource->client(), id);
++    QWaylandSeatPrivate::get(input_device)->clientRequestedDataDevice(this, resource->client(), id, resource->version());
+ }
+ 
+ void DataDeviceManager::comp_accept(wl_client *, wl_resource *, uint32_t, const char *)
+@@ -244,13 +244,23 @@ void DataDeviceManager::comp_destroy(wl_client *, wl_resource *)
+ {
+ }
+ 
++void DataDeviceManager::comp_finish(wl_client *, wl_resource *)
++{
++}
++
++void DataDeviceManager::comp_set_actions(wl_client *, wl_resource *, uint32_t, uint32_t)
++{
++}
++
+ QT_WARNING_DISABLE_GCC("-Wmissing-field-initializers")
+ QT_WARNING_DISABLE_CLANG("-Wmissing-field-initializers")
+ 
+ const struct wl_data_offer_interface DataDeviceManager::compositor_offer_interface = {
+     DataDeviceManager::comp_accept,
+     DataDeviceManager::comp_receive,
+-    DataDeviceManager::comp_destroy
++    DataDeviceManager::comp_destroy,
++    DataDeviceManager::comp_finish,
++    DataDeviceManager::comp_set_actions
+ };
+ 
+ } //namespace
+diff --git a/src/compositor/wayland_wrapper/qwldatadevicemanager_p.h b/src/compositor/wayland_wrapper/qwldatadevicemanager_p.h
+index 954a4c3..98328c4 100644
+--- a/src/compositor/wayland_wrapper/qwldatadevicemanager_p.h
++++ b/src/compositor/wayland_wrapper/qwldatadevicemanager_p.h
+@@ -89,6 +89,12 @@ private:
+                              int32_t fd);
+     static void comp_destroy(struct wl_client *client,
+                              struct wl_resource *resource);
++    static void comp_finish(struct wl_client *client,
++                            struct wl_resource *resource);
++    static void comp_set_actions(struct wl_client *client,
++                                 struct wl_resource *resource,
++                                 uint32_t dnd_actions,
++                                 uint32_t preferred_action);
+ 
+     static const struct wl_data_offer_interface compositor_offer_interface;
+ };
+diff --git a/src/compositor/wayland_wrapper/qwldataoffer.cpp b/src/compositor/wayland_wrapper/qwldataoffer.cpp
+index a612ca6..bf84037 100644
+--- a/src/compositor/wayland_wrapper/qwldataoffer.cpp
++++ b/src/compositor/wayland_wrapper/qwldataoffer.cpp
+@@ -14,7 +14,7 @@ namespace QtWayland
+ {
+ 
+ DataOffer::DataOffer(DataSource *dataSource, QtWaylandServer::wl_data_device::Resource *target)
+-    : QtWaylandServer::wl_data_offer(target->client(), 0, 1)
++    : QtWaylandServer::wl_data_offer(target->client(), 0, target->version())
+     , m_dataSource(dataSource)
+ {
+     // FIXME: connect to dataSource and reset m_dataSource on destroy
+@@ -23,6 +23,8 @@ DataOffer::DataOffer(DataSource *dataSource, QtWaylandServer::wl_data_device::Re
+     for (const QString &mimeType : mimeTypes) {
+         send_offer(mimeType);
+     }
++    if (resource()->version() >= WL_DATA_OFFER_SOURCE_ACTIONS_SINCE_VERSION)
++        send_source_actions(dataSource->actions());
+ }
+ 
+ DataOffer::~DataOffer()
+@@ -46,6 +48,23 @@ void DataOffer::data_offer_receive(Resource *resource, const QString &mimeType,
+         close(fd);
+ }
+ 
++void DataOffer::data_offer_finish(Resource *)
++{
++    if (m_dataSource)
++        m_dataSource->finished();
++}
++
++void DataOffer::data_offer_set_actions(Resource *, uint32_t dnd_actions, uint32_t preferred_action)
++{
++    if (!m_dataSource)
++        return;
++    const uint32_t common = dnd_actions & m_dataSource->actions();
++    // Tercih edilen ortaksa o, değilse ortak olanların ilki (kopyala, taşı, sor)
++    const uint32_t action = (preferred_action & common) ? preferred_action : (common & -common);
++    send_action(action);
++    m_dataSource->sendAction(action);
++}
++
+ void DataOffer::data_offer_destroy(Resource *resource)
+ {
+     wl_resource_destroy(resource->handle);
+diff --git a/src/compositor/wayland_wrapper/qwldataoffer_p.h b/src/compositor/wayland_wrapper/qwldataoffer_p.h
+index aeac6d6..f445233 100644
+--- a/src/compositor/wayland_wrapper/qwldataoffer_p.h
++++ b/src/compositor/wayland_wrapper/qwldataoffer_p.h
+@@ -37,6 +37,8 @@ public:
+ protected:
+     void data_offer_accept(Resource *resource, uint32_t serial, const QString &mime_type) override;
+     void data_offer_receive(Resource *resource, const QString &mime_type, int32_t fd) override;
++    void data_offer_finish(Resource *resource) override;
++    void data_offer_set_actions(Resource *resource, uint32_t dnd_actions, uint32_t preferred_action) override;
+     void data_offer_destroy(Resource *resource) override;
+     void data_offer_destroy_resource(Resource *resource) override;
+ 
+diff --git a/src/compositor/wayland_wrapper/qwldatasource.cpp b/src/compositor/wayland_wrapper/qwldatasource.cpp
+index eba8ae3..f1921ad 100644
+--- a/src/compositor/wayland_wrapper/qwldatasource.cpp
++++ b/src/compositor/wayland_wrapper/qwldatasource.cpp
+@@ -14,9 +14,11 @@ QT_BEGIN_NAMESPACE
+ 
+ namespace QtWayland {
+ 
+-DataSource::DataSource(struct wl_client *client, uint32_t id, uint32_t time)
+-    : QtWaylandServer::wl_data_source(client, id, 1)
++DataSource::DataSource(struct wl_client *client, uint32_t id, uint32_t time, int version)
++    : QtWaylandServer::wl_data_source(client, id, version)
+     , m_time(time)
++    , m_actions(version < 3 ? WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY
++                            : WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE)
+ {
+ }
+ 
+@@ -54,6 +56,29 @@ void DataSource::cancel()
+     send_cancelled();
+ }
+ 
++uint32_t DataSource::actions() const
++{
++    return m_actions;
++}
++
++void DataSource::sendAction(uint32_t action)
++{
++    if (resource()->version() >= WL_DATA_SOURCE_ACTION_SINCE_VERSION)
++        send_action(action);
++}
++
++void DataSource::dropPerformed()
++{
++    if (resource()->version() >= WL_DATA_SOURCE_DND_DROP_PERFORMED_SINCE_VERSION)
++        send_dnd_drop_performed();
++}
++
++void DataSource::finished()
++{
++    if (resource()->version() >= WL_DATA_SOURCE_DND_FINISHED_SINCE_VERSION)
++        send_dnd_finished();
++}
++
+ void DataSource::setManager(DataDeviceManager *mgr)
+ {
+     m_manager = mgr;
+@@ -74,6 +99,11 @@ void DataSource::data_source_offer(Resource *, const QString &mime_type)
+     m_mimeTypes.append(mime_type);
+ }
+ 
++void DataSource::data_source_set_actions(Resource *, uint32_t dnd_actions)
++{
++    m_actions = dnd_actions;
++}
++
+ void DataSource::data_source_destroy(Resource *resource)
+ {
+     wl_resource_destroy(resource->handle);
+diff --git a/src/compositor/wayland_wrapper/qwldatasource_p.h b/src/compositor/wayland_wrapper/qwldatasource_p.h
+index 2f846e8..fd54dc6 100644
+--- a/src/compositor/wayland_wrapper/qwldatasource_p.h
++++ b/src/compositor/wayland_wrapper/qwldatasource_p.h
+@@ -33,7 +33,7 @@ class DataDeviceManager;
+ class DataSource : public QObject, public QtWaylandServer::wl_data_source
+ {
+ public:
+-    DataSource(struct wl_client *client, uint32_t id, uint32_t time);
++    DataSource(struct wl_client *client, uint32_t id, uint32_t time, int version);
+     ~DataSource() override;
+     uint32_t time() const;
+     QList<QString> mimeTypes() const;
+@@ -41,6 +41,10 @@ public:
+     void accept(const QString &mimeType);
+     void send(const QString &mimeType,int fd);
+     void cancel();
++    uint32_t actions() const;
++    void sendAction(uint32_t action);
++    void dropPerformed();
++    void finished();
+ 
+     void setManager(DataDeviceManager *mgr);
+     void setDevice(DataDevice *device);
+@@ -49,11 +53,13 @@ public:
+ 
+ protected:
+     void data_source_offer(Resource *resource, const QString &mime_type) override;
++    void data_source_set_actions(Resource *resource, uint32_t dnd_actions) override;
+     void data_source_destroy(Resource *resource) override;
+     void data_source_destroy_resource(Resource *resource) override;
+ 
+ private:
+     uint32_t m_time;
++    uint32_t m_actions;
+     QList<QString> m_mimeTypes;
+ 
+     DataDevice *m_device = nullptr;

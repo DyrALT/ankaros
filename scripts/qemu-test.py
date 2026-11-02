@@ -127,6 +127,14 @@ def button(path, down):
     qmp(path, "input-send-event", {"events": [{"type": "btn", "data": {"down": down, "button": "left"}}]})
 
 
+def wheel(path, direction, count=1):
+    """Fare tekerleği: direction "up" ya da "down"."""
+    for _ in range(count):
+        for down in (True, False):
+            qmp(path, "input-send-event", {"events": [{"type": "btn", "data": {"down": down, "button": f"wheel-{direction}"}}]})
+        time.sleep(0.08)
+
+
 def click(path, x, y):
     """Sol tıklama. İmleç taşındıktan sonra beklenir: softpipe ile bir kare yüzlerce milisaniye
     sürebiliyor ve hareket işlenmeden basılırsa tıklama uygulamaya imlecin eski konumuyla ulaşıyor."""
@@ -235,6 +243,7 @@ def run_actions(actions, qmp_path, console, log, screenshot):
     hold X1 Y1 X2 Y2  sürükle ama düğmeyi bırakma
     up             basılı tutulan sol düğmeyi bırak
     move X Y       imleci taşı
+    wheel up|down [SAYI]  fare tekerleği
     sleep SANIYE   bekle
     key TUŞLAR     tuş kombinasyonu, QEMU adlarıyla: ret, esc, meta_l-l
     keydown TUŞ    tuşu basılı tut (ör. alt), keyup TUŞ ile bırak
@@ -254,6 +263,8 @@ def run_actions(actions, qmp_path, console, log, screenshot):
             drag(qmp_path, *(float(v) for v in values[:4]), release=False)
         elif name == "move":
             move(qmp_path, float(values[0]), float(values[1]))
+        elif name == "wheel":
+            wheel(qmp_path, values[0], int(values[1]) if len(values) > 1 else 1)
         elif name == "up":
             button(qmp_path, False)
         elif name == "keydown":
