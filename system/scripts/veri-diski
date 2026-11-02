@@ -9,11 +9,12 @@ LABEL=ankaros-veri
 
 log() { echo "veri-diski: $*"; }
 
-device=$(blkid -L "$LABEL" 2>/dev/null || true)
+# blkid BusyBox'ınki: -L, -o ve -s seçeneklerini tanımaz, yalnızca bulduklarını listeler.
+device=$(blkid 2>/dev/null | sed -n "s/^\([^:]*\):.* LABEL=\"$LABEL\".*/\1/p" | head -n 1)
 if [ -z "$device" ] && [ -b /dev/vdb ]; then
   # Biçimlendirmeden önce diskin gerçekten boş olduğundan emin ol: blkid hiçbir imza bulmamalı,
   # ilk 1 MB tamamen sıfır olmalı (bölüm tablosu, başka işletim sistemi, şifreli disk...)
-  if [ -n "$(blkid -o value -s TYPE /dev/vdb 2>/dev/null)" ] \
+  if [ -n "$(blkid /dev/vdb 2>/dev/null)" ] \
     || [ "$(head -c 1048576 /dev/vdb | tr -d '\000' | head -c 1 | wc -c)" -ne 0 ]; then
     log "/dev/vdb boş değil ve etiketi $LABEL değil, dokunulmadı"
     exit 0
