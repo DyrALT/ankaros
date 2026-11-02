@@ -131,6 +131,23 @@ Mac'te de denenebilir.
 sistem neredeyse yerel hızda açılır. Ek QEMU argümanları betiğe eklenebilir. Örneğin
 `./scripts/run-qemu.sh -snapshot` imajda yapılan değişiklikleri kapanışta atar, deneme için kullanışlıdır.
 
+### x86_64 bilgisayarda
+
+Mac dışındaki adımlar aynıdır, derleme Linux'ta doğrudan çalışır ([karar 0018](kararlar/0018-x86-64-imaji.md)).
+Windows'ta WSL2 gerekir, henüz denenmedi. Derleme için bölüm 3'teki paketler kurulur, ardından:
+
+```bash
+./scripts/build.sh         # bilgisayarın mimarisini derler, çıktı ~/ankaros-output
+./scripts/run-qemu.sh --gui   # KVM varsa donanım hızlandırmasıyla açar
+./scripts/qemu-test.py --expect-desktop --wait 120 --screenshot masaustu.png
+```
+
+- `/dev/kvm`'ye yazma izni yoksa QEMU işlemciyi taklit eder, çok yavaştır. Kullanıcıyı `kvm` grubuna ekleyin.
+- Başka bir mimariyi derlemek için `ANKAROS_ARCH=x86_64 ./scripts/build.sh`. Çapraz derleme değildir, Mac'teki
+  arm64 makinede x86_64 araç zinciri kurulur ve çıktı `~/ankaros-output-x86_64`'e gider. İmajı `IMAGES`
+  değişkeniyle verin. Mac'te işlemci taklit edildiği için çok yavaş açılır.
+- İmaj yalnızca sanal makine içindir, gerçek bilgisayarda açılmaz (Faz 6). UTM Mac'e özgüdür.
+
 ## 5. Masaüstü kabuğunu Mac'te çalıştırmak
 
 Kabuk (QML arayüzü) imaj derlemeden, doğrudan Mac'te bir pencerede geliştirilir:

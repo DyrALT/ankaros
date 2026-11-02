@@ -19,6 +19,8 @@ Ekran görüntüsü .ppm ya da .png olabilir (PNG'ye dönüştürme ek paket ist
 
 GPU 2D sanal karttır (virtio-gpu-pci), Mesa yazılımsal çizer (softpipe). Hız ölçmek için değil,
 "ekranda doğru şey görünüyor mu" sorusunu cevaplamak için.
+
+Mimari imajdan anlaşılır: bzImage varsa x86_64, Image varsa aarch64 (karar 0018).
 """
 
 import argparse
@@ -41,6 +43,27 @@ def default_images():
         user = os.environ.get("USER", "")
         return os.path.expanduser(f"~/OrbStack/ankaros-build/home/{user}/ankaros-output/images")
     return os.path.expanduser("~/ankaros-output/images")
+
+
+def machine_settings(images):
+    """İmajın mimarisine göre QEMU ayarları."""
+    if os.path.exists(os.path.join(images, "bzImage")):
+        return {
+            "arch": "x86_64",
+            "kernel": "bzImage",
+            "console": "ttyS0",
+            "machine": ["-M", "q35", "-vga", "none"],
+            "root_device": "virtio-blk-pci",
+            "net_device": "virtio-net-pci",
+        }
+    return {
+        "arch": "aarch64",
+        "kernel": "Image",
+        "console": "ttyAMA0",
+        "machine": ["-M", "virt"],
+        "root_device": "virtio-blk-device",
+        "net_device": "virtio-net-device",
+    }
 
 
 def wait_for(sock, needle, timeout, log):
@@ -309,9 +332,14 @@ def main():
     serial_path = os.path.join(workdir, "serial.sock")
     qmp_path = os.path.join(workdir, "qmp.sock")
     log_path = args.log or os.path.splitext(args.screenshot)[0] + ".log"
+    settings = machine_settings(args.images)
+    host_arch = {"arm64": "aarch64"}.get(platform.machine(), platform.machine())
     # CI'daki arm64 makinelerde KVM yok, işlemci yazılımla taklit edilir (tcg): çalışır ama yavaştır.
+    # Başka mimarinin imajı da taklitle açılır.
     if args.accel:
         accel = args.accel
+    elif settings["arch"] != host_arch:
+        accel = "tcg"
     elif platform.system() == "Darwin":
         accel = "hvf"
     elif os.access("/dev/kvm", os.R_OK | os.W_OK):
@@ -331,18 +359,18 @@ def main():
                      "-device", "virtio-blk-pci,drive=veri"]
 
     qemu = subprocess.Popen([
-        "qemu-system-aarch64",
-        "-M", "virt", "-accel", accel, "-cpu", "host" if accel != "tcg" else "max", "-smp", "4", "-m", "2G",
+        f"qemu-system-{settings['arch']}",
+        *settings["machine"], "-accel", accel, "-cpu", "host" if accel != "tcg" else "max", "-smp", "4", "-m", "2G",
         "-snapshot",
         "-display", "none",
         "-device", f"virtio-gpu-pci,xres={SCREEN_WIDTH},yres={SCREEN_HEIGHT}",
         "-device", "virtio-keyboard-pci", "-device", "virtio-tablet-pci",
-        "-kernel", os.path.join(args.images, "Image"),
-        "-append", "rootwait root=/dev/vda console=ttyAMA0",
+        "-kernel", os.path.join(args.images, settings["kernel"]),
+        "-append", f"rootwait root=/dev/vda console={settings['console']}",
         "-drive", f"file={os.path.join(args.images, 'rootfs.ext4')},if=none,format=raw,id=hd0,file.locking=off",
-        "-device", "virtio-blk-device,drive=hd0",
+        "-device", f"{settings['root_device']},drive=hd0",
         *data_disk,
-        "-netdev", "user,id=eth0", "-device", "virtio-net-device,netdev=eth0,id=nic0",
+        "-netdev", "user,id=eth0", "-device", f"{settings['net_device']},netdev=eth0,id=nic0",
         "-serial", f"unix:{serial_path},server=on,wait=off",
         "-qmp", f"unix:{qmp_path},server=on,wait=off",
     ])
@@ -363,7 +391,7 @@ def main():
             wait_for(console, b"# ", 15, log)
             if args.command:
                 # Komutun çıktısı da günlüğe düşsün diye seri konsola yönlendirilir.
-                console.sendall(f"({args.command}) > /dev/ttyAMA0 2>&1 &\n".encode())
+                console.sendall(f"({args.command}) > /dev/{settings['console']} 2>&1 &\n".encode())
             if args.expect_desktop:
                 started = time.time()
                 deadline = started + args.wait

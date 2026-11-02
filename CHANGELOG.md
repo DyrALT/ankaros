@@ -7,6 +7,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- x86_64 imajı ([karar 0018](docs/kararlar/0018-x86-64-imaji.md)): `build.sh` bilgisayarın mimarisini derler,
+  `run-qemu.sh` ve `qemu-test.py` mimariyi imajdan anlar. CI x86_64'ü `main`'de derleyip açılışını denetler.
 - `ank kur`, `ank kaldir` ve `ank liste` ([docs/katmanlar.md](docs/katmanlar.md)): `.deb` paketi şifre sorulduktan
   sonra Debian katmanına kurulur, uygulaması başlat panelinde görünür. İşi root olarak çalışan `ankaros-apps`
   servisi yapar.

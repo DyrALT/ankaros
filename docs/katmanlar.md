@@ -47,7 +47,7 @@ ona `ank-paket` üzerinden bağlanır.
 `system/katman/`. Komutu katmanın içinde çalıştırır:
 
 - **Kullanıcı olarak:** Yeni bir kullanıcı ad alanı ve bağlama ad alanı açılır (`CONFIG_USER_NS`, çekirdek
-  yapılandırma parçası `external/board/qemu-aarch64/linux.fragment`). Kullanıcı kendi kimliğiyle kalır,
+  yapılandırma parçası `external/board/qemu/linux.fragment`). Kullanıcı kendi kimliğiyle kalır,
   root yetkisi gerekmez, setuid program yoktur. Katmanın root'a ait dosyaları `nobody` görünür.
 - **Root olarak:** Yalnızca bağlama ad alanı açılır. `apt` gibi paket yöneticileri böyle çalışır.
 - Katmanda `/run` ve `/home` boş birer tmpfs'tir. ankaros'tan paylaşılanlar (`layer.h`, `sharedPaths`):

@@ -75,7 +75,7 @@ Ayrıntılı plan: [faz-4-plani.md](faz-4-plani.md)
 
 ## Faz 5: x86_64 ve Windows uygulamaları (`v0.6.0`)
 
-- [ ] x86_64 için imaj (Buildroot), CI'da iki mimari
+- [x] x86_64 için imaj (Buildroot), CI'da iki mimari ([karar 0018](kararlar/0018-x86-64-imaji.md))
 - [ ] Windows katmanı: Wine ile `.exe` çalıştırma
 - [ ] İsteğe bağlı: Windows'u sanal makinede çalıştırma
 

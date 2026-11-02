@@ -52,7 +52,7 @@ Durum satırları:
 | `config.address`, `config.gateway`, `config.dns` | `network.conf`'taki statik değerler |
 
 **Yetki:** Ayarı değiştirme yetkisi `netdev` grubundadır, `ankaros` kullanıcısı bu gruptadır
-(`external/board/qemu-aarch64/users.txt`). Karar 0011'de "etkin oturumun kullanıcısı" yazıyor. Tek
+(`external/board/qemu/users.txt`). Karar 0011'de "etkin oturumun kullanıcısı" yazıyor. Tek
 kullanıcılı geliştirme imajında ikisi aynı sonucu verir. Grup ile denetlemek, ağ servisinin oturum
 yöneticisine sormasını gerektirmez.
 
