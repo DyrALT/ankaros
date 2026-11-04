@@ -7,6 +7,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Compositor `wp_viewporter`, `zxdg_output_manager_v1`, `zwp_linux_dmabuf_v1`, `wp_cursor_shape_manager_v1`,
+  `xdg_activation_v1` ve `zwp_primary_selection_device_manager_v1` sunuyor
+  ([docs/wayland-protokolleri.md](docs/wayland-protokolleri.md)). Seçili metin orta tuşla yapıştırılır, uygulamalar
+  imleç şeklini belirler ve odaktayken başka pencereyi öne getirebilir.
 - x86_64 imajı ([karar 0018](docs/kararlar/0018-x86-64-imaji.md)): `build.sh` bilgisayarın mimarisini derler,
   `run-qemu.sh` ve `qemu-test.py` mimariyi imajdan anlar. CI x86_64'ü `main`'de derleyip açılışını denetler.
 - `ank kur`, `ank kaldir` ve `ank liste` ([docs/katmanlar.md](docs/katmanlar.md)): `.deb` paketi şifre sorulduktan

@@ -134,10 +134,20 @@ WaylandCompositor {
     socketName: "wayland-0"
 
     WaylandOutput {
+        id: output
+
         sizeFollowsWindow: true
         // Retina ekranlarda 2 (oturum yöneticisi QT_SCALE_FACTOR=2 verir). Uygulamalar bu ölçeği
         // Wayland çıktısından öğrenir ve pencerelerini 2 kat çözünürlükle çizer.
         scaleFactor: Math.max(1, Math.round(screen.pixelRatio))
+
+        XdgOutputV1 {
+            name: "ankaros-0"
+            description: "ankaros ekranı"
+            logicalPosition: output.position
+            logicalSize: Qt.size(output.geometry.width / output.scaleFactor,
+                                 output.geometry.height / output.scaleFactor)
+        }
 
         window: Window {
             id: screen
@@ -382,5 +392,26 @@ WaylandCompositor {
     // Uygulamalardan kendi başlık çubuklarını çizmemelerini iste, çerçeveyi biz çiziyoruz (karar 0007).
     XdgDecorationManagerV1 {
         preferredMode: XdgToplevel.ServerSideDecoration
+    }
+
+    // Uygulamaların istediği diğer protokoller (docs/wayland-protokolleri.md)
+    Viewporter {}
+
+    XdgOutputManagerV1 {}
+
+    CursorShapeManager {}
+
+    PrimarySelectionManager {}
+
+    XdgActivationManager {
+        onActivationRequested: surface => {
+            if (Session.greeter || desktop.locked)
+                return;
+            const window = compositor.windows.find(w => w.xdgSurface.surface === surface);
+            if (window && !window.closing) {
+                compositor.raise(window);
+                window.takeFocus();
+            }
+        }
     }
 }

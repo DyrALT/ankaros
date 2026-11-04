@@ -21,7 +21,8 @@ ANKAROS_COMPOSITOR_DEPENDENCIES = \
 	libxkbcommon \
 	qt6base \
 	qt6declarative \
-	qt6wayland
+	qt6wayland \
+	wayland-protocols
 
 ANKAROS_COMPOSITOR_CONF_OPTS = \
 	-DQT_HOST_PATH=$(HOST_DIR)

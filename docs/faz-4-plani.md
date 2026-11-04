@@ -100,11 +100,12 @@ terminali bu yüzden açılmamıştı). B adımında ölçülecek, gerekenler ek
 | Protokol | Ne için | Durum |
 |---|---|---|
 | `wl_seat` sürüm 5, `wl_data_device_manager` 3 | Klavye/fare olayları, sürükle-bırak | Var: Qt 6.9.1'e yama (`external/patches/qt6wayland/`). Dış uygulamayla sürükle-bırak denenmedi. |
-| `linux-dmabuf` | GPU ile çizilen arabellekler (VS Code, tarayıcılar) | Araştırılacak |
 | `xdg-decoration` | Pencere çerçevesini compositor'ın çizmesi | Var (karar 0007) |
-| `viewporter`, `fractional-scale` | Ölçekli ekranlar | Araştırılacak |
-| `text-input` | Klavye düzeni, Türkçe karakterler, giriş yöntemleri | Araştırılacak |
-| `primary-selection`, `xdg-activation`, `cursor-shape` | Seçili metni orta tuşla yapıştırma, pencere öne getirme, imleç | Araştırılacak |
+| `linux-dmabuf`, `viewporter`, `xdg-output` | GPU arabellekleri, ölçekleme, ekran bilgisi | Var, Qt'den |
+| `primary-selection`, `xdg-activation`, `cursor-shape` | Seçili metni orta tuşla yapıştırma, pencere öne getirme, imleç | Var, kendimiz yazdık |
+| `text-input`, `fractional-scale` | Giriş yöntemleri, kesirli ölçek | Eklenmedi: sistemde karşılığı yok |
+
+Ayrıntılar ve sınırlar: [wayland-protokolleri.md](wayland-protokolleri.md).
 
 Eksik bir protokol Qt'de yoksa Qt Wayland Compositor'ın C++ arayüzüyle kendimiz ekleriz.
 

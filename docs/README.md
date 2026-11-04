@@ -7,6 +7,7 @@
 | [oturum.md](oturum.md) | Kullanıcı hesapları, giriş, oturum yöneticisi (ankaros-session) |
 | [ag.md](ag.md) | Kablolu ağ servisi (ankaros-network) ve Ayarlar › Ağ |
 | [katmanlar.md](katmanlar.md) | Uyumluluk katmanları: `ank katman`, `ankaros-katman`, Debian katmanı |
+| [wayland-protokolleri.md](wayland-protokolleri.md) | Compositor'ın sunduğu protokoller, sınırları, eklenmeyenler |
 | [pencere-yonetimi.md](pencere-yonetimi.md) | Pencere taşıma, boyutlandırma, yaslama, Alt+Tab ve kısayollar |
 | [terminal.md](terminal.md) | Terminal (ankaros-terminal): özellikler, kısayollar, yapı |
 | [acilis-suresi.md](acilis-suresi.md) | Açılış süresinin ölçülmesi ve ölçümler |
