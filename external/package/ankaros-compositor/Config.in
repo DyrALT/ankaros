@@ -6,6 +6,7 @@ config BR2_PACKAGE_ANKAROS_COMPOSITOR
 	select BR2_PACKAGE_LIBXKBCOMMON
 	select BR2_PACKAGE_QT6WAYLAND
 	select BR2_PACKAGE_QT6WAYLAND_COMPOSITOR
+	select BR2_PACKAGE_WAYLAND_PROTOCOLS
 	help
 	  ankaros'un Wayland compositor'ı: tam ekran masaüstü
 	  (Ankaros.Shell) ve pencere yönetimi.

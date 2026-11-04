@@ -24,6 +24,8 @@ bool AppLauncher::launch(const QString &command, const QString &waylandDisplay) 
     // uygulamaları da ekranı ele geçirmeye çalışır, onlar Wayland istemcisi olmalı.
     environment.insert(QStringLiteral("QT_QPA_PLATFORM"), QStringLiteral("wayland"));
     environment.remove(QStringLiteral("QT_QPA_EGLFS_INTEGRATION"));
+    environment.remove(QStringLiteral("QT_WAYLAND_CLIENT_BUFFER_INTEGRATION"));
+    environment.remove(QStringLiteral("QT_WAYLAND_IGNORE_BIND_DISPLAY"));
     // Compositor'ın ölçeği (Retina ekranlarda 2). Uygulamalar ölçeği Wayland çıktısından alır, bu
     // değişken de geçerse iki kez ölçeklenirler.
     environment.remove(QStringLiteral("QT_SCALE_FACTOR"));

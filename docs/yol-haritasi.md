@@ -64,9 +64,9 @@ Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
 Ayrıntılı plan: [faz-4-plani.md](faz-4-plani.md)
 
 - [ ] A: Ses (PipeWire) ve D-Bus
-- [ ] B: Compositor'ın eksik Wayland protokolleri (`wl_seat` 5 ve `wl_data_device_manager` 3 geldi, gerisi bekliyor)
+- [x] B: Compositor'ın eksik Wayland protokolleri ([wayland-protokolleri.md](wayland-protokolleri.md)). VS Code denemesi kaldı
 - [x] C: Veri diski, kapsayıcı başlatıcısı ve Debian katmanı
-- [x] D: `ankaros-apps` servisi ve `ank` komutu: `.deb` kurma (VS Code denemesi B adımını bekliyor)
+- [x] D: `ankaros-apps` servisi ve `ank` komutu: `.deb` kurma
 - [ ] E: Figma'da Paket Merkezi
 - [ ] F: Paket Merkezi
 - [ ] G: XWayland
