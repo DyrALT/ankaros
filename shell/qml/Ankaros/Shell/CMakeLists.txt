@@ -10,6 +10,7 @@ qt_add_qml_module(ankaros_shell
     DEPENDENCIES Ankaros.UI
     QML_FILES
         Desktop.qml
+        DesktopMenu.qml
         TaskBar.qml
         TaskItem.qml
         Clock.qml
