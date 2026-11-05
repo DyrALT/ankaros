@@ -38,7 +38,6 @@ qt_add_qml_module(ankaros-compositor
         keyboardlayout.cpp
         primaryselection.h
         primaryselection.cpp
-        viewporter.h
         xdgactivation.h
         xdgactivation.cpp
 )

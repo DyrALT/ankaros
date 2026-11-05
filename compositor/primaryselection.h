@@ -30,7 +30,8 @@ public:
     void setSelection(wl_client *client, PrimarySelectionSource *source);
     void sendSelection(PrimarySelectionDevice *device);
     void removeDevice(PrimarySelectionDevice *device);
-    void sourceDestroyed(PrimarySelectionSource *source);
+    void sourceDestroyed(PrimarySelectionSource *source, bool destroyedByRequest);
+    wl_client *focusedClient() const;
 
     // Seçim her değiştiğinde artar, eski teklifler böylece geçersiz kalır
     quint64 generation() const { return m_generation; }
@@ -44,12 +45,9 @@ protected:
     void zwp_primary_selection_device_manager_v1_destroy(Resource *resource) override;
 
 private:
-    wl_client *focusedClient() const;
-    void focusChanged(QWaylandSurface *focus);
     void announce(wl_client *except = nullptr);
 
     QList<PrimarySelectionDevice *> m_devices;
     PrimarySelectionSource *m_source = nullptr;
-    wl_client *m_focusedClient = nullptr;
     quint64 m_generation = 0;
 };

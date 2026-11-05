@@ -79,10 +79,24 @@ std::optional<Qt::CursorShape> qtShape(uint32_t shape)
 class CursorShapeDevice : public Device
 {
 public:
-    CursorShapeDevice(CursorShapeManager *manager, wl_client *client, uint32_t id, int version)
+    // pointer boşsa (çizim tableti) nesne vardır ama hiçbir şey yapmaz
+    CursorShapeDevice(CursorShapeManager *manager, wl_client *client, uint32_t id, int version,
+                      wl_resource *pointer)
         : Device(client, id, version)
         , m_manager(manager)
-    {}
+        , m_inert(!pointer)
+    {
+        m_pointerGone.device = this;
+        m_pointerGone.listener.notify = [](wl_listener *listener, void *) {
+            reinterpret_cast<PointerListener *>(listener)->device->m_inert = true;
+            wl_list_remove(&listener->link);
+            wl_list_init(&listener->link);
+        };
+        wl_list_init(&m_pointerGone.listener.link);
+        if (pointer)
+            wl_resource_add_destroy_listener(pointer, &m_pointerGone.listener);
+    }
+    ~CursorShapeDevice() override { wl_list_remove(&m_pointerGone.listener.link); }
 
 protected:
     void wp_cursor_shape_device_v1_destroy_resource(Resource *) override { delete this; }
@@ -97,11 +111,20 @@ protected:
             wl_resource_post_error(resource->handle, error_invalid_shape, "bilinmeyen imleç şekli");
             return;
         }
-        m_manager->setCursorForClient(resource->client(), *cursor);
+        if (!m_inert)
+            m_manager->setCursorForClient(resource->client(), *cursor);
     }
 
 private:
+    struct PointerListener
+    {
+        wl_listener listener; // İlk üye olmalı: bildirimden nesneye dönülüyor
+        CursorShapeDevice *device;
+    };
+
     CursorShapeManager *m_manager;
+    PointerListener m_pointerGone;
+    bool m_inert;
 };
 
 } // namespace
@@ -134,14 +157,14 @@ void CursorShapeManager::wp_cursor_shape_manager_v1_destroy(Resource *resource)
 }
 
 void CursorShapeManager::wp_cursor_shape_manager_v1_get_pointer(Resource *resource, uint32_t id,
-                                                                wl_resource *)
+                                                                wl_resource *pointer)
 {
-    new CursorShapeDevice(this, resource->client(), id, resource->version());
+    new CursorShapeDevice(this, resource->client(), id, resource->version(), pointer);
 }
 
 void CursorShapeManager::wp_cursor_shape_manager_v1_get_tablet_tool_v2(Resource *resource,
                                                                        uint32_t id, wl_resource *)
 {
     // Çizim tableti desteklenmiyor, nesne yine de oluşturulmalı
-    new CursorShapeDevice(this, resource->client(), id, resource->version());
+    new CursorShapeDevice(this, resource->client(), id, resource->version(), nullptr);
 }

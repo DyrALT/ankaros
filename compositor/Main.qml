@@ -395,8 +395,6 @@ WaylandCompositor {
     }
 
     // Uygulamaların istediği diğer protokoller (docs/wayland-protokolleri.md)
-    Viewporter {}
-
     XdgOutputManagerV1 {}
 
     CursorShapeManager {}
@@ -407,7 +405,7 @@ WaylandCompositor {
         onActivationRequested: surface => {
             if (Session.greeter || desktop.locked)
                 return;
-            const window = compositor.windows.find(w => w.xdgSurface.surface === surface);
+            const window = compositor.windows.find(w => w.xdgSurface?.surface === surface);
             if (window && !window.closing) {
                 compositor.raise(window);
                 window.takeFocus();

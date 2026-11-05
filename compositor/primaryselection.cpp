@@ -25,11 +25,12 @@ public:
 protected:
     void zwp_primary_selection_source_v1_destroy_resource(Resource *) override
     {
-        m_manager->sourceDestroyed(this);
+        m_manager->sourceDestroyed(this, m_destroyedByRequest);
         delete this;
     }
     void zwp_primary_selection_source_v1_destroy(Resource *resource) override
     {
+        m_destroyedByRequest = true;
         wl_resource_destroy(resource->handle);
     }
     void zwp_primary_selection_source_v1_offer(Resource *, const QString &mimeType) override
@@ -40,6 +41,7 @@ protected:
 private:
     PrimarySelectionManager *m_manager;
     QStringList m_mimeTypes;
+    bool m_destroyedByRequest = false;
 };
 
 namespace {
@@ -65,12 +67,14 @@ protected:
     {
         wl_resource_destroy(resource->handle);
     }
-    void zwp_primary_selection_offer_v1_receive(Resource *, const QString &mimeType,
+    void zwp_primary_selection_offer_v1_receive(Resource *resource, const QString &mimeType,
                                                 int32_t fd) override
     {
-        if (m_generation == m_manager->generation() && m_manager->source())
+        // Teklif odak gidince ya da seçim değişince biter, arka plandaki uygulama seçimi okuyamaz
+        if (m_generation == m_manager->generation() && m_manager->source() &&
+            resource->client() == m_manager->focusedClient())
             m_manager->source()->transfer(mimeType, fd);
-        // Olay gönderilirken tanıtıcının kopyası alınır, buradaki kapatılmalı. Teklif eskiyse
+        // Olay gönderilirken tanıtıcının kopyası alınır, buradaki kapatılmalı. Teklif geçersizse
         // okuyan taraf boş veri görür.
         close(fd);
     }
@@ -135,7 +139,11 @@ void PrimarySelectionManager::initialize()
     auto *compositor = static_cast<QWaylandCompositor *>(extensionContainer());
     init(compositor->display(), 1);
     connect(compositor->defaultSeat(), &QWaylandSeat::keyboardFocusChanged, this,
-            [this](QWaylandSurface *focus, QWaylandSurface *) { focusChanged(focus); });
+            [this](QWaylandSurface *focus, QWaylandSurface *previous) {
+                // Odaktaki yüzey yok olunca Qt odağı sinyalsiz sıfırlar, previous o zaman boştur
+                if (!previous || !focus || previous->waylandClient() != focus->waylandClient())
+                    announce();
+            });
 }
 
 wl_client *PrimarySelectionManager::focusedClient() const
@@ -145,19 +153,13 @@ wl_client *PrimarySelectionManager::focusedClient() const
     return focus ? focus->waylandClient() : nullptr;
 }
 
-void PrimarySelectionManager::focusChanged(QWaylandSurface *focus)
-{
-    wl_client *client = focus ? focus->waylandClient() : nullptr;
-    if (client == m_focusedClient)
-        return;
-    m_focusedClient = client;
-    announce();
-}
-
 void PrimarySelectionManager::announce(wl_client *except)
 {
+    wl_client *focused = focusedClient();
+    if (!focused || focused == except)
+        return;
     for (PrimarySelectionDevice *device : std::as_const(m_devices)) {
-        if (device->waylandClient() == m_focusedClient && device->waylandClient() != except)
+        if (device->waylandClient() == focused)
             device->sendCurrent(m_source);
     }
 }
@@ -185,14 +187,15 @@ void PrimarySelectionManager::removeDevice(PrimarySelectionDevice *device)
     m_devices.removeOne(device);
 }
 
-void PrimarySelectionManager::sourceDestroyed(PrimarySelectionSource *source)
+void PrimarySelectionManager::sourceDestroyed(PrimarySelectionSource *source,
+                                              bool destroyedByRequest)
 {
     if (source != m_source)
         return;
     m_source = nullptr;
     ++m_generation;
-    // Kapanmakta olan uygulamaya yeni nesne oluşturulmamalı
-    announce(source->waylandClient());
+    // Uygulama kapanıyorsa ona yeni nesne oluşturulmamalı
+    announce(destroyedByRequest ? nullptr : source->waylandClient());
 }
 
 void PrimarySelectionManager::zwp_primary_selection_device_manager_v1_create_source(
