@@ -4,11 +4,15 @@
 # bunu beklemez: imaj yerelde derlenip denenir (docs/gelistirme-ortami.md), CI main'de bir kez daha
 # derleyip bozulmayı yakalar. Elle başlatmak için: gh workflow run imaj.yml --ref <dal>
 # x86_64 PR'larda çalışmaz: main'de ve elle başlatılınca derlenir, süreyi iki katına çıkarmasın.
+#
+# vX.Y.Z etiketi gönderilince iki imaj da derlenir, açılış testini geçerse GitHub Release'e eklenir
+# (CONTRIBUTING.md → Sürümler). Etikette dosya filtresi uygulanmaz, her zaman çalışır.
 name: İmaj
 
 on:
   push:
     branches: [main]
+    tags: ['v*.*.*']
     paths: &imaj-dosyalari
       - buildroot
       - .gitmodules
@@ -104,3 +108,62 @@ jobs:
             ~/ankaros-output/images/${{ matrix.kernel }}
             ~/ankaros-output/images/rootfs.ext4
           retention-days: 14
+
+  release:
+    name: Sürüm
+    # Yalnızca iki mimari de derlenip açılış testini geçtiyse çalışır
+    needs: image
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Etiket main'de mi
+        # Daldaki denenmemiş bir commit'e konan etiket yayınlanmasın
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor "$TAG^{commit}" origin/main ||
+            { echo "::error::$TAG main dalında değil"; exit 1; }
+      - name: Sürüm notu
+        # .github/surum-notu.md ardından CHANGELOG'daki "## [X.Y.Z]" bölümü. Bölüm yoksa sürüm
+        # hazırlanmamıştır, durulur.
+        run: |
+          surum=${TAG#v}
+          awk -v baslik="## [$surum]" \
+            'index($0, baslik) == 1 { bulundu = 1; next } bulundu && /^## \[/ { exit } bulundu' \
+            CHANGELOG.md > degisiklikler.md
+          if ! grep -q '[^[:space:]]' degisiklikler.md; then
+            echo "::error::CHANGELOG.md'de [$surum] bölümü yok"
+            exit 1
+          fi
+          sed -e "s|@TAG@|$TAG|g" -e "s|@REPO@|$GITHUB_REPOSITORY|g" .github/surum-notu.md > notlar.md
+          cat degisiklikler.md >> notlar.md
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ankaros-qemu-*
+          path: imajlar
+      - name: Arşivler
+        run: |
+          for arch in aarch64 x86_64; do
+            ad=ankaros-$TAG-$arch
+            mv "imajlar/ankaros-qemu-$arch" "$ad"
+            tar czf "$ad.tar.gz" "$ad"
+          done
+          sha256sum ankaros-*.tar.gz > SHA256SUMS
+          cat SHA256SUMS
+      - name: Release
+        # Koşu yeniden başlatılırsa var olan Release'in dosyaları ve notu değiştirilir
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release edit "$TAG" --notes-file notlar.md
+            gh release upload "$TAG" ankaros-*.tar.gz SHA256SUMS --clobber
+          else
+            gh release create "$TAG" ankaros-*.tar.gz SHA256SUMS --verify-tag \
+              --title "ankaros $TAG" --notes-file notlar.md
+          fi

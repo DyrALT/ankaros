@@ -7,6 +7,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Sürüm etiketi gönderilince aarch64 ve x86_64 imajları derlenip açılış testinden sonra GitHub Release'e
+  ekleniyor (CONTRIBUTING.md → Sürümler).
 - Compositor `wp_viewporter`, `zxdg_output_manager_v1`, `zwp_linux_dmabuf_v1`, `wp_cursor_shape_manager_v1`,
   `xdg_activation_v1` ve `zwp_primary_selection_device_manager_v1` sunuyor
   ([docs/wayland-protokolleri.md](docs/wayland-protokolleri.md)). Seçili metin orta tuşla yapıştırılır, uygulamalar
