@@ -69,6 +69,14 @@ Item {
         border.width: 1
     }
 
+    // Çerçeveye sağ tık, altındaki masaüstünün sağ tık menüsünü açmasın. Yalnızca sağ düğmeyi alır, sol
+    // tıklama ve sürükleme etkilenmez. -6: aşağıdaki boyutlandırma tutamaklarının dışarı taşan kalınlığı.
+    MouseArea {
+        anchors.fill: parent
+        anchors.margins: root.resizable ? -6 : 0
+        acceptedButtons: Qt.RightButton
+    }
+
     Item {
         id: body
 

@@ -23,6 +23,8 @@ qt_add_qml_module(ankaros_ui
         HoverButton.qml
         InfoTip.qml
         InputField.qml
+        MenuItem.qml
+        MenuSeparator.qml
         PushButton.qml
         SectionTitle.qml
         SegmentedControl.qml
