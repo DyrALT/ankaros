@@ -114,6 +114,7 @@ parçalar. `Ankaros.System` (`shell/qml/Ankaros/System/`) sistem servislerinin i
 | `AppIcon.qml` | Degrade uygulama simgesi | `AppIcon/*` |
 | `GlassPanel.qml` | Arkasını bulanıklaştıran buzlu cam yüzey | panel dolgusu + arka plan bulanıklığı |
 | `HoverButton.qml` | Üzerine gelince arka planı beliren düğme | `color/surface/hover`, `pressed` |
+| `MenuItem.qml`, `MenuSeparator.qml` | Menü satırı (simge, ad, kısayol) ve ayırıcı çizgi. Güç ve masaüstü menüsü kullanır | Güç menüsü satırları |
 | `Wallpaper.qml` | Renk geçişi ve yumuşak renk lekeleri, dört palet (Ayarlar'da önizleme olarak da kullanılır) | Duvar kağıdı |
 | `Desktop.qml` | Masaüstünün kökü. Önizleme ve compositor bunu yükler | Ekran çerçevesi |
 | `TaskBar.qml`, `TaskItem.qml`, `Clock.qml` | Alt çubuk, uygulama öğesi, saat | Alt çubuk |
@@ -128,6 +129,7 @@ parçalar. `Ankaros.System` (`shell/qml/Ankaros/System/`) sistem servislerinin i
 | `PasswordField.qml`, `Avatar.qml`, `BigClock.qml`, `ErrorPill.qml` | Şifre alanı, avatar, büyük saat, hata balonu | `Şifre alanı`, `Oturum kartı` |
 | `GlassIconButton.qml`, `LockBackground.qml` | Giriş ekranının cam düğmeleri, bulanık arka plan | |
 | `PowerMenu.qml` | Başlat panelindeki güç menüsü | Güç menüsü |
+| `DesktopMenu.qml` | Boş masaüstüne sağ tıklayınca açılan menü ([masaustu-menusu.md](masaustu-menusu.md)) | Figma'da çizilmedi, güç menüsüyle aynı stil |
 
 ### Tasarım ilkeleri
 
