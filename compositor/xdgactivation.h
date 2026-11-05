@@ -1,8 +1,8 @@
 #pragma once
 
 // xdg-activation-v1: bir uygulama başka bir pencereyi öne getirmek ister (ör. terminaldeki bağlantı
-// tarayıcıyı açar). Yalnızca klavye odağı kendisindeyken aldığı jeton geçerlidir, arka plandaki
-// uygulama odağı çalamaz.
+// tarayıcıyı açar). Jeton yalnızca klavye odağı kendisindeyken ve kullanıcı az önce bir tuşa ya da
+// fareye bastıysa geçerlidir, uygulama kendiliğinden odak çalamaz.
 #include "qwayland-server-xdg-activation-v1.h"
 
 #include <QCoreApplication>
@@ -23,8 +23,9 @@ class XdgActivationManager : public QWaylandCompositorExtensionTemplate<XdgActiv
 public:
     // Qt'nin QML'den oluşturulan eklentileri kendini başlatmaz, compositor kurulunca initialize()
     // çağrılsın
-    XdgActivationManager() { QCoreApplication::postEvent(this, new QEvent(QEvent::Polish)); }
+    XdgActivationManager();
     void initialize() override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
     // Jeton üretir. Yalnızca odaktaki uygulamanın kendi yüzeyiyle istediği jeton kullanılabilir,
     // ötekiler de bir jeton alır (protokol gereği) ama işe yaramaz.
@@ -41,4 +42,5 @@ protected:
 
 private:
     QHash<QString, QElapsedTimer> m_tokens;
+    QElapsedTimer m_lastInput;
 };

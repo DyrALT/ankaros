@@ -11,7 +11,7 @@
 | `wl_seat`, `wl_data_device_manager` | 5, 3 | Girdi, pano, sürükle-bırak | Qt'ye yama (`external/patches/qt6wayland/`) |
 | `xdg_wm_base`, `zxdg_decoration_manager_v1` | 1, 1 | Pencereler ve çerçeve (karar 0007) | Qt |
 | `zxdg_output_manager_v1` | 3 | Ekranın mantıksal boyutu | Qt |
-| `wp_viewporter` | 1 | Ölçekleme. Chromium ve Electron bu olmadan açılmaz | Qt, QML'e `viewporter.h` açar |
+| `wp_viewporter` | 1 | Ölçekleme | Qt, `WaylandCompositor` kendisi sunar |
 | `zwp_linux_dmabuf_v1` | 3 | GPU ile çizilen arabellekler | Qt eklentisi, `main.cpp` seçer |
 | `wp_cursor_shape_manager_v1` | 1 | Uygulamanın imleç şekli | `cursorshape.cpp` |
 | `xdg_activation_v1` | 1 | Pencereyi öne getirme | `xdgactivation.cpp` |
@@ -30,7 +30,8 @@ Kendi yazdıklarımızın tanımları `wayland-protocols` paketinden gelir, Qt'n
   Şekli `cursor-shape` ile söyleyen uygulamalarda doğru imleç görünür, desteklemeyenlerin kendi imleç teması
   görünmez.
 - **Seri numaraları:** `primary-selection` ve `cursor-shape` istekteki olay numarasına bakmaz, yalnızca
-  uygulamanın odakta olup olmadığına bakar.
+  uygulamanın odakta olup olmadığına bakar. `xdg-activation` de bakmaz: jeton, uygulama odaktayken ve son 10 saniyede
+  tuşa ya da fareye basıldıysa geçerli olur (en fazla 64 jeton, 30 saniye).
 - **`zxdg_output_v1.done` uyarısı:** Qt uygulamaları günlüğe `received on version 3 or newer` yazar. Qt'nin
   compositor'ı bu olayı sürüm 3'te de gönderiyor, zararsızdır.
 
@@ -48,7 +49,7 @@ Kendi yazdıklarımızın tanımları `wayland-protocols` paketinden gelir, Qt'n
 
 Yeni protokoller iki istemcili küçük bir programla QEMU'da denendi: seçim bir istemciden ötekine aktarıldı, arka
 plandaki istemcinin seçim değiştirmesi ve geçersiz jetonla öne gelmesi reddedildi, geçerli jeton pencereyi öne
-getirdi, istemciler kapanınca compositor çalışmaya devam etti.
+getirdi, odağını kaybeden istemci eski teklifle seçimi okuyamadı, istemciler kapanınca compositor çalışmaya devam etti.
 
 UTM'de elle denendi: Terminal ve Ayarlar açılıyor, imleç şekli değişiyor, iki `foot` penceresi arasında yapıştırma
 çalışıyor. `linux-dmabuf` sunuluyor ve hatasız yükleniyor, ama onunla gerçek bir GPU arabelleği gönderen bir uygulama

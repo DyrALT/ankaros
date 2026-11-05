@@ -1,5 +1,6 @@
 #include "xdgactivation.h"
 
+#include <QGuiApplication>
 #include <QPointer>
 #include <QUuid>
 #include <QtWaylandCompositor/QWaylandCompositor>
@@ -10,6 +11,10 @@ namespace {
 
 // Jeton kısa ömürlüdür: tıklamadan pencerenin açılmasına kadar geçen süre
 constexpr qint64 tokenLifetimeMs = 30'000;
+// Jeton istenmeden en fazla bu kadar önce kullanıcı girdisi olmalı
+constexpr qint64 inputWindowMs = 10'000;
+// Odaktaki uygulama döngüde jeton istese de bellek büyümesin
+constexpr qsizetype maxTokens = 64;
 
 class ActivationToken : public QtWaylandServer::xdg_activation_token_v1
 {
@@ -53,6 +58,20 @@ private:
 
 } // namespace
 
+XdgActivationManager::XdgActivationManager()
+{
+    QCoreApplication::postEvent(this, new QEvent(QEvent::Polish));
+    qApp->installEventFilter(this);
+}
+
+bool XdgActivationManager::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched->isWindowType() &&
+        (event->type() == QEvent::KeyPress || event->type() == QEvent::MouseButtonPress))
+        m_lastInput.start();
+    return false;
+}
+
 void XdgActivationManager::initialize()
 {
     QWaylandCompositorExtensionTemplate::initialize();
@@ -65,12 +84,15 @@ QString XdgActivationManager::createToken(wl_client *client, QWaylandSurface *su
     auto *compositor = static_cast<QWaylandCompositor *>(extensionContainer());
     const QWaylandSurface *focus = compositor->defaultSeat()->keyboardFocus();
     if (!surface || surface->waylandClient() != client || !focus ||
-        focus->waylandClient() != client)
+        focus->waylandClient() != client || !m_lastInput.isValid() ||
+        m_lastInput.hasExpired(inputWindowMs))
         return token;
 
     m_tokens.removeIf([](QHash<QString, QElapsedTimer>::iterator entry) {
         return entry->hasExpired(tokenLifetimeMs);
     });
+    if (m_tokens.size() >= maxTokens)
+        return token;
     QElapsedTimer created;
     created.start();
     m_tokens.insert(token, created);
