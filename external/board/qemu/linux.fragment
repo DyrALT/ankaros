@@ -11,3 +11,11 @@ CONFIG_POSIX_MQUEUE=y
 CONFIG_BINFMT_MISC=y
 CONFIG_HIGH_RES_TIMERS=y
 CONFIG_NO_HZ_IDLE=y
+# Ses (karar 0016, docs/ses.md): QEMU'nun virtio-sound-pci aygıtı için SND_VIRTIO, UTM ve gerçek
+# bilgisayarlar için Intel HDA ve genel HDA kodeği. Buildroot'un ana yapılandırmalarında ses yok.
+CONFIG_SOUND=y
+CONFIG_SND=y
+CONFIG_SND_PCI=y
+CONFIG_SND_HDA_INTEL=y
+CONFIG_SND_HDA_GENERIC=y
+CONFIG_SND_VIRTIO=y

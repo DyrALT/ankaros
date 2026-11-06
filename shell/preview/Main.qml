@@ -72,6 +72,7 @@ Window {
         session: Session
         network: Network
         battery: Battery
+        audio: Audio
         locked: window.args.includes("--lock")
         startMenuOpen: window.args.includes("--launcher")
         calendarOpen: window.args.includes("--calendar")

@@ -56,6 +56,18 @@ BR2_PACKAGE_FONTCONFIG=y
 BR2_PACKAGE_DEJAVU=y
 BR2_PACKAGE_DEJAVU_MONO=y
 
+# Ses ve D-Bus (docs/ses.md): PipeWire sesi yönetir, WirePlumber hangi aygıtın kullanılacağına karar
+# verir (Lua 5.4 ister), wpctl ses düzeyini değiştirir. alsa-utils yalnızca denemeler için.
+BR2_PACKAGE_DBUS=y
+BR2_PACKAGE_ALSA_LIB=y
+BR2_PACKAGE_ALSA_UTILS=y
+BR2_PACKAGE_ALSA_UTILS_AMIXER=y
+BR2_PACKAGE_ALSA_UTILS_APLAY=y
+BR2_PACKAGE_LUA=y
+BR2_PACKAGE_LUA_5_4=y
+BR2_PACKAGE_PIPEWIRE=y
+BR2_PACKAGE_WIREPLUMBER=y
+
 # Qt 6: eglfs ile doğrudan ekrana çizim, QML, Wayland compositor
 BR2_PACKAGE_QT6=y
 BR2_PACKAGE_QT6BASE_GUI=y

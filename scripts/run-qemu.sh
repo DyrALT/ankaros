@@ -8,6 +8,8 @@
 #
 # Çıkmak için: Ctrl-a ardından x
 #
+# Ses (docs/ses.md): $ANKAROS_AUDIO ses sürücüsü (Mac'te coreaudio, başka yerde none).
+#
 # Veri diski (karar 0017): $ANKAROS_DATA (varsayılan ~/.local/share/ankaros/veri.qcow2), yoksa 16 GB'lık
 # boş bir disk oluşturulur. İlk açılışta ankaros onu biçimlendirip /var/lib/ankaros'a bağlar.
 #
@@ -59,6 +61,12 @@ if [ ! -f "$DATA" ]; then
   qemu-img create -q -f qcow2 "$DATA" 16G
 fi
 
+# Ses (docs/ses.md): virtio-sound-pci (QEMU 8.2+). Mac'te coreaudio, başka yerde ses çıkmaz (none).
+# $ANKAROS_AUDIO ile değişir (ör. pa, pipewire, alsa).
+if [ -z "$ANKAROS_AUDIO" ]; then
+  [ "$(uname)" = Darwin ] && ANKAROS_AUDIO=coreaudio || ANKAROS_AUDIO=none
+fi
+
 DISPLAY_ARGS="-nographic"
 if [ "$1" = "--gui" ]; then
   shift
@@ -77,5 +85,6 @@ exec "qemu-system-$ARCH" \
   -device "$ROOT_DEVICE",drive=hd0 \
   -drive file="$DATA",if=none,format=qcow2,id=veri \
   -device virtio-blk-pci,drive=veri \
+  -audiodev "$ANKAROS_AUDIO",id=ses -device virtio-sound-pci,audiodev=ses \
   -netdev user,id=eth0 -device "$NET_DEVICE",netdev=eth0 \
   "$@"

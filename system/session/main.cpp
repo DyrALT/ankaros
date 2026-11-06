@@ -228,14 +228,11 @@ bool SessionManager::spawn(Mode mode, const std::string &user)
     for (std::string &entry : environment)
         envp.push_back(entry.data());
     envp.push_back(nullptr);
-    // Ortam değişkenlerinin geri kalanı (eglfs/KMS, dil, varsayılan klavye) /etc/profile.d altından
-    // gelir
-    const char *argv[] = {"/bin/sh",
-                          "-c",
-                          ". /etc/profile; exec /usr/bin/ankaros-compositor \"$@\"",
-                          "ankaros-compositor",
-                          mode == Mode::Greeter ? "--login" : nullptr,
-                          nullptr};
+    // masaustu-baslat /etc/profile'ı okur (eglfs/KMS, dil, varsayılan klavye /etc/profile.d
+    // altından gelir), oturumda önce ses altyapısını (D-Bus, PipeWire, WirePlumber) sonra
+    // compositor'ı başlatır
+    const char *argv[] = {"/bin/sh", "/usr/libexec/ankaros/masaustu-baslat",
+                          mode == Mode::Greeter ? "--login" : nullptr, nullptr};
 
     const int logFd = open(compositorLog, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
     if (logFd >= 0)

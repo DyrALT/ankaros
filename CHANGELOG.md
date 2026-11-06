@@ -7,6 +7,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Ses ve D-Bus ([docs/ses.md](docs/ses.md)): imajda PipeWire, WirePlumber ve D-Bus var, çekirdekte ses desteği
+  açık. Her oturumda kullanıcının D-Bus'ı, PipeWire'ı ve WirePlumber'ı açılır. Alt çubukta ses simgesi,
+  Hızlı ayarlarda sessiz düğmesi ve ses kaydırıcısı eklendi (ses aygıtı yoksa görünmezler). QEMU ve UTM
+  betikleri sanal makineye `virtio-sound-pci` ekler.
 - Compositor `wp_viewporter`, `zxdg_output_manager_v1`, `zwp_linux_dmabuf_v1`, `wp_cursor_shape_manager_v1`,
   `xdg_activation_v1` ve `zwp_primary_selection_device_manager_v1` sunuyor
   ([docs/wayland-protokolleri.md](docs/wayland-protokolleri.md)). Seçili metin orta tuşla yapıştırılır, uygulamalar

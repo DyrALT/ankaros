@@ -63,7 +63,7 @@ Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
 
 Ayrıntılı plan: [faz-4-plani.md](faz-4-plani.md)
 
-- [ ] A: Ses (PipeWire) ve D-Bus
+- [ ] A: Ses (PipeWire) ve D-Bus ([ses.md](ses.md)): imaj derlendi, QEMU'da ses aygıtı ve wpctl denendi; arayüz (kaydırıcı, sessiz düğmesi, simge) ekranda denendi
 - [x] B: Compositor'ın eksik Wayland protokolleri ([wayland-protokolleri.md](wayland-protokolleri.md)). VS Code denemesi kaldı
 - [x] C: Veri diski, kapsayıcı başlatıcısı ve Debian katmanı
 - [x] D: `ankaros-apps` servisi ve `ank` komutu: `.deb` kurma

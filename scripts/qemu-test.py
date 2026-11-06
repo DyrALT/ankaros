@@ -370,6 +370,8 @@ def main():
         "-drive", f"file={os.path.join(args.images, 'rootfs.ext4')},if=none,format=raw,id=hd0,file.locking=off",
         "-device", f"{settings['root_device']},drive=hd0",
         *data_disk,
+        # Ses aygıtı (docs/ses.md): CI'da ses çıkmaz, yeter ki wpctl aygıtı görsün
+        "-audiodev", "none,id=ses", "-device", "virtio-sound-pci,audiodev=ses",
         "-netdev", "user,id=eth0", "-device", f"{settings['net_device']},netdev=eth0,id=nic0",
         "-serial", f"unix:{serial_path},server=on,wait=off",
         "-qmp", f"unix:{qmp_path},server=on,wait=off",

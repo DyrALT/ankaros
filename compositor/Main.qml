@@ -188,6 +188,7 @@ WaylandCompositor {
                 session: Session
                 network: Network
                 battery: Battery
+                audio: Audio
                 visible: !Session.greeter
                 snapPreview: {
                     const dragged = compositor.windows.find(w => w.snapZone !== "");
