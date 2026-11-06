@@ -7,6 +7,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Masaüstü sağ tık menüsü ([docs/masaustu-menusu.md](docs/masaustu-menusu.md)): duvar kağıdı ve görünüm
+  ayarları, açık/koyu tema, Terminal, ekranı kilitle. Menü satırları `Ankaros.UI`'daki ortak `MenuItem` ve
+  `MenuSeparator` bileşenlerine taşındı (güç menüsü de kullanıyor). Önizlemede `--context-menu`, CI duman
+  testinde bir ekran görüntüsü daha.
 - Ses ve D-Bus ([docs/ses.md](docs/ses.md)): imajda PipeWire, WirePlumber ve D-Bus var, çekirdekte ses desteği
   açık. Her oturumda kullanıcının D-Bus'ı, PipeWire'ı ve WirePlumber'ı açılır. Alt çubukta ses simgesi,
   Hızlı ayarlarda sessiz düğmesi ve ses kaydırıcısı eklendi (ses aygıtı yoksa görünmezler). QEMU ve UTM

@@ -24,43 +24,6 @@ GlassPanel {
         NumberAnimation { duration: Theme.motion.fast }
     }
 
-    component MenuItem: HoverButton {
-        id: item
-
-        property string icon
-        property string label
-        property string shortcut
-
-        Layout.fillWidth: true
-        Layout.preferredHeight: 34
-        radius: Theme.radius.sm
-
-        RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 10
-            anchors.rightMargin: 10
-            spacing: 10
-
-            Icon {
-                name: item.icon
-                size: 16
-            }
-
-            Label {
-                Layout.fillWidth: true
-                text: item.label
-                font.weight: Font.Medium
-            }
-
-            Label {
-                visible: item.shortcut.length > 0
-                text: item.shortcut
-                color: Theme.color.textSecondary
-                font.pixelSize: Theme.font.caption
-            }
-        }
-    }
-
     ColumnLayout {
         id: column
 
@@ -81,13 +44,7 @@ GlassPanel {
             onClicked: root.logoutRequested()
         }
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            Layout.topMargin: 2
-            Layout.bottomMargin: 2
-            color: Theme.color.border
-        }
+        MenuSeparator {}
 
         MenuItem {
             icon: "restart"

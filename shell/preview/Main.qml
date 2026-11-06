@@ -20,6 +20,7 @@
 //   --search <metin>     başlat panelini bu aramayla aç, ör. --search koyu
 //   --calendar           takvimi açık göster
 //   --quick-settings     hızlı ayarları açık göster
+//   --context-menu       masaüstünün sağ tık menüsünü açık göster
 //   --login              giriş ekranını göster (compositor --login gibi). Şifre: ankaros
 //   --lock               masaüstünü kilitli olarak başla. Şifre: ankaros
 //   --error              giriş ya da kilit ekranını "Şifre yanlış" durumunda göster
@@ -105,6 +106,8 @@ Window {
                 showStartMenu("home", window.args[search + 1]);
             else if (window.args.includes("--all-apps"))
                 showStartMenu("all", "");
+            else if (window.args.includes("--context-menu"))
+                Qt.callLater(() => showContextMenu(Qt.point(640, 260)));
         }
     }
 

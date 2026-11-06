@@ -38,6 +38,8 @@ Item {
     property alias startMenuOpen: startMenu.open
     property alias calendarOpen: calendar.open
     property alias quickSettingsOpen: quickSettings.open
+    // Masaüstüne sağ tıklayınca açılan menü
+    property alias contextMenuOpen: desktopMenu.open
     // Uygulama pencerelerinin yerleştiği katman: duvar kağıdının üstünde, alt çubuğun altında.
     // Compositor pencere çerçevelerini bu öğenin çocuğu olarak oluşturur.
     readonly property alias windowLayer: windowLayer
@@ -69,6 +71,18 @@ Item {
         startMenu.open = false;
         calendar.open = false;
         quickSettings.open = false;
+        desktopMenu.open = false;
+    }
+
+    // Masaüstü menüsünü bir noktada aç (sahne koordinatları). Başka paneller kapanır, menü ekranın
+    // ve alt çubuğun dışına taşmaz.
+    function showContextMenu(position) {
+        if (locked || switcher.visible)
+            return;
+        closePanels();
+        desktopMenu.x = Math.max(Theme.spacing.sm, Math.min(position.x, width - desktopMenu.width - Theme.spacing.sm));
+        desktopMenu.y = Math.max(Theme.spacing.sm, Math.min(position.y, workArea.height - desktopMenu.height));
+        desktopMenu.open = true;
     }
 
     // Panellerden birini aç ya da açıksa kapat, diğerlerini kapat
@@ -104,12 +118,12 @@ Item {
     function shellAt(position) {
         if (switcher.visible || root.locked)
             return true;
-        for (const item of [taskBar, startMenu, calendar, quickSettings]) {
+        for (const item of [taskBar, startMenu, calendar, quickSettings, desktopMenu]) {
             if (item.visible && item.contains(item.mapFromItem(null, position)))
                 return true;
         }
-        // Açık bir panelin dışına tıklamak paneli kapatır, pencereye ulaşmaz
-        return startMenu.open || calendar.open || quickSettings.open;
+        // Açık bir panelin ya da menünün dışına tıklamak onu kapatır, pencereye ulaşmaz
+        return startMenu.open || calendar.open || quickSettings.open || desktopMenu.open;
     }
 
     // Alt çubukta uygulamanın simgesinin ortası (küçültme animasyonu buraya uçar)
@@ -126,6 +140,14 @@ Item {
 
         Wallpaper {
             anchors.fill: parent
+        }
+
+        // Boş masaüstüne sağ tık. Pencereler bunun üstünde olduğu için pencerenin içindeki sağ tık
+        // uygulamaya gider. Basınca açılır: kısa tıklamalar yavaş çizimde TapHandler'da kaybolabiliyor.
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.RightButton
+            onPressed: mouse => root.showContextMenu(Qt.point(mouse.x, mouse.y))
         }
 
         Item {
@@ -170,10 +192,44 @@ Item {
 
     // Açılır paneller açıkken dışarı tıklamak onları kapatır. Her MouseArea'nın bir imleci vardır:
     // görünür kalırsa pencerelerin üstünde durduğu için tutamakların imlecini örter.
+    // Sağ tık da kapatır (menü açıkken başka yere sağ tıklamak onu kapatır, yenisi açılmaz).
     MouseArea {
         anchors.fill: parent
-        visible: startMenu.open || calendar.open || quickSettings.open
-        onClicked: root.closePanels()
+        visible: startMenu.open || calendar.open || quickSettings.open || desktopMenu.open
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onPressed: root.closePanels()
+    }
+
+    Shortcut {
+        sequence: "Escape"
+        enabled: desktopMenu.open
+        onActivated: desktopMenu.open = false
+    }
+
+    DesktopMenu {
+        id: desktopMenu
+
+        backdrop: scene
+        onWallpaperRequested: {
+            open = false;
+            root.settingsRequested("wallpaper");
+        }
+        onAppearanceRequested: {
+            open = false;
+            root.settingsRequested("appearance");
+        }
+        onThemeToggleRequested: {
+            open = false;
+            Appearance.darkMode = !Appearance.darkMode;
+        }
+        onTerminalRequested: {
+            open = false;
+            root.launch("Terminal");
+        }
+        onLockRequested: {
+            open = false;
+            root.lock();
+        }
     }
 
     StartMenu {

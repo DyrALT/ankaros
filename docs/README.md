@@ -10,6 +10,7 @@
 | [katmanlar.md](katmanlar.md) | Uyumluluk katmanları: `ank katman`, `ankaros-katman`, Debian katmanı |
 | [wayland-protokolleri.md](wayland-protokolleri.md) | Compositor'ın sunduğu protokoller, sınırları, eklenmeyenler |
 | [pencere-yonetimi.md](pencere-yonetimi.md) | Pencere taşıma, boyutlandırma, yaslama, Alt+Tab ve kısayollar |
+| [masaustu-menusu.md](masaustu-menusu.md) | Masaüstüne sağ tıklayınca açılan menü: davranış, maddeler, yapı |
 | [terminal.md](terminal.md) | Terminal (ankaros-terminal): özellikler, kısayollar, yapı |
 | [acilis-suresi.md](acilis-suresi.md) | Açılış süresinin ölçülmesi ve ölçümler |
 | [init.md](init.md) | ankaros-init: servis dosyaları, ankarosctl, günlükler, kapatma |
