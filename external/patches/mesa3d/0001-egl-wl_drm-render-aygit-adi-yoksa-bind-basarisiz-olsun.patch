@@ -1,0 +1,18 @@
+mesa3d: render aygıtı adı yoksa EGL_WL_bind_wayland_display çökmesin
+
+eglBindWaylandDisplayWL, drmGetRenderDeviceNameFromFd başarısız olunca
+dri2_dpy->device_name'i kopyalıyor. Yazılımla çizen sürücüde (kms_swrast,
+softpipe) bu ad NULL, strdup(NULL) ile compositor çöküyordu. Ad yoksa bağlama
+başarısız olur ve Qt wl_drm olmadan devam eder (docs/faz-4-plani.md).
+
+--- a/src/egl/drivers/dri2/egl_dri2.c	2026-11-03 20:20:49.579162556 +0300
++++ b/src/egl/drivers/dri2/egl_dri2.c	2026-11-03 20:20:49.600174217 +0300
+@@ -2695,7 +2695,7 @@
+       goto fail;
+ 
+    device_name = drmGetRenderDeviceNameFromFd(dri2_dpy->fd_render_gpu);
+-   if (!device_name)
++   if (!device_name && dri2_dpy->device_name)
+       device_name = strdup(dri2_dpy->device_name);
+    if (!device_name)
+       goto fail;

@@ -40,6 +40,9 @@ BR2_PACKAGE_MESA3D=y
 BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_SOFTPIPE=y
 BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VIRGL=y
 BR2_PACKAGE_MESA3D_GBM=y
+# EGL_WL_bind_wayland_display: bu seçenek kapalıysa compositor'ın EGL'si uzantıyı sunmaz, penceredeki
+# istemciler ekran kartını bulamaz ve yazılımla çizer
+BR2_PACKAGE_MESA3D_LEGACY_BIND_WAYLAND_DISPLAY=y
 BR2_PACKAGE_MESA3D_OPENGL_EGL=y
 BR2_PACKAGE_MESA3D_OPENGL_ES=y
 

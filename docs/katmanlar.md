@@ -60,7 +60,9 @@ ona `ank-paket` üzerinden bağlanır.
 
 - **Compositor'ın eksik protokolleri (Faz 4 B):** `foot` penceresini açıyor ama compositor seçili metni orta
   tuşla yapıştırma, `xdg-activation`, kesirli ölçek, imleç şekli ve `text-input` sunmuyor. `linux-dmabuf`
-  henüz açılmadı, uygulamalar ekran belleğini paylaşılan bellekle gönderiyor.
+  (sürüm 3, Qt'nin eklentisi) ve `wl_drm` açık: Qt uygulaması ankaros'un sanal GPU'sunda GPU belleğiyle çiziyor.
+  Katmandaki uygulamayla (`foot`, `glxgears`, Debian'ın Mesa'sı) denenmedi. Qt'nin `linux-dmabuf` eklentisi
+  `dmabuf-feedback` (sürüm 4) sunmuyor, Mesa dışındaki istemciler (Chromium, Electron) bunu isteyebilir.
 - `ankaros-katman` ortam değişkenlerini temizlemiyor. ankaros'un bash biçimindeki `PS1`'i katmandaki
   `/bin/sh`'a geçerse istem bozuk görünür.
 - Kurulan uygulamaların kendi simgeleri okunmuyor, başlat panelinde genel simge görünüyor.
