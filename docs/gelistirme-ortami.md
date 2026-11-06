@@ -146,7 +146,7 @@ Windows için aşağıdaki [Windows'ta](#windowsta) bölümüne bakın. Derleme 
 - Başka bir mimariyi derlemek için `ANKAROS_ARCH=x86_64 ./scripts/build.sh`. Buildroot o mimarinin araç zincirini
   kendisi derler, Mac'teki arm64 makinede de çalışır. Çıktı `~/ankaros-output-x86_64`'e gider. İmajı `IMAGES`
   değişkeniyle verin. Mac'te işlemci taklit edildiği için çok yavaş açılır.
-- İmaj yalnızca sanal makine içindir, gerçek bilgisayarda açılmaz (Faz 6). UTM Mac'e özgüdür.
+- İmaj yalnızca sanal makine içindir, gerçek bilgisayarda açılmaz (Faz 7). UTM Mac'e özgüdür.
 
 ### Windows'ta
 
