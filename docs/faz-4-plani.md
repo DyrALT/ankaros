@@ -1,5 +1,7 @@
 # Faz 4 planı: başka sistemlerin uygulamaları (`v0.5.0`)
 
+> `v0.5.0` A–D adımlarıyla yayınlandı (2026-11-07). E–H adımları yol haritasında Faz 5 (`v0.6.0`) oldu.
+
 **Hedef:** Kullanıcı, uygulamanın sitesinden indirdiği `.deb`'i (ilk örnek VS Code) çift tıklayarak ya da
 Paket Merkezi'nden kurar. Uygulama başlat panelinde görünür, ankaros'ta kendi penceresinde açılır,
 sesi ve GPU'yu kullanır. Ardından aynı altyapıyla `.rpm` ve AppImage gelir.
@@ -58,7 +60,7 @@ Her adım ayrı bir PR'dır. PR'lar üst üste dizilmez.
 | **F** `feat(apps)` | Paket Merkezi. `.deb` dosyasına çift tıklama (dosya yöneticisi yokken Terminal'den `ank kur`). |
 | **G** `feat(compositor)` | XWayland (yalnızca X11 bilen uygulamalar için) |
 | **H** `feat(system)` | Fedora katmanı (`.rpm`) ve AppImage |
-| **I** `chore` | `v0.5.0` |
+| **I** `chore` | `v0.5.0` (A–D ile çıktı, E–H `v0.6.0`'a kaldı) |
 
 A, B ve C birbirinden bağımsızdır, sırayla ama birbirini beklemeden yapılabilir. D, C'den sonra gelir.
 
@@ -121,7 +123,7 @@ Eksik bir protokol Qt'de yoksa Qt Wayland Compositor'ın C++ arayüzüyle kendim
 
 ## Kapsam dışı
 
-- Windows programları (Wine) ve x86_64 desteği: Faz 5
+- Windows programları (Wine) ve x86_64 desteği: Faz 6
 - x86 uygulamalarını ARM'de çalıştırmak (FEX-Emu, box64)
 - Flatpak (ileride ayrı bir katman olarak eklenebilir)
 - Uygulamaların yalıtılması (sandbox)

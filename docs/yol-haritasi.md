@@ -59,27 +59,33 @@ Ayrıntılı plan: [faz-3-plani.md](faz-3-plani.md)
 - [x] H: Ayarlar › Klavye ve dil
 - [x] `v0.4.0`
 
-## Faz 4: Başka sistemlerin uygulamaları (`v0.5.0`), sıradaki
+## Faz 4: Başka sistemlerin uygulamaları (`v0.5.0`), tamamlandı
 
 Ayrıntılı plan: [faz-4-plani.md](faz-4-plani.md)
 
-- [ ] A: Ses (PipeWire) ve D-Bus ([ses.md](ses.md)): imaj derlendi, QEMU'da ses aygıtı ve wpctl denendi; arayüz (kaydırıcı, sessiz düğmesi, simge) ekranda denendi
+- [x] A: Ses (PipeWire) ve D-Bus ([ses.md](ses.md)): imaj derlendi, QEMU'da ses aygıtı ve wpctl denendi; arayüz (kaydırıcı, sessiz düğmesi, simge) ekranda denendi
 - [x] B: Compositor'ın eksik Wayland protokolleri ([wayland-protokolleri.md](wayland-protokolleri.md)). VS Code denemesi kaldı
 - [x] C: Veri diski, kapsayıcı başlatıcısı ve Debian katmanı
 - [x] D: `ankaros-apps` servisi ve `ank` komutu: `.deb` kurma
+- [x] `v0.5.0`. Planın E–H adımları Faz 5'e taşındı, sonraki fazların numarası birer kaydı
+
+## Faz 5: Paket Merkezi ve diğer katmanlar (`v0.6.0`), sıradaki
+
+Ayrıntılı plan: [faz-4-plani.md](faz-4-plani.md), E–H adımları
+
 - [ ] E: Figma'da Paket Merkezi
 - [ ] F: Paket Merkezi
 - [ ] G: XWayland
 - [ ] H: Fedora katmanı (`.rpm`) ve AppImage
-- [ ] `v0.5.0`
+- [ ] `v0.6.0`
 
-## Faz 5: x86_64 ve Windows uygulamaları (`v0.6.0`)
+## Faz 6: x86_64 ve Windows uygulamaları (`v0.7.0`)
 
 - [x] x86_64 için imaj (Buildroot), CI'da iki mimari ([karar 0018](kararlar/0018-x86-64-imaji.md))
 - [ ] Windows katmanı: Wine ile `.exe` çalıştırma
 - [ ] İsteğe bağlı: Windows'u sanal makinede çalıştırma
 
-## Faz 6: Dağıtım (`v0.7.0`)
+## Faz 7: Dağıtım (`v0.8.0`)
 
 - [ ] Kurulum programı
 - [ ] ISO imajı, gerçek donanımda test

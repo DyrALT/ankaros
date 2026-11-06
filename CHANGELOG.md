@@ -5,6 +5,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+## [0.5.0] - 2026-11-07
+
 ### Eklendi
 
 - Sürüm etiketi gönderilince aarch64 ve x86_64 imajları derlenip açılış testinden sonra GitHub Release'e
@@ -190,7 +192,8 @@ Faz 0: QEMU'da açılan en küçük ankaros sistemi ve Mac'te çalışan masaüs
 
 - `run-qemu.sh`: OrbStack klasöründeki imaj açılırken çıkan disk kilidi hatası
 
-[Yayınlanmamış]: https://github.com/DyrALT/ankaros/compare/v0.4.0...HEAD
+[Yayınlanmamış]: https://github.com/DyrALT/ankaros/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/DyrALT/ankaros/releases/tag/v0.5.0
 [0.4.0]: https://github.com/DyrALT/ankaros/releases/tag/v0.4.0
 [0.3.0]: https://github.com/DyrALT/ankaros/releases/tag/v0.3.0
 [0.2.0]: https://github.com/DyrALT/ankaros/releases/tag/v0.2.0

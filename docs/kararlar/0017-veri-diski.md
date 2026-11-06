@@ -35,7 +35,7 @@ Kurulan uygulamalar ve katmanlar ikinci bir diskte, **veri diskinde** tutulur:
 ## Sonuçlar
 
 - Sistem güncellense de kurulan uygulamalar ve katmanlar korunur.
-- Gerçek donanımda (Faz 6) kurulum programı aynı etiketle ikinci bir bölüm oluşturur.
+- Gerçek donanımda (Faz 7) kurulum programı aynı etiketle ikinci bir bölüm oluşturur.
 - Ev klasörü (`/home`) şimdilik kök dosya sisteminde kalır, ileride veri diskine taşınabilir.
 - İmaja e2fsprogs eklenir (`mkfs.ext4`, `e2fsck`). Busybox'ın `mke2fs`'i yalnızca ext2 biçimlendirir,
   günlüksüz bir dosya sistemi elektrik kesintisinde bozulabilir.
