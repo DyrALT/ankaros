@@ -112,6 +112,21 @@ Herkese açık C++ sınıfları ve QML bileşenleri dosya başında kısa bir a�
 Faz 0 → `v0.1.0`, Faz 1 → `v0.2.0` gibi. Sürümler `main` üzerinde `vX.Y.Z` etiketiyle işaretlenir ve
 CHANGELOG'daki `[Yayınlanmamış]` bölümü o sürümün başlığına dönüştürülür.
 
+Etiket gönderilince `imaj.yml` iki mimarinin imajını derler. İkisi de QEMU açılış testini geçerse GitHub
+Release oluşturulur, `ankaros-vX.Y.Z-aarch64.tar.gz`, `ankaros-vX.Y.Z-x86_64.tar.gz` ve `SHA256SUMS` eklenir.
+Notu [.github/surum-notu.md](.github/surum-notu.md) ile CHANGELOG'daki `## [X.Y.Z]` bölümünden oluşur. Bu yüzden
+etiket, CHANGELOG'u hazırlayan PR birleştikten sonra `main`'e konur:
+
+```sh
+git checkout main && git pull
+git tag -a v0.5.0 -m "ankaros v0.5.0"
+git push origin v0.5.0
+```
+
+Bölüm yoksa ya da etiket `main`'de değilse Release oluşturulmaz. x86_64 derlemesi önbelleksiz birkaç saat
+sürebilir. Bir mimari başarısız olursa Release hiç oluşturulmaz, koşu yeniden başlatılınca var olan Release
+güncellenir.
+
 ## Buildroot'u güncellemek
 
 Buildroot bir git submodule'üdür ve bir LTS sürümüne sabitlenmiştir. Güncellemek için ayrı bir

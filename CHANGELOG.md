@@ -7,6 +7,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Eklendi
 
+- Sürüm etiketi gönderilince aarch64 ve x86_64 imajları derlenip açılış testinden sonra GitHub Release'e
+  ekleniyor (CONTRIBUTING.md → Sürümler).
 - Masaüstü sağ tık menüsü ([docs/masaustu-menusu.md](docs/masaustu-menusu.md)): duvar kağıdı ve görünüm
   ayarları, açık/koyu tema, Terminal, ekranı kilitle. Menü satırları `Ankaros.UI`'daki ortak `MenuItem` ve
   `MenuSeparator` bileşenlerine taşındı (güç menüsü de kullanıyor). Önizlemede `--context-menu`, CI duman
