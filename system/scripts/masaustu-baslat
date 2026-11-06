@@ -1,0 +1,53 @@
+#!/bin/sh
+# Kullanıcının masaüstünü başlatır: önce ses altyapısı (oturum D-Bus'ı, PipeWire, WirePlumber), sonra
+# compositor. ankaros-session çağırır (docs/oturum.md, docs/ses.md). Giriş ekranı (--login) için ses
+# başlatılmaz. Ses servisleri compositor'la aynı süreç grubundadır: oturum kapanınca ankaros-session
+# hepsine birden sinyal gönderir, compositor çöküp çıkarsa bu betik onları kendisi durdurur.
+# Ses altyapısı başlamazsa masaüstü yine açılır (ses simgesi görünmez).
+. /etc/profile
+
+pids=""
+status=0
+
+if [ "$1" != "--login" ]; then
+  runtime="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+  # Önceki oturumdan kalan soket ve kilitler yeni servislerin başlamasını engellemesin
+  rm -f "$runtime/bus" "$runtime/pipewire-0" "$runtime/pipewire-0.lock" "$runtime/pipewire-0-manager" \
+    "$runtime/pipewire-0-manager.lock" "$runtime/pulse/native" "$runtime/pulse/pid"
+
+  # Oturum D-Bus'ı. Adresi compositor ve onun açtığı uygulamalar devralır.
+  export DBUS_SESSION_BUS_ADDRESS="unix:path=$runtime/bus"
+  if command -v dbus-daemon >/dev/null 2>&1; then
+    dbus-daemon --session --nofork --nopidfile --nosyslog --address="$DBUS_SESSION_BUS_ADDRESS" &
+    pids="$pids $!"
+    for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+      [ -S "$runtime/bus" ] && break
+      sleep 0.1
+    done
+  fi
+
+  if command -v pipewire >/dev/null 2>&1; then
+    pipewire &
+    pids="$pids $!"
+    if command -v wireplumber >/dev/null 2>&1; then
+      wireplumber &
+      pids="$pids $!"
+    fi
+    # PulseAudio protokolü: Debian katmanındaki uygulamalar (Electron, Chromium, Firefox) bunu kullanır
+    if command -v pipewire-pulse >/dev/null 2>&1; then
+      pipewire-pulse &
+      pids="$pids $!"
+    fi
+  else
+    echo "masaustu-baslat: pipewire yok, ses kullanılamaz"
+  fi
+fi
+
+# exec kullanılmaz: compositor çıkınca ses servisleri de durdurulmalı
+/usr/bin/ankaros-compositor "$@"
+status=$?
+
+# shellcheck disable=SC2086
+[ -n "$pids" ] && kill $pids 2>/dev/null
+wait 2>/dev/null
+exit "$status"

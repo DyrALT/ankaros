@@ -1,0 +1,7 @@
+# Sistem D-Bus'ı: sistem düzeyindeki servislerin (ve ilerde katmanlardaki uygulamaların) mesajlaşması
+# (docs/ses.md). Kullanıcı oturumlarının kendi D-Bus'ı oturum başlarken açılır (masaustu-baslat).
+# /var/lib/dbus, Buildroot'ta /tmp/dbus'a bağlıdır: makine kimliği her açılışta yeniden üretilir.
+description = Sistem D-Bus'ı
+exec = /bin/sh -c 'mkdir -p /run/dbus /tmp/dbus && dbus-uuidgen --ensure && exec dbus-daemon --system --nofork --nopidfile --nosyslog'
+restart = on-failure
+after = udev

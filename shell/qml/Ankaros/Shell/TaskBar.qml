@@ -18,6 +18,8 @@ GlassPanel {
     property var network: null
     // Pil (Desktop.battery). Pil yoksa simgesi görünmez.
     property var battery: null
+    // Ses (Desktop.audio). Ses aygıtı yoksa simgesi görünmez.
+    property var audio: null
     property bool quickSettingsOpen: false
     property bool calendarOpen: false
 
@@ -171,6 +173,14 @@ GlassPanel {
                             : root.network.connected ? qsTr("Kablolu · %1").arg(root.network.address.split("/")[0])
                             : qsTr("Bağlanıyor")
                     }
+                }
+
+                Icon {
+                    id: volumeIcon
+
+                    visible: root.audio !== null && root.audio.available
+                    name: root.audio ? root.audio.icon : "volume3"
+                    size: Theme.size.statusIcon
                 }
 
                 Icon {

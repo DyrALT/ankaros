@@ -31,8 +31,9 @@ utm() {
 
 # Çekirdeğin açılış argümanları ve girdi aygıtları. UTM her satırı boşluklardan böler, birden çok
 # kelimelik değerler tırnak içinde yazılır. Çekirdekte USB girdi sürücüsü yok, klavye ve fare virtio
-# aygıtlarıdır. Son ikisi ekranı sabit 2880x1800 yapar (set_display).
-ARGUMENTS='["-append \"rootwait root=/dev/vda console=ttyAMA0\"","-device virtio-keyboard-pci","-device virtio-tablet-pci","-global virtio-gpu-gl-pci.xres=2880","-global virtio-gpu-gl-pci.yres=1800"]'
+# aygıtlarıdır. Ses: macOS'un coreaudio'su üzerinden virtio-sound-pci (docs/ses.md). Son ikisi ekranı
+# sabit 2880x1800 yapar (set_display).
+ARGUMENTS='["-append \"rootwait root=/dev/vda console=ttyAMA0\"","-device virtio-keyboard-pci","-device virtio-tablet-pci","-audiodev coreaudio,id=ses","-device virtio-sound-pci,audiodev=ses","-global virtio-gpu-gl-pci.xres=2880","-global virtio-gpu-gl-pci.yres=1800"]'
 
 # Ekran: Retina modu açık, çözünürlük sabit 2880x1800. Retina modunda görüntü Mac'in gerçek
 # çözünürlüğünde gösterilir (1440x900 noktalık pencere), ankaros 2560 pikselden geniş ekranda

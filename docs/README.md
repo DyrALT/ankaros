@@ -5,6 +5,7 @@
 | [gelistirme-ortami.md](gelistirme-ortami.md) | Mac'te geliştirme ortamının sıfırdan kurulumu |
 | [mimari.md](mimari.md) | Sistemin katmanları, repo yapısı ve açılış sırası |
 | [oturum.md](oturum.md) | Kullanıcı hesapları, giriş, oturum yöneticisi (ankaros-session) |
+| [ses.md](ses.md) | Ses (PipeWire, WirePlumber), D-Bus, `Audio` sınıfı ve ses arayüzü |
 | [ag.md](ag.md) | Kablolu ağ servisi (ankaros-network) ve Ayarlar › Ağ |
 | [katmanlar.md](katmanlar.md) | Uyumluluk katmanları: `ank katman`, `ankaros-katman`, Debian katmanı |
 | [wayland-protokolleri.md](wayland-protokolleri.md) | Compositor'ın sunduğu protokoller, sınırları, eklenmeyenler |

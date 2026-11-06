@@ -29,6 +29,8 @@ Item {
     property var network: null
     // Pil (Ankaros.System Battery): present, level, charging. Pil yoksa alt çubukta simgesi görünmez.
     property var battery: null
+    // Ses (Ankaros.System Audio): available, volume (0-100), muted. Ses aygıtı yoksa simgesi görünmez.
+    property var audio: null
     // Ekran kilitli mi. lock() kilitler, kilidi doğru şifre açar.
     property bool locked: false
 
@@ -276,6 +278,7 @@ Item {
         }
         network: root.network
         battery: root.battery
+        audio: root.audio
         onAppClicked: app => {
             root.closePanels();
             root.launch(app);
@@ -302,6 +305,7 @@ Item {
         backdrop: scene
         userName: root.userName
         network: root.network
+        audio: root.audio
         onNetworkClicked: {
             open = false;
             root.settingsRequested("network");

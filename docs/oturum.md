@@ -36,7 +36,8 @@ ankaros-init
    ekranına dönülür.
 
 Her oturum için `/run/user/<uid>` hazırlanır (`XDG_RUNTIME_DIR`). Wayland soketi oradadır. Ortamın geri
-kalanı (eglfs/KMS, dil, klavye) `/etc/profile.d/ankaros-grafik.sh`'den gelir. Compositor'ın çıktısı
+kalanı (eglfs/KMS, dil, klavye) `/etc/profile.d/ankaros-grafik.sh`'den gelir. Compositor'ı `masaustu-baslat` betiği
+başlatır: oturumda önce kullanıcının D-Bus'ını, PipeWire'ı ve WirePlumber'ı açar ([ses.md](ses.md)). Compositor'ın çıktısı
 `/var/log/ankaros-compositor.log`'a, oturum yöneticisininki `/var/log/ankaros-session.log`'a yazılır.
 
 ## session.conf
