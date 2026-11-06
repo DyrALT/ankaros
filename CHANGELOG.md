@@ -31,6 +31,9 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 - Veri diski ([karar 0017](docs/kararlar/0017-veri-diski.md)): kurulan uygulamalar ve uyumluluk katmanları
   ikinci bir diskte (`/var/lib/ankaros`) durur, sistem güncellense de korunur. Boş disk ilk açılışta
   biçimlendirilir. `run-qemu.sh`, `qemu-test.py` ve `utm-olustur.sh` diski kendisi oluşturur.
+- Windows'ta açma: `scripts/run-qemu.ps1` x86_64 imajını WHPX ile donanım hızlandırmalı açar, virgl ve veri
+  diskini kendisi ayarlar ([docs/gelistirme-ortami.md](docs/gelistirme-ortami.md)). `-Width`/`-Height`
+  çekirdek argümanı `ankaros.mode` ile konuğa iletilir (imajdaki sabit `kms.json` 1440x900'e kilitliyordu)
 
 ### Değişti
 
@@ -39,6 +42,12 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ### Düzeltildi
 
+- QEMU'da (virtio-gpu) x86_64 imajının ekranı 640x480 açılıyordu, 1440x900'e ayarlandı
+- Penceredeki uygulamalar (Ayarlar, Terminal) sanal GPU varken de yazılımla (softpipe) çiziyordu: Mesa
+  `EGL_WL_bind_wayland_display` desteği olmadan derleniyordu, compositor `wl_drm` sunamıyor ve istemcinin EGL'si
+  GPU'yu bulamıyordu. Mesa seçeneği açıldı (GPU'suz ortamda compositor'ı çökertmesin diye Mesa'ya küçük bir yama
+  eklendi), uygulamalar `wayland-egl` ve `linux-dmabuf` eklentilerini yüklüyor. x86_64'te
+  (QEMU, virgl) Ayarlar virgl ile çiziyor, UTM'de ve katmandaki uygulamalarla denenmedi
 - Veri diski ikinci açılıştan itibaren bağlanmıyordu, kurulu katmanlar görünmüyordu
 - Pencere boyutlandırılırken çerçeve fareyi geriden izliyor, fare durduktan sonra da büyümeye devam ediyordu
 - İmleç pencere kenarlarında boyutlandırma imlecine dönmüyordu

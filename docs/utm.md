@@ -78,5 +78,17 @@ OpenGL VENDOR: Mesa RENDERER: virgl (ANGLE (Apple, ANGLE Metal Renderer: Apple M
 | `Could not open 'root=/dev/vda'` | `-append` değeri tırnak içinde değil |
 | `VFS: Unable to mount root fs` | Kök dosya sistemi diski VirtIO arayüzünde değil |
 | Masaüstü geliyor, fare ve klavye çalışmıyor | QEMU argümanlarındaki virtio girdi aygıtları eksik |
-| `Failed to initialize EGL display ... EGL_WL_bind_wayland_display` | Zararsız. Uygulamalar ekran belleğini GPU üzerinden değil, paylaşılan bellekle gönderir. |
+| `Failed to initialize EGL display ... EGL_WL_bind_wayland_display` | Zararsız. Uygulamalar ekran belleğini GPU üzerinden değil, paylaşılan bellekle gönderir. Mesa bu uzantıyla derlendikten sonraki imajlarda görünmemeli, ama UTM'de denenmedi. |
 | Betik "Sanal makine oluşturuluyor"da takılıyor | macOS'un otomasyon izni penceresi cevap bekliyor |
+
+## UTM'de denenmeyenler
+
+Aşağıdakiler gerçek bir Mac'te çalıştırılmadı, Windows'taki QEMU (WHPX) denemelerine ve kaynak koduna dayanır:
+
+- KMS ekran modu (`ankaros.mode` çekirdek argümanı, yoksa 1440x900; yedek `/etc/ankaros/kms.json`) yalnızca
+  x86_64'te kullanılır, aarch64'te
+  [`ankaros-grafik.sh`](../external/board/qemu/rootfs-overlay/etc/profile.d/ankaros-grafik.sh) dosyayı hiç
+  vermez. Retina'da ekranın 2880x1800'de kalması UTM'nin `xres` ve `yres` ayarlarına bağlı, Mac'te
+  doğrulanmadı.
+- Penceredeki uygulamaların GPU ile çizmesi (Mesa `EGL_WL_bind_wayland_display`, `linux-dmabuf`) yalnızca
+  QEMU'da (x86_64, virgl) ölçüldü. UTM'nin ANGLE/Metal arka ucunda ve aarch64'te denenmedi.

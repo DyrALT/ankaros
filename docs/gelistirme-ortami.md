@@ -134,7 +134,7 @@ sistem neredeyse yerel hızda açılır. Ek QEMU argümanları betiğe eklenebil
 ### x86_64 bilgisayarda
 
 Mac dışındaki adımlar aynıdır, derleme Linux'ta doğrudan çalışır ([karar 0018](kararlar/0018-x86-64-imaji.md)).
-Windows'ta WSL2 gerekir, henüz denenmedi. Derleme için bölüm 3'teki paketler kurulur, ardından:
+Windows için aşağıdaki [Windows'ta](#windowsta) bölümüne bakın. Derleme için bölüm 3'teki paketler kurulur, ardından:
 
 ```bash
 ./scripts/build.sh         # bilgisayarın mimarisini derler, çıktı ~/ankaros-output
@@ -147,6 +147,59 @@ Windows'ta WSL2 gerekir, henüz denenmedi. Derleme için bölüm 3'teki paketler
   kendisi derler, Mac'teki arm64 makinede de çalışır. Çıktı `~/ankaros-output-x86_64`'e gider. İmajı `IMAGES`
   değişkeniyle verin. Mac'te işlemci taklit edildiği için çok yavaş açılır.
 - İmaj yalnızca sanal makine içindir, gerçek bilgisayarda açılmaz (Faz 6). UTM Mac'e özgüdür.
+
+### Windows'ta
+
+Windows 11'de x86_64 imajı derlenir ve QEMU'da WHPX (Windows Hypervisor Platform) ile donanım
+hızlandırmalı açılır. aarch64 imajı da açılır ama işlemci taklit edildiği için çok yavaştır.
+
+1. **Gerekenler:** WSL2'de Ubuntu (derleme için), Windows'ta [QEMU](https://www.qemu.org/download/#windows)
+   ve "Windows Hypervisor Platform" özelliği (Windows Özellikleri'nden açılır).
+2. **Derleme (WSL'de):** Linux'taki adımlar aynıdır. WSL'in Windows'tan miras aldığı `PATH` boşluk içerdiği ve
+   Buildroot bunu reddettiği için temiz bir `PATH` ile çalıştırın. Ubuntu 25.10 ve sonrasında `install`
+   komutu uutils sürümüdür ve Buildroot onu kabul etmez, `/usr/bin/gnuinstall`'a bağlantı veren bir klasörü
+   `PATH`'in başına koyun:
+
+   ```bash
+   mkdir -p ~/shim && ln -sf /usr/bin/gnuinstall ~/shim/install
+   ANKAROS_ARCH=x86_64 PATH=$HOME/shim:/usr/local/bin:/usr/bin:/bin ./scripts/build.sh
+   ```
+
+   Derleme saatler sürer ve çok bellek ister. WSL'e varsayılandan fazla bellek ve işlemci vermek için
+   `%UserProfile%\.wslconfig` dosyasında `[wsl2]` altına `memory=` ve `processors=` yazın. Derlemeyi
+   `setsid nohup ... &` ile başlatırsanız terminal kapanınca durmaz.
+3. **Açma (PowerShell'de):**
+
+   ```powershell
+   .\scripts\run-qemu.ps1 -Arch x86_64
+   ```
+
+   Betik imajı WSL'den `%UserProfile%\ankaros-images-x86_64`'e kopyalar (QEMU WSL'in ağ dosya sisteminde
+   çalışmaz), veri diskini `%LocalAppData%\ankaros\veri.qcow2` olarak oluşturur ve QEMU'yu açar.
+   `-Snapshot` imajda ve veri diskinde (kurulan katmanlar ve uygulamalar dahil) yapılan değişiklikleri
+   kapanışta atar, `-Refresh` yeni derlemeyi yeniden kopyalar. `-Width` ve `-Height` ekran çözünürlüğünü
+   (varsayılan 1440x900) verir: betik bunu çekirdek argümanı `ankaros.mode=GENxYÜK` olarak taşır,
+   `/etc/profile.d/ankaros-grafik.sh` okuyup KMS yapılandırmasını `/run/user/<uid>/kms.json` olarak üretir.
+   Ek QEMU argümanları `-Extra @('-qmp', 'tcp:127.0.0.1:4444,server=on,wait=off')` biçiminde verilir
+   (tek başına `-qmp ...` yazılırsa PowerShell onu betiğin kendi parametrelerine bağlamaya çalışır).
+
+Betiğin seçtikleri ve nedenleri:
+
+- **`-vga none`:** q35'in varsayılan standart VGA'sı kalırsa Mesa onu seçer ve sanal GPU'yu kullanmadan
+  yazılımla çizer (softpipe). Bu standart kart 3B çizim bilmez, bu yüzden her kare işlemcide çizilir:
+  tıklamalara geç cevap gelir, bulanıklaştırma gibi efektler yavaşlar ve yavaş çizimde olay döngüsü
+  tıkandığı için kısa tıklamalar kaybolabilir. Bunu kapatmak masaüstünü belirgin biçimde hızlandırır.
+- **virgl (`virtio-gpu-gl`, `gtk,gl=on`):** Windows'ta QEMU'nun bu desteği vardır. Compositor
+  ekranı ana bilgisayarın GPU'suyla çizer. `-NoGl` yazılımla çizime döner.
+- **`zoom-to-fit` kapalı:** Pencere ekranla aynı boyutta gösterilir. Ölçeklenirse görüntü bulanıklaşır, `-Fit`
+  ile açılır.
+- Pencerenin içindeki uygulamalar (Ayarlar, Terminal) da sanal GPU'yla çizer. Bunun için Mesa
+  `EGL_WL_bind_wayland_display` desteğiyle derlenir ve compositor `wayland-egl` ile `linux-dmabuf`
+  eklentilerini yükler ([faz-4-plani.md](faz-4-plani.md)). Eski bir imajda ya da bu ayar olmadan
+  Ayarlar › Hakkında'da "Ekran kartı: softpipe" görünür.
+- **Açılış testi:** `scripts/qemu-test.py`'nin `--accel` seçeneği yalnızca `hvf`, `kvm` ve `tcg` kabul eder, `whpx`
+  yoktur. Windows'ta bu betik işlemciyi yazılımla taklit eder (yavaş). Masaüstünü hızlı denemek için
+  `run-qemu.ps1` kullanılır.
 
 ## 5. Masaüstü kabuğunu Mac'te çalıştırmak
 
@@ -176,10 +229,13 @@ Ayrıntılar ve tasarım akışı için [tasarim-akisi.md](tasarim-akisi.md).
   `<paket>-dirclean` ile temizleyip yeniden derleyin.
 - **QEMU'da `Failed to lock byte 100`**: İmaj OrbStack'in paylaşılan klasöründen okunuyor ve bu klasör
   dosya kilitlerini desteklemiyor. `run-qemu.sh` kilitlemeyi bu yüzden kapatır (`file.locking=off`).
-  QEMU'yu elle çalıştırıyorsanız aynı seçeneği ekleyin.
+  QEMU'yu elle çalıştırıyorsanız aynı seçeneği ekleyin. Windows'ta aynı hata imaj WSL'in ağ yolundan
+  (`\\wsl.localhost\...`) açılınca çıkar, `run-qemu.ps1` bu yüzden imajı Windows tarafına kopyalar.
 - **Dosya silindi ya da taşındı ama imajda eski hali duruyor**: Buildroot, repodaki `system/`, `shell/` ve
   `compositor/` klasörlerini derleme klasörüne `rsync` ile kopyalar ve silinen dosyaları orada bırakır.
   Taşınan bir başlık dosyasının eski kopyası derlemeye karışabilir, imaja eski bir servis dosyası
   girebilir. Bir dosyayı sildikten ya da taşıdıktan sonra paketin derleme klasörünü temizleyin:
   `./scripts/build.sh ankaros-system-dirclean all` (paket adı değişir). CI her seferinde temiz derler.
 - **QEMU'da `hvf` hatası**: Intel Mac'te çalışmaz. `-accel hvf` yerine `-accel tcg` kullanın (çok yavaş).
+- **Windows'ta QEMU'da `whpx` hatası**: "Windows Hypervisor Platform" özelliği kapalıdır. Windows Özellikleri'nden
+  açıp bilgisayarı yeniden başlatın. Açmak istemezseniz `run-qemu.ps1 -Accel tcg` yazılımla açar (çok yavaş).
