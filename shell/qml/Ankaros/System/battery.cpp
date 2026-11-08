@@ -39,8 +39,13 @@ void Battery::read()
         if (readValue(base + QLatin1String("scope")) == QLatin1String("Device"))
             continue;
         present = true;
-        total += qBound(0, readValue(base + QLatin1String("capacity")).toInt(), 100);
-        ++count;
+        // Okunamayan pil ortalamaya sıfır olarak girmesin
+        bool ok = false;
+        const int capacity = readValue(base + QLatin1String("capacity")).toInt(&ok);
+        if (ok) {
+            total += qBound(0, capacity, 100);
+            ++count;
+        }
         charging =
             charging || readValue(base + QLatin1String("status")) == QLatin1String("Charging");
     }

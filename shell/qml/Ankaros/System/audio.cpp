@@ -31,8 +31,13 @@ Audio::Audio(QObject *parent)
         if (error != QProcess::FailedToStart)
             return;
         startFailed();
-        if (m_pendingVolume >= 0 || m_pendingMuted >= 0)
-            applyPending();
+        // QProcess hâlâ Starting durumunda, kendi sinyali içinden start() düşer: olay döngüsüne
+        // ertele
+        QTimer::singleShot(0, this, [this] {
+            if ((m_pendingVolume >= 0 || m_pendingMuted >= 0) &&
+                m_writer.state() == QProcess::NotRunning)
+                applyPending();
+        });
     });
     // Takılan wpctl sonsuza dek beklemesin: öldürülünce finished gelir ve sıra ilerler
     for (QTimer *timeout : {&m_readTimeout, &m_writeTimeout}) {
