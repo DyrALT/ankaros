@@ -9,6 +9,7 @@
 #include "control.h"
 #include "protocol.h"
 #include "sessionconfig.h"
+#include "sessionlog.h"
 
 #include <cerrno>
 #include <csignal>
@@ -36,6 +37,8 @@ constexpr const char *compositorLog = "/var/log/ankaros-compositor.log";
 constexpr double failedLoginDelay = 1.5; // hatalı şifreden sonra yeni deneme için beklenen süre
 constexpr double stopTimeout = 5.0;
 constexpr int maxQuickCrashes = 3; // art arda bu kadar çöken oturum yerine giriş ekranı açılır
+// Masaüstü günlüğünün en büyük boyutu, sonra .1 olur (kök dosya sistemini doldurmasın)
+constexpr size_t compositorLogSize = 4 * 1024 * 1024;
 
 double now()
 {
@@ -80,12 +83,17 @@ public:
     double timeout() const;
     void shutdown();
     ControlServer::Reply handle(const std::vector<std::string> &command, uid_t peer);
+    void setEpoll(int fd) { m_epollFd = fd; }
+    // fd masaüstünün çıktı borusuysa okur ve true döner
+    bool handleOutput(int fd);
 
 private:
     void startGreeter();
     void startSession(const std::string &user);
     bool spawn(Mode mode, const std::string &user);
     void terminate();
+    int openOutput();
+    void closeOutput();
     bool allowAttempt(std::string &error);
     void failedAttempt();
     std::string sessionUser() const { return m_child.mode == Mode::Session ? m_child.user : ""; }
@@ -103,7 +111,71 @@ private:
     double m_killAt = -1;
     double m_nextAttemptAt = 0;
     bool m_shuttingDown = false;
+    // Masaüstünün çıktısı: uygulamalar borunun yazma ucunu devralır, oturum yöneticisi okuyup
+    // günlüğe yazar (SessionLog)
+    SessionLog m_log{compositorLog, compositorLogSize, now};
+    int m_epollFd = -1;
+    int m_output = -1;
 };
+
+int SessionManager::openOutput()
+{
+    closeOutput();
+    int fds[2];
+    if (pipe2(fds, O_CLOEXEC) != 0) {
+        say("çıktı borusu açılamadı: %s", strerror(errno));
+        return -1;
+    }
+    fcntl(fds[0], F_SETFL, fcntl(fds[0], F_GETFL) | O_NONBLOCK);
+    m_output = fds[0];
+    if (m_epollFd >= 0) {
+        epoll_event event{};
+        event.events = EPOLLIN;
+        event.data.fd = m_output;
+        epoll_ctl(m_epollFd, EPOLL_CTL_ADD, m_output, &event);
+    }
+    return fds[1];
+}
+
+void SessionManager::closeOutput()
+{
+    if (m_output < 0)
+        return;
+    handleOutput(m_output); // kalanı oku
+    if (m_output < 0)
+        return;
+    if (m_epollFd >= 0)
+        epoll_ctl(m_epollFd, EPOLL_CTL_DEL, m_output, nullptr);
+    close(m_output);
+    m_output = -1;
+    m_log.flush();
+}
+
+bool SessionManager::handleOutput(int fd)
+{
+    if (fd < 0 || fd != m_output)
+        return false;
+    // Seviye tetiklemeli: bir seferde en fazla 256 KiB, kalanı sonraki turda (denetim soketi
+    // beklemesin)
+    char buffer[16 * 1024];
+    for (int i = 0; i < 16; ++i) {
+        const ssize_t count = read(fd, buffer, sizeof buffer);
+        if (count > 0) {
+            m_log.append(buffer, static_cast<size_t>(count));
+            continue;
+        }
+        if (count < 0 && (errno == EAGAIN || errno == EINTR))
+            break;
+        // Bütün yazanlar kapandı (ya da hata): boru kapatılır
+        if (m_epollFd >= 0)
+            epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, nullptr);
+        close(fd);
+        m_output = -1;
+        m_log.flush();
+        break;
+    }
+    return true;
+}
 
 SessionConfig readConfig()
 {
@@ -277,10 +349,11 @@ bool SessionManager::spawn(Mode mode, const std::string &user)
     const char *argv[] = {"/bin/sh", "/usr/libexec/ankaros/masaustu-baslat",
                           mode == Mode::Greeter ? "--login" : nullptr, nullptr};
 
-    const int logFd = open(compositorLog, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
-    if (logFd >= 0)
-        dprintf(logFd, "--- ankaros-session: %s (%s) ---\n",
-                mode == Mode::Greeter ? "giriş ekranı" : "oturum", user.c_str());
+    // Önceki oturumdan kalan boru kapatılır, kalan yazanlar (oturumla birlikte öldürülür) EPIPE
+    // alır
+    const int logFd = openOutput();
+    m_log.note(std::string("--- ankaros-session: ") +
+               (mode == Mode::Greeter ? "giriş ekranı" : "oturum") + " (" + user + ") ---");
 
     const pid_t pid = fork();
     if (pid == 0) {
@@ -288,7 +361,7 @@ bool SessionManager::spawn(Mode mode, const std::string &user)
         sigemptyset(&none);
         sigprocmask(SIG_SETMASK, &none, nullptr);
         setsid();
-        const int nullFd = open("/dev/null", O_RDWR);
+        const int nullFd = open("/dev/null", O_RDWR | O_CLOEXEC);
         dup2(nullFd, STDIN_FILENO);
         dup2(logFd >= 0 ? logFd : nullFd, STDOUT_FILENO);
         dup2(logFd >= 0 ? logFd : nullFd, STDERR_FILENO);
@@ -564,6 +637,7 @@ int main()
         fprintf(stderr, "soket açılamadı: %s: %s\n", sessionSocketPath, strerror(errno));
         return 1;
     }
+    manager.setEpoll(epollFd);
     manager.start();
 
     for (;;) {
@@ -573,7 +647,8 @@ int main()
                                      timeout < 0 ? -1 : static_cast<int>(timeout * 1000) + 1);
         for (int i = 0; i < count; ++i) {
             if (events[i].data.fd != signalFd) {
-                control.handle(events[i].data.fd);
+                if (!manager.handleOutput(events[i].data.fd))
+                    control.handle(events[i].data.fd);
                 continue;
             }
             signalfd_siginfo info{};

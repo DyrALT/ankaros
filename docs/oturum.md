@@ -42,6 +42,15 @@ kalanı (eglfs/KMS, dil, klavye) `/etc/profile.d/ankaros-grafik.sh`'den gelir. C
 başlatır: oturumda önce kullanıcının D-Bus'ını, PipeWire'ı ve WirePlumber'ı açar ([ses.md](ses.md)). Compositor'ın çıktısı
 `/var/log/ankaros-compositor.log`'a, oturum yöneticisininki `/var/log/ankaros-session.log`'a yazılır.
 
+Compositor ve açtığı uygulamalar günlük dosyasına doğrudan yazamaz: çıktıları bir boruyla oturum yöneticisine
+gelir, dosyaya o yazar (`system/session/sessionlog.cpp`).
+
+- Dosya 4 MB'ı geçince `ankaros-compositor.log.1` olur, en fazla iki dosya kalır. Durmadan çıktı veren bir
+  uygulama kök dosya sistemini dolduramaz.
+- Uygulamaların her satırının önünde oturum yöneticisinin yazdığı zaman vardır (`[  12.345] `). Oturum
+  yöneticisinin kendi satırları (`--- ankaros-session: oturum (ankaros) ---`) zamansızdır, uygulamalar bunları
+  taklit edemez.
+
 ## session.conf
 
 ```ini

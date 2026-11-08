@@ -42,6 +42,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   başlık dizisi belleği büyütmüyor.
 - Masaüstü menüsünün boşluklarına tıklamak menüyü kapatmıyor.
 - `utm-olustur.sh` `qemu-img` yoksa UTM'ye dokunmadan duruyor.
+- Masaüstünün çıktısı (`/var/log/ankaros-compositor.log`) oturum yöneticisinden geçiyor: dosya 4 MB'ta
+  döndürülüyor, uygulamalar dosyaya doğrudan yazamıyor ([docs/oturum.md](docs/oturum.md)).
 
 ## [0.5.0] - 2026-11-07
 
