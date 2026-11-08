@@ -62,6 +62,10 @@ public:
     bool start(const std::string &name, std::string &error);
     bool stop(const std::string &name, std::string &error);
     bool restart(const std::string &name, std::string &error);
+    // Kapatma başladı: bundan sonra hiçbir servis başlatılmaz ya da yeniden başlatılmaz. Güç komutu
+    // alınır alınmaz çağrılır, ana döngünün aynı turundaki update() ve süreç bitişleri de kapanışa
+    // karşı çalışmasın diye.
+    void beginShutdown();
     // Kapatma: servisleri başlatılma sırasının tersiyle durdurur, en fazla timeout saniye bekler.
     void stopAll(double timeout);
 
@@ -83,6 +87,7 @@ private:
     std::vector<Service> m_services; // başlatma sırasıyla
     std::vector<std::pair<std::string, double>> m_marks;
     double m_kernelTime = -1;
+    bool m_shuttingDown = false;
 };
 
 } // namespace ankaros

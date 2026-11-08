@@ -89,7 +89,9 @@ ankarosctl boot                   # açılış süresi raporu (docs/acilis-sures
 ankarosctl poweroff               # ya da BusyBox'ın poweroff, reboot, halt komutları
 ```
 
-`status` ve `boot` herkes tarafından, diğer komutlar yalnızca root tarafından kullanılabilir.
+`status`, `boot` ve `mark` herkes tarafından, diğer komutlar yalnızca root tarafından kullanılabilir.
+`mark` adındaki kontrol karakterleri (ESC gibi terminal kaçış dizileri dahil) init günlüğe yazmadan önce
+`?` ile değiştirilir.
 `ankarosctl` `/run/ankaros/init.sock` soketine bağlanır. Protokol satır tabanlıdır, ayrıntısı
 `system/common/protocol.h`'de.
 
@@ -98,9 +100,11 @@ ankarosctl poweroff               # ya da BusyBox'ın poweroff, reboot, halt kom
 `ankarosctl poweroff`/`reboot`, BusyBox'ın `poweroff`/`reboot`/`halt` komutları (PID 1'e SIGUSR2, SIGTERM,
 SIGUSR1 gönderirler) ve Ctrl-Alt-Del (SIGINT) kapatmayı başlatır:
 
-1. Servisler başlatılma sırasının tersiyle durdurulur, en fazla 5 saniye beklenir.
-2. Kalan bütün süreçlere SIGTERM, 2 saniye sonra SIGKILL gönderilir.
-3. Diskler senkronlanır, kök dosya sistemi salt okunur yapılır, makine kapatılır ya da yeniden başlar.
+1. Kapatma başlar başlamaz hiçbir servis başlatılmaz ya da yeniden başlatılmaz (`start` komutu "sistem
+   kapanıyor" hatası verir).
+2. Servisler başlatılma sırasının tersiyle durdurulur, en fazla 5 saniye beklenir.
+3. Kalan bütün süreçlere SIGTERM, 2 saniye sonra SIGKILL gönderilir.
+4. Diskler senkronlanır, kök dosya sistemi salt okunur yapılır, makine kapatılır ya da yeniden başlar.
 
 ## Geliştirme
 
