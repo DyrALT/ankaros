@@ -21,6 +21,7 @@ on:
     paths:
       - buildroot
       - .gitmodules
+      - VERSION
       - external/**
       - shell/**
       - compositor/**
@@ -32,6 +33,7 @@ on:
     paths:
       - buildroot
       - .gitmodules
+      - VERSION
       - external/**
       - system/**
       - scripts/build.sh
