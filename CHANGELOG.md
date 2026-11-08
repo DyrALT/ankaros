@@ -11,6 +11,9 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   sistem paketleri yeniden derlenir (her mimari için ~50-60 dakika yerine 10 dakika kadar, tahmin). Buildroot,
   defconfig ya da `external/` değişince her şey yine baştan derlenir. PR'larda imaj yalnızca sistem katmanı
   değişince derlenir, kabuk ve compositor PR'larını CI iş akışı denetler.
+- Büyütülen pencere bütün ekranı kaplıyor (tam ekran), öndeyken alt çubuk animasyonla aşağı iniyor. Fare
+  ekranın en altına gelince alt çubuk geri çıkıyor ([docs/pencere-yonetimi.md](docs/pencere-yonetimi.md)).
+  Ekrandan büyük açılan pencere artık büyütülmüyor, ekranın ortasında daha küçük açılıyor.
 
 ## [0.5.0] - 2026-11-07
 

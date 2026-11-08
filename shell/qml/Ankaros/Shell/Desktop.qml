@@ -43,8 +43,17 @@ Item {
     // Uygulama pencerelerinin yerleştiği katman: duvar kağıdının üstünde, alt çubuğun altında.
     // Compositor pencere çerçevelerini bu öğenin çocuğu olarak oluşturur.
     readonly property alias windowLayer: windowLayer
-    // Pencerelerin kullanabileceği alan (alt çubuk hariç)
+    // Pencerelerin kullanabileceği alan (alt çubuk hariç). Alt çubuk gizlenince değişmez: gizleme
+    // yalnızca kaydırmadır (transform), taskBar.y aynı kalır.
     readonly property rect workArea: Qt.rect(0, 0, width, taskBar.y - Theme.size.taskBarMargin)
+    // Öndeki pencere tam ekran mı (compositor verir). Öyleyse alt çubuk aşağı kayıp gizlenir, fare
+    // ekranın en altına inince geri çıkar.
+    property bool fullscreen: false
+    readonly property bool taskBarHidden: fullscreen && !taskBarPeeking
+    // Tam ekranda alt çubuk şu an gösteriliyor mu (fare altta, alt çubuğun üstünde ya da bir paneli açık)
+    property bool taskBarPeeking: false
+    readonly property bool taskBarWanted: bottomEdgeHover.hovered || taskBarHover.hovered || startMenu.open
+                                          || calendar.open || quickSettings.open
 
     // Pencerelerin üst üste sırası. Compositor pencereleri öne getirirken bunu kullanır.
     property int topZ: 0
@@ -256,6 +265,37 @@ Item {
         onPoweroffRequested: root.session?.poweroff()
     }
 
+    // Tam ekranda alt çubuğu geri getiren ince şerit: ekranın en altı. Fare olaylarını tüketmez
+    // (HoverHandler), alttaki pencere tıklamaları almaya devam eder.
+    Item {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        height: 2
+        visible: root.fullscreen
+
+        HoverHandler {
+            id: bottomEdgeHover
+        }
+    }
+
+    onTaskBarWantedChanged: {
+        if (taskBarWanted) {
+            taskBarHideDelay.stop();
+            taskBarPeeking = true;
+        } else {
+            taskBarHideDelay.restart();
+        }
+    }
+
+    // Fare alt çubuktan ayrılınca hemen kaçmasın, kısa bir süre sonra insin
+    Timer {
+        id: taskBarHideDelay
+
+        interval: 500
+        onTriggered: root.taskBarPeeking = false
+    }
+
     TaskBar {
         id: taskBar
 
@@ -263,6 +303,14 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.margins: Theme.size.taskBarMargin
+        // Gizlenince ekranın altına kayar. Yer değiştirmez (y aynı), workArea etkilenmez.
+        transform: Translate {
+            y: root.taskBarHidden ? taskBar.height + 2 * Theme.size.taskBarMargin : 0
+
+            Behavior on y {
+                NumberAnimation { duration: Theme.motion.normal; easing.type: Theme.motion.easing }
+            }
+        }
         backdrop: scene
         apps: root.taskBarApps
         running: root.running
@@ -285,6 +333,11 @@ Item {
         }
         onStatusClicked: root.togglePanel(quickSettings)
         onClockClicked: root.togglePanel(calendar)
+
+        // Tam ekranda fare alt çubuğun üstündeyken gizlenmesin
+        HoverHandler {
+            id: taskBarHover
+        }
     }
 
     CalendarPopup {

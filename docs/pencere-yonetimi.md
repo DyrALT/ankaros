@@ -11,8 +11,9 @@ boyutlandırma tutamakları) `Ankaros.Shell` modülündeki `WindowChrome`'dur. W
 | Öne getirme | Pencerenin herhangi bir yerine (uygulamanın içi dahil) basınca pencere öne gelir ve klavye odağını alır. |
 | Taşıma | Başlık çubuğundan sürükleyerek. Başlık çubuğu ekranın üstünden dışarı çıkmaz. |
 | Boyutlandırma | Kenarlardan ve köşelerden sürükleyerek. Tutamaklar çerçevenin hemen dışındadır (6 px), uygulamanın içine taşmaz. Uygulamanın en küçük ve en büyük boyutu korunur. |
-| Yaslama | Pencere ekranın sol ya da sağ kenarına sürüklenince yarım ekrana, üst kenara sürüklenince tam ekrana yaslanır. Bırakmadan önce yarı saydam bir önizleme yerini gösterir. |
-| Eski boyuta dönme | Büyütülmüş ya da yaslanmış pencere sürüklenince eski boyutuna döner, fare pencerenin aynı oranındaki yerinde kalır. Başlık çubuğuna çift tıklamak da büyütür ya da eski boyutuna döndürür. |
+| Yaslama | Pencere ekranın sol ya da sağ kenarına sürüklenince yarım ekrana yaslanır, üst kenara sürüklenince tam ekran olur. Bırakmadan önce yarı saydam bir önizleme yerini gösterir. |
+| Tam ekran | Büyüt düğmesi, başlık çubuğuna çift tıklama, Süper+↑ ve üst kenara yaslama pencereyi bütün ekrana yayar (alt çubuğun yeri dahil). Öndeki pencere tam ekransa alt çubuk aşağı kayarak gizlenir. Fare ekranın en altına inince geri çıkar, alt çubuktan ayrılınca yarım saniye sonra yine iner. Açık bir paneli varken gizlenmez. Açılırken ekrandan büyük olan pencere tam ekran yapılmaz, ekranın ortasında daha küçük açılır. |
+| Eski boyuta dönme | Tam ekran ya da yaslanmış pencere sürüklenince eski boyutuna döner, fare pencerenin aynı oranındaki yerinde kalır. Başlık çubuğuna çift tıklamak da tam ekran yapar ya da eski boyutuna döndürür. |
 | Pencere geçişi | Alt+Tab: açık pencerelerin canlı küçük görüntüleri, son kullanılandan başlayarak. Alt bırakılınca seçilen pencere öne gelir. Küçültülmüş pencerenin yerinde uygulamanın simgesi görünür. |
 | Animasyonlar | Açılma ve kapanma (soluklaşma ve hafif büyüme), küçültme (alt çubuktaki simgesine doğru uçar) |
 
@@ -23,8 +24,8 @@ boyutlandırma tutamakları) `Ankaros.Shell` modülündeki `WindowChrome`'dur. W
 | Süper | Başlat panelini aç ve kapat (tek başına basılıp bırakılınca) |
 | Süper+D | Bütün pencereleri küçült, ikinci basışta geri getir |
 | Süper+← / → | Etkin pencereyi sola ya da sağa yasla |
-| Süper+↑ | Büyüt |
-| Süper+↓ | Büyütülmüş ya da yaslanmışsa eski boyutuna döndür, değilse küçült |
+| Süper+↑ | Tam ekran |
+| Süper+↓ | Tam ekran ya da yaslanmışsa eski boyutuna döndür, değilse küçült |
 | Alt+Tab, Alt+Shift+Tab | Pencereler arasında geçiş, Esc vazgeçer |
 | Alt+F4 | Etkin pencereyi kapat |
 | Süper+L | Ekranı kilitle |
