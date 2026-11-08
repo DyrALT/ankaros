@@ -5,6 +5,11 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+### Düzeltildi
+
+- Üst üste duran pencerelerde öndekinin başlık çubuğuna basmak arkadaki pencereyi öne getirmiyor, öndeki
+  pencere taşınabiliyor.
+
 ### Değişti
 
 - CI'daki imaj derlemesi artımlı: Buildroot'un çıktısı önbellekte tutulur, yalnızca kabuk, compositor ve

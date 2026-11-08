@@ -125,6 +125,16 @@ Item {
             }
 
             TapHandler {
+                // Basışı başlık çubuğu alır (WithinBounds), alttaki pencerenin uygulamasına geçmez.
+                // Geçerse oradaki uygulama (ör. Terminal'in sekme şeridi) sürüklemeyi kendi taşıması
+                // sayıp öne çıkıyor, bu pencere de taşınamıyordu. Sürükleme başlayınca DragHandler
+                // basışı bundan devralır. Basış pencerenin genelindeki TapHandler'a ulaşmadığı için
+                // pencereyi burada öne getir.
+                gesturePolicy: TapHandler.WithinBounds
+                onPressedChanged: {
+                    if (pressed)
+                        root.pressed();
+                }
                 // Başlık çubuğuna çift tıklamak pencereyi büyütür ya da eski boyutuna döndürür.
                 onDoubleTapped: root.maximizeClicked()
             }
