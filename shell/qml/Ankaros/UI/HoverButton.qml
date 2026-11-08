@@ -13,6 +13,14 @@ Rectangle {
     signal clicked
 
     radius: Theme.radius.md
+    // Klavyeyle de kullanılabilsin: Tab ile odaklanır, Enter/Boşluk tıklar (ör. başlat panelinde
+    // arama kutusundan sonraki öğelere Tab ile geçilir)
+    activeFocusOnTab: true
+    border.width: root.visualFocus ? 2 : 0
+    border.color: Theme.color.accent
+    Keys.onReturnPressed: clicked()
+    Keys.onEnterPressed: clicked()
+    Keys.onSpacePressed: clicked()
     color: pressed ? Theme.color.surfacePressed
                    : hovered || checked ? Theme.color.surfaceHover : restColor
 
