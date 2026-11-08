@@ -56,6 +56,12 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   yeniden deneniyor, takılırsa öldürülüyor.
 - Ağ servisiyle bağlantı kopunca alt çubuk "bağlı" göstermiyor. Fare ve klavye pilleri sistem pili sayılmıyor
   ([docs/ses.md](docs/ses.md), [docs/ag.md](docs/ag.md)).
+- Süper+D ile küçültülen pencereler listesi bir pencere kapanınca, elle geri getirilince ya da yeni pencere
+  açılınca kaybolmuyor.
+- Başlat panelinde Tab ve Shift+Tab ile arama kutusundan sonuçlara ve öğelere geçiliyor, Enter ya da Boşluk
+  ile açılıyor. Alt+Tab'ın arka planı tıklamayı arkadaki pencerelere geçirmiyor.
+- Ayarlar › Alt çubuk, kurulu olmayan uygulamaların sabitlemesini silmiyor. Uygulama listesi yalnızca `appIds`
+  ya da sabitleme değişince de güncelleniyor.
 
 ## [0.5.0] - 2026-11-07
 
