@@ -58,10 +58,13 @@ Geriye uyumsuz bir değişiklikte türden sonra `!` eklenir ve gövdeye `BREAKIN
 2. Commit'lerinizi atın, `main`'deki değişiklikleri almak için `git rebase main` kullanın.
 3. PR açın. PR şablonundaki kontrol listesini doldurun.
 4. En az **bir ekip arkadaşının onayı** ve **CI'ın yeşil olması** gerekir. CI'daki kod stili ve
-   kabuk/compositor denetimleri birkaç dakika sürer. İmaj derlemesi (`İmaj` iş akışı) 45 dakikayı
-   geçtiği için beklenmez: imajı etkileyen bir değişiklik yerelde derlenip QEMU ya da UTM'de
-   denenir, PR'ın "Nasıl test edildi?" bölümüne yazılır. CI imajı `main`'de yeniden derleyip açılış
-   testinden geçirir. Orada kırmızı olursa ilk iş onu düzeltmektir.
+   kabuk/compositor denetimleri birkaç dakika sürer. İmaj derlemesi (`İmaj` iş akışı) PR'larda
+   yalnızca sistem katmanı (Buildroot, `external/`, `system/`, derleme betikleri) değişince çalışır ve
+   beklenmez: Buildroot'un paketleri değişince baştan derlenir, bir saati bulur. İmajı etkileyen bir
+   değişiklik yerelde derlenip QEMU ya da UTM'de denenir, PR'ın "Nasıl test edildi?" bölümüne yazılır.
+   CI imajı `main`'de yeniden derleyip açılış testinden geçirir. Yalnızca ankaros'un kendi kodu
+   değiştiyse bu, önbellekteki Buildroot çıktısının üstüne 10 dakika kadar sürer. Orada kırmızı olursa
+   ilk iş onu düzeltmektir.
 5. Birleştirme yöntemi **squash merge**. PR başlığı Conventional Commits biçiminde olmalı, çünkü
    `main`'deki commit mesajı o olur.
 6. Birleştikten sonra dalı silin.
