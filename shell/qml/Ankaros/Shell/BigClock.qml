@@ -28,6 +28,12 @@ Column {
         font.weight: Font.Medium
     }
 
+    // Gizliyken (kilit ekranı açık değilken) çalışmasın, görünür olunca saati hemen düzeltsin
+    onVisibleChanged: {
+        if (visible)
+            now = new Date();
+    }
+
     Timer {
         interval: 1000
         running: root.visible

@@ -7,6 +7,8 @@ import Ankaros.UI
 Item {
     id: root
 
+    // Kilitli mi. Kilit açılınca (başarılı da olsa) şifre alanı hemen boşalır.
+    property bool locked: false
     property string userName
     // Bulanıklaştırılacak öğe (masaüstü sahnesi)
     property Item backdrop
@@ -31,6 +33,7 @@ Item {
     }
 
     visible: opacity > 0
+    opacity: root.locked ? 1 : 0
 
     Behavior on opacity {
         NumberAnimation { duration: Theme.motion.slow; easing.type: Theme.motion.easing }
@@ -40,6 +43,15 @@ Item {
         if (visible) {
             background.capture();
             reset();
+        }
+    }
+
+    // Kilit açılırken şifre kararma süresince alanda ve busy kalmasın, bellekte de tutulmasın
+    onLockedChanged: {
+        if (!locked) {
+            root.error = "";
+            root.busy = false;
+            field.clear();
         }
     }
 

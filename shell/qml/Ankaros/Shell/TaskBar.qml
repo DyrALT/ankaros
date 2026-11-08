@@ -22,6 +22,9 @@ GlassPanel {
     property var audio: null
     property bool quickSettingsOpen: false
     property bool calendarOpen: false
+    // Ekran kilitli. Balonlar pencerenin en üstüne bağlandığı için kilit ekranının üstünde kalırdı,
+    // kilitliyken hiç gösterilmez.
+    property bool locked: false
 
     signal startClicked
     signal searchClicked
@@ -167,7 +170,7 @@ GlassPanel {
                         parent: networkIcon.Window.contentItem
                         x: position.x
                         y: position.y
-                        shown: networkHover.hovered
+                        shown: networkHover.hovered && !root.locked
                         text: !root.network || !root.network.available ? qsTr("Ağ servisine ulaşılamıyor")
                             : !root.network.carrier ? qsTr("Kablo takılı değil")
                             : root.network.connected ? qsTr("Kablolu · %1").arg(root.network.address.split("/")[0])
@@ -202,7 +205,7 @@ GlassPanel {
                         parent: batteryIcon.Window.contentItem
                         x: position.x
                         y: position.y
-                        shown: batteryHover.hovered
+                        shown: batteryHover.hovered && !root.locked
                         text: !root.battery ? "" : root.battery.charging
                             ? qsTr("%%1 · şarj oluyor").arg(root.battery.level) : qsTr("%%1").arg(root.battery.level)
                     }
