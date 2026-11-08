@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLoggingCategory>
+#include <QUrl>
 
 Q_LOGGING_CATEGORY(lcCatalog, "ankaros.catalog")
 
@@ -33,9 +34,11 @@ void AppCatalog::reload()
     const QStringList pinned = m_pinned;
     const QHash<QString, QString> commands = m_commands;
     const QHash<QString, QString> namesByAppId = m_namesByAppId;
+    const QVariantMap icons = m_icons;
     m_names.clear();
     m_pinned.clear();
     m_commands.clear();
+    m_icons.clear();
     m_namesByAppId.clear();
     load(m_systemPath);
     if (QFile::exists(m_userPath)) {
@@ -43,7 +46,7 @@ void AppCatalog::reload()
         m_watcher.addPath(m_userPath);
     }
     if (m_names != names || m_pinned != pinned || m_commands != commands ||
-        m_namesByAppId != namesByAppId)
+        m_namesByAppId != namesByAppId || m_icons != icons)
         emit changed();
 }
 
@@ -77,6 +80,11 @@ bool AppCatalog::load(const QString &path)
         const QString command = app.value(QLatin1String("command")).toString();
         if (!command.isEmpty())
             m_commands.insert(name, command);
+        // Dosya yoksa (uygulama kaldırıldı) ya da bozuksa resim yok sayılır, AppIcon genel simgeye
+        // döner
+        const QString icon = app.value(QLatin1String("icon")).toString();
+        if (QFileInfo::exists(icon))
+            m_icons.insert(name, QUrl::fromLocalFile(icon));
         for (const QJsonValue &appId : app.value(QLatin1String("appIds")).toArray())
             m_namesByAppId.insert(appId.toString(), name);
     }

@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
+#include <QVariantMap>
 #include <QtQml/qqmlregistration.h>
 
 // Başlat panelindeki ve alt çubuktaki uygulamaların listesi. /etc/ankaros/apps.json'dan okunur
@@ -25,6 +26,9 @@ class AppCatalog : public QObject
     // alt çubukta yalnızca bunlar gösterilir, diğerleri ileride yazılacak uygulamaların yer
     // tutucusudur.
     Q_PROPERTY(QStringList launchable READ launchable NOTIFY changed)
+    // Uygulama adından kendi simgesinin adresine (file://). Yalnızca resmi olanlar bulunur, AppIcon
+    // bunu AppImages üzerinden kullanır.
+    Q_PROPERTY(QVariantMap icons READ icons NOTIFY changed)
 
 public:
     explicit AppCatalog(QObject *parent = nullptr);
@@ -32,6 +36,7 @@ public:
     QStringList names() const { return m_names; }
     QStringList pinned() const { return m_pinned; }
     QStringList launchable() const;
+    QVariantMap icons() const { return m_icons; }
 
     // Uygulamanın komutu. Komutu olmayan (henüz yazılmamış) uygulamalar için boş döner.
     Q_INVOKABLE QString command(const QString &name) const;
@@ -52,5 +57,6 @@ private:
     QStringList m_names;
     QStringList m_pinned;
     QHash<QString, QString> m_commands;
+    QVariantMap m_icons;
     QHash<QString, QString> m_namesByAppId;
 };

@@ -3,6 +3,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQml
 import QtWayland.Compositor
 import QtWayland.Compositor.XdgShell
 
@@ -442,6 +443,13 @@ WaylandCompositor {
 
     // Uygulamaların istediği diğer protokoller (docs/wayland-protokolleri.md)
     XdgOutputManagerV1 {}
+
+    // ank kur ile kurulan uygulamaların kendi simgeleri (AppIcon okur)
+    Binding {
+        target: AppImages
+        property: "map"
+        value: AppCatalog.icons
+    }
 
     CursorShapeManager {}
 

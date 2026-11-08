@@ -1,5 +1,6 @@
 // Ayarlar uygulamasının penceresi. Pencere çerçevesini ankaros'ta compositor çizer (karar 0007).
 import QtQuick
+import QtQml
 
 import Ankaros.System
 import Ankaros.UI
@@ -26,6 +27,13 @@ Window {
         const page = settingsRequest.split("|")[0];
         if (page.length > 0)
             panel.page = page;
+    }
+
+    // Alt çubuk sayfasındaki simgeler için, ank kur ile kurulan uygulamaların kendi resimleri
+    Binding {
+        target: AppImages
+        property: "map"
+        value: AppCatalog.icons
     }
 
     SettingsPanel {

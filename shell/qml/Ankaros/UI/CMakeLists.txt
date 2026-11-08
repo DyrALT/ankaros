@@ -6,13 +6,14 @@ else()
     qt_add_library(ankaros_ui STATIC)
 endif()
 
-set_source_files_properties(Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+set_source_files_properties(Theme.qml AppImages.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 qt_add_qml_module(ankaros_ui
     URI Ankaros.UI
     VERSION 1.0
     QML_FILES
         Theme.qml
+        AppImages.qml
         IconData.js
         Label.qml
         Icon.qml
