@@ -28,8 +28,10 @@ signals:
 
 private:
     void read();
+    void reap();
 
     int m_fd = -1;
     int m_pid = -1;
+    int m_reapAttempts = 0;
     QSocketNotifier *m_notifier = nullptr;
 };

@@ -97,8 +97,9 @@ void TerminalView::componentComplete()
     m_screen->output = [this](const char *data, size_t size) { m_pty->write(data, size); };
     connect(m_pty, &PtyProcess::received, this, [this](const QByteArray &data) {
         m_screen->write(data);
-        // Yeni çıktı gelince en alta dön (çalışan bir komutu izlerken)
-        if (m_scroll != 0 && !m_selecting)
+        // Yeni çıktı gelince en alta dön (çalışan bir komutu izlerken). Alternatif ekranda geçmiş
+        // gösterilmediği için, seçim sürüyor olsa da ofset sıfırlanır.
+        if (m_scroll != 0 && (!m_selecting || m_screen->alternateScreen()))
             m_scroll = 0;
         if (!m_titleTimer->isActive())
             m_titleTimer->start();
