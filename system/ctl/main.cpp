@@ -1,10 +1,14 @@
 // ankarosctl: ankaros-init'i denetler. Kullanım: ankarosctl help
 #include "protocol.h"
 
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <string>
+#include <termios.h>
+#include <unistd.h>
 #include <vector>
 
 namespace {
@@ -16,7 +20,8 @@ const char *usage =
     "  start|stop|restart AD   servisi başlat, durdur, yeniden başlat (root)\n"
     "  poweroff | reboot       sistemi kapat, yeniden başlat (root)\n"
     "  boot                    açılışta her adımın süresi\n"
-    "  mark AD                 açılış süresine bir işaret ekle (ör. masaüstünün ilk karesi)\n";
+    "  mark AD                 açılış süresine bir işaret ekle (ör. masaüstünün ilk karesi)\n"
+    "  session passwd          oturumdaki kullanıcının şifresini değiştir (şifreler stdin'den)\n";
 
 std::vector<std::string> split(const std::string &line, char separator)
 {
@@ -97,6 +102,83 @@ void printBoot(const std::vector<std::string> &lines)
         printf("masaüstü henüz çizilmedi\n");
 }
 
+termios savedTerminal;
+
+void restoreTerminal(int signal)
+{
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &savedTerminal);
+    _exit(128 + signal);
+}
+
+// Şifreyi okur. Terminalse yankı kapatılır, değilse stdin'den bir satır alınır. Şifre komut satırı
+// argümanı olarak alınmaz: ps ve /proc/*/cmdline herkese gösterir.
+bool readPassword(const char *prompt, std::string &password)
+{
+    const bool terminal = isatty(STDIN_FILENO);
+    termios hidden;
+    bool hiding = false;
+    if (terminal) {
+        fputs(prompt, stderr);
+        fflush(stderr);
+        if (tcgetattr(STDIN_FILENO, &savedTerminal) == 0) {
+            hidden = savedTerminal;
+            hidden.c_lflag &= ~static_cast<tcflag_t>(ECHO);
+            // Ctrl-C ile çıkılırsa terminal yankısız kalmasın
+            signal(SIGINT, restoreTerminal);
+            signal(SIGTERM, restoreTerminal);
+            tcsetattr(STDIN_FILENO, TCSAFLUSH, &hidden);
+            hiding = true;
+        }
+    }
+    const bool ok = static_cast<bool>(std::getline(std::cin, password));
+    if (hiding) {
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &savedTerminal);
+        signal(SIGINT, SIG_DFL);
+        signal(SIGTERM, SIG_DFL);
+    }
+    if (terminal)
+        fputc('\n', stderr);
+    if (!password.empty() && password.back() == '\r')
+        password.pop_back();
+    return ok;
+}
+
+// Protokol alanları sekmeyle ayrılır, boş alanlar atlanır: bu şifreler komutu bozar
+const char *passwordProblem(const std::string &password)
+{
+    if (password.empty())
+        return "şifre boş olamaz";
+    if (password.find_first_of("\t\r\n") != std::string::npos)
+        return "şifre sekme ya da satır sonu içeremez";
+    return nullptr;
+}
+
+// "session passwd": eski şifre, yeni şifre (terminalde bir de tekrarı) okunup komuta çevrilir
+bool readPasswordCommand(std::vector<std::string> &command)
+{
+    std::string current;
+    std::string next;
+    std::string repeat;
+    const bool terminal = isatty(STDIN_FILENO);
+    if (!readPassword("Eski şifre: ", current) || !readPassword("Yeni şifre: ", next) ||
+        (terminal && !readPassword("Yeni şifre (tekrar): ", repeat))) {
+        fputs("ankarosctl: şifreler okunamadı\n", stderr);
+        return false;
+    }
+    if (terminal && next != repeat) {
+        fputs("ankarosctl: yeni şifreler aynı değil\n", stderr);
+        return false;
+    }
+    for (const std::string *password : {&current, &next}) {
+        if (const char *problem = passwordProblem(*password)) {
+            fprintf(stderr, "ankarosctl: %s\n", problem);
+            return false;
+        }
+    }
+    command = {"passwd", current, next};
+    return true;
+}
+
 } // namespace
 
 int main(int argc, char *argv[])
@@ -111,6 +193,16 @@ int main(int argc, char *argv[])
     if (command.empty()) {
         fputs(usage, stderr);
         return 2;
+    }
+    if (session && command[0] == "passwd") {
+        if (command.size() > 1) {
+            fputs("ankarosctl: şifreler argüman olarak verilmez (ps'te görünürler), stdin'den "
+                  "okunur\n",
+                  stderr);
+            return 2;
+        }
+        if (!readPasswordCommand(command))
+            return 1;
     }
 
     std::vector<std::string> lines;

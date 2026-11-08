@@ -79,6 +79,10 @@ Ayarlar › Kullanıcı'dan kapatılabilir.
 
 - Hatalı şifreden sonra 1,5 saniye boyunca yeni deneme kabul edilmez.
 - Yalnızca uid'si 1000 ve üstü olan kullanıcılar oturum açabilir. Sistem kullanıcıları açamaz.
+- Alanlar sekmeyle ayrıldığı için şifrede sekme ya da satır sonu bulunamaz ve şifre boş olamaz: kabuk ve
+  `ankarosctl` bunları göndermeden açık bir hatayla reddeder. `ankarosctl session passwd` şifreleri
+  komut satırından değil stdin'den okur (terminalse yankısız sorar, değilse sırayla eski ve yeni şifreyi
+  satır satır okur), böylece `ps`'te görünmezler.
 - Hata mesajları ("Şifre yanlış") doğrudan ekranda gösterilecek biçimde Türkçedir.
 
 Seri konsolda root olarak denemek için:
@@ -87,6 +91,7 @@ Seri konsolda root olarak denemek için:
 ankarosctl session status
 ankarosctl session logout                 # giriş ekranına döner
 ankarosctl session login ankaros ankaros  # giriş ekranındayken oturum açar
+ankarosctl session passwd                 # şifreleri sorar (yankısız), argümanla verilmez
 ankarosctl restart ankaros-session        # giriş ekranını ya da masaüstünü yeniden başlatır
 ```
 

@@ -601,6 +601,11 @@ ControlServer::Reply SessionManager::handle(const std::vector<std::string> &comm
                     say("şifre değiştirildi: %s", sessionUser().c_str());
             }
         }
+    } else if (name == "status" || name == "login" || name == "unlock" || name == "lock" ||
+               name == "logout" || name == "poweroff" || name == "reboot" || name == "autologin" ||
+               name == "passwd") {
+        // Alan sayısı ya da değeri yanlış. Boş alanlar atlandığı için boş şifre de buraya düşer.
+        reply.error = "yanlış argüman sayısı ya da boş alan: " + name;
     } else {
         reply.error = "bilinmeyen komut: " + name;
     }

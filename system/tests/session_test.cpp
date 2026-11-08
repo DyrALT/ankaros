@@ -1,5 +1,6 @@
 #include "accounts.h"
 #include "check.h"
+#include "control.h"
 #include "sessionconfig.h"
 #include "sessionlog.h"
 
@@ -54,6 +55,8 @@ static void forwardsAppearanceToGreeter()
         "[appearance]\ndarkMode=true\nwallpaper=kehribar\nwallpaperOnLock=true\n";
     const auto env = greeterAppearance(conf);
     CHECK_EQ(env.size(), 2u);
+    if (env.size() != 2)
+        return; // aşağıdaki indeksler sınırı aşmasın
     CHECK_EQ(env[0], "ANKAROS_DARK_MODE=true");
     CHECK_EQ(env[1], "ANKAROS_WALLPAPER=kehribar"); // başka bölümdeki değer karışmaz
 
@@ -68,11 +71,15 @@ static void forwardsKeyboardLayout()
 {
     const auto f = keyboardEnvironment("[appearance]\nkeyboardLayout=tr-f\n", false);
     CHECK_EQ(f.size(), 2u);
+    if (f.size() != 2)
+        return;
     CHECK_EQ(f[0], "XKB_DEFAULT_LAYOUT=tr");
     CHECK_EQ(f[1], "XKB_DEFAULT_VARIANT=f");
     // Giriş ekranına seçim ayrıca iletilir (kendi Appearance'ı dosyayı okuyamaz)
     const auto greeter = keyboardEnvironment("[appearance]\nkeyboardLayout=us\n", true);
     CHECK_EQ(greeter.size(), 2u);
+    if (greeter.size() != 2)
+        return;
     CHECK_EQ(greeter[0], "XKB_DEFAULT_LAYOUT=us");
     CHECK_EQ(greeter[1], "ANKAROS_KEYBOARD_LAYOUT=us");
     // Seçim yoksa ya da bilinmiyorsa varsayılan (/etc/profile.d) kalır
@@ -82,6 +89,32 @@ static void forwardsKeyboardLayout()
 }
 
 #ifdef __linux__
+// Denetim soketi komutları sekmeyle ayrılır. Boş alanlar atlanır, bu yüzden boş şifre alan
+// sayısını değiştirir (istemciler boş şifreyi göndermeden reddeder, sunucu "yanlış argüman" der).
+static void splitsControlFields()
+{
+    const auto fields = [](const char *line) { return splitFields(line); };
+    using Fields = std::vector<std::string>;
+    CHECK(fields("status") == Fields{"status"});
+    CHECK(fields("login\tali\tgizli") == (Fields{"login", "ali", "gizli"}));
+    // Boş satır ve yalnızca ayraçlar komut sayılmaz
+    CHECK(fields("").empty());
+    CHECK(fields("\t").empty());
+    CHECK(fields("\t\t\t").empty());
+    // Başta, sonda ve art arda ayraçlar boş alan üretmez
+    CHECK(fields("\tstatus") == Fields{"status"});
+    CHECK(fields("status\t") == Fields{"status"});
+    CHECK(fields("status\t\t") == Fields{"status"});
+    CHECK(fields("a\t\tb") == (Fields{"a", "b"}));
+    // Boş şifre alanı kaybolur: "unlock" + "" tek alana iner
+    CHECK(fields("unlock\t") == Fields{"unlock"});
+    CHECK(fields("passwd\t\tyeni") == (Fields{"passwd", "yeni"}));
+    // Boşluk ayraç değildir, alan içinde kalır
+    CHECK(fields("login\tali\tgizli şifre") == (Fields{"login", "ali", "gizli şifre"}));
+    // Tek sekmeli şifre iki alana bölünür (bu yüzden istemciler sekmeyi reddeder)
+    CHECK(fields("unlock\tab\tcd") == (Fields{"unlock", "ab", "cd"}));
+}
+
 static void hashesPasswords()
 {
     const std::string hash = makeHash("gizli şifre");
@@ -159,6 +192,7 @@ int main()
     forwardsKeyboardLayout();
     choosesDisplayScale();
 #ifdef __linux__
+    splitsControlFields();
     hashesPasswords();
 #endif
     return check::result("session_test");
