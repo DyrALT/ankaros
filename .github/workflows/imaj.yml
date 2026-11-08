@@ -1,8 +1,13 @@
 # ankaros imajını (aarch64 ve x86_64, karar 0018) derler ve QEMU'da masaüstüne kadar açıldığını denetler.
 #
-# Önbellekle bile 45 dakikayı geçtiği için yalnızca imajı etkileyen dosyalar değişince çalışır. PR'lar
-# bunu beklemez: imaj yerelde derlenip denenir (docs/gelistirme-ortami.md), CI main'de bir kez daha
-# derleyip bozulmayı yakalar. Elle başlatmak için: gh workflow run imaj.yml --ref <dal>
+# Derleme artımlıdır: Buildroot'un çıktısı önbellekte durur, yalnızca ankaros'un kendi paketleri
+# (kabuk, compositor, sistem) yeniden derlenir. Buildroot, defconfig ya da external/ değişince önbellek
+# geçersizleşir ve her şey baştan derlenir (ccache ile bile 50-60 dakika).
+#
+# main'de imajı etkileyen her değişiklikte çalışır. PR'larda yalnızca sistem katmanı değişince çalışır
+# (Buildroot, external/, system/, derleme betikleri): kabuk ve compositor'ı CI iş akışı Qt 6.9'da derleyip
+# denetler, imajdaki bozulmayı main'deki derleme yakalar. PR'lar bunu beklemez: imaj yerelde derlenip
+# denenir (docs/gelistirme-ortami.md). Elle başlatmak için: gh workflow run imaj.yml --ref <dal>
 # x86_64 PR'larda çalışmaz: main'de ve elle başlatılınca derlenir, süreyi iki katına çıkarmasın.
 #
 # vX.Y.Z etiketi gönderilince iki imaj da derlenir, açılış testini geçerse GitHub Release'e eklenir
@@ -13,7 +18,7 @@ on:
   push:
     branches: [main]
     tags: ['v*.*.*']
-    paths: &imaj-dosyalari
+    paths:
       - buildroot
       - .gitmodules
       - external/**
@@ -24,7 +29,14 @@ on:
       - scripts/qemu-test.py
       - .github/workflows/imaj.yml
   pull_request:
-    paths: *imaj-dosyalari
+    paths:
+      - buildroot
+      - .gitmodules
+      - external/**
+      - system/**
+      - scripts/build.sh
+      - scripts/qemu-test.py
+      - .github/workflows/imaj.yml
   workflow_dispatch:
 
 # PR'da yeni push eskisini iptal eder. main'de iptal edilmez: çalışan derleme biter, en son push sıraya
@@ -43,7 +55,7 @@ jobs:
       matrix:
         include: ${{ fromJSON(github.event_name == 'pull_request' && '[{"arch":"aarch64","runner":"ubuntu-24.04-arm","qemu":"qemu-system-arm","kernel":"Image"}]' || '[{"arch":"aarch64","runner":"ubuntu-24.04-arm","qemu":"qemu-system-arm","kernel":"Image"},{"arch":"x86_64","runner":"ubuntu-24.04","qemu":"qemu-system-x86","kernel":"bzImage"}]') }}
     runs-on: ${{ matrix.runner }}
-    # İlk derleme Qt 6 ve Mesa ile birlikte birkaç saat sürer, sonrakiler önbellekten hızlanır.
+    # Önbelleksiz ilk derleme Qt 6 ve Mesa ile birlikte birkaç saat sürer.
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
@@ -53,8 +65,23 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential file wget cpio unzip rsync bc python3 libncurses-dev
+      - name: Önbellek anahtarı
+        # Çıktının geçerli olduğu durum: Buildroot'un commit'i, external/ (defconfig, paket tarifleri,
+        # kart dosyaları) ve derleme betiği. Biri değişince çıktı önbelleği kullanılmaz.
+        id: anahtar
+        run: |
+          echo "cikti=buildroot-cikti-v1-${{ matrix.arch }}-$(git rev-parse HEAD:buildroot)-${{ hashFiles('external/**', 'scripts/build.sh') }}" >> "$GITHUB_OUTPUT"
+      - name: Önbellek (Buildroot çıktısı)
+        # Yalnızca birebir aynı anahtar: eski bir çıktının üstüne derlemek bayat paketler bırakabilir
+        id: cikti
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/ankaros-output
+          key: ${{ steps.anahtar.outputs.cikti }}
       - name: Önbellek (kaynak paketleri ve ccache)
-        uses: actions/cache@v4
+        # Yalnızca baştan derlerken gerekir
+        if: steps.cikti.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/ankaros-dl
@@ -67,7 +94,17 @@ jobs:
             buildroot-${{ matrix.arch }}-
             buildroot-
       - name: Derle
-        run: ./scripts/build.sh
+        # Önbellekten gelen çıktıda Buildroot dosya tarihlerine bakar: checkout'taki dosyalar (defconfig,
+        # çekirdek yapılandırması) damgalardan yeni görünür, çekirdek baştan yapılandırılmaya kalkar. Girdiler
+        # anahtarda olduğundan damgalar ve .config tek bir ana tarihlenir (aynı tarih: birbirlerini de
+        # tetiklemesinler).
+        run: |
+          if [ "${{ steps.cikti.outputs.cache-hit }}" = true ]; then
+            t="@$(date +%s)"
+            find ~/ankaros-output/build -mindepth 2 -maxdepth 2 -name '.stamp_*' -exec touch -d "$t" {} +
+            touch -d "$t" ~/ankaros-output/.config
+          fi
+          ./scripts/build.sh
       - name: Açılış testi (QEMU)
         # İmaj ekransız açılır, masaüstü görünene kadar ekran görüntüsü alınır. arm64 makinede KVM yok,
         # işlemci yazılımla taklit edilir: Mac'te 20 saniye süren açılış burada birkaç dakika sürebilir.
@@ -108,6 +145,32 @@ jobs:
             ~/ankaros-output/images/${{ matrix.kernel }}
             ~/ankaros-output/images/rootfs.ext4
           retention-days: 14
+      - name: Önbellek (kaynak paketleri ve ccache) kaydet
+        if: steps.cikti.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/ankaros-dl
+            ~/.buildroot-ccache
+          key: buildroot-${{ matrix.arch }}-${{ hashFiles(format('external/configs/ankaros_qemu_{0}_defconfig', matrix.arch), '.gitmodules') }}-${{ github.sha }}
+      - name: Buildroot çıktısını önbellek için küçült
+        # build/ 20 GB'ı aşar. Buildroot bir paketin bittiğini build/<paket>/.stamp_* dosyalarından anlar,
+        # derlenmiş hali host/ (araç zinciri ve sysroot) ve target/ altındadır. Damgalar dışında build/
+        # silinir, ankaros paketlerinin dizini tümden: bir sonraki koşuda yalnızca onlar baştan derlenir.
+        # Kök dosya sistemi her derlemede yeniden oluşur, saklanmaz. Kalan ~1,5 GB (yerelde denendi: ankaros
+        # paketleri dışında hiçbir şey yeniden derlenmedi).
+        if: steps.cikti.outputs.cache-hit != 'true'
+        run: |
+          cd ~/ankaros-output
+          rm -rf build/ankaros-* images/rootfs.*
+          find build -mindepth 2 -maxdepth 2 ! -name '.stamp_*' -exec rm -rf {} +
+          du -sh . host target build images
+      - name: Önbellek (Buildroot çıktısı) kaydet
+        if: steps.cikti.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/ankaros-output
+          key: ${{ steps.anahtar.outputs.cikti }}
 
   release:
     name: Sürüm

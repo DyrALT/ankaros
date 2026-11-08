@@ -5,6 +5,13 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
+### Değişti
+
+- CI'daki imaj derlemesi artımlı: Buildroot'un çıktısı önbellekte tutulur, yalnızca kabuk, compositor ve
+  sistem paketleri yeniden derlenir (her mimari için ~50-60 dakika yerine 10 dakika kadar, tahmin). Buildroot,
+  defconfig ya da `external/` değişince her şey yine baştan derlenir. PR'larda imaj yalnızca sistem katmanı
+  değişince derlenir, kabuk ve compositor PR'larını CI iş akışı denetler.
+
 ## [0.5.0] - 2026-11-07
 
 ### Eklendi
