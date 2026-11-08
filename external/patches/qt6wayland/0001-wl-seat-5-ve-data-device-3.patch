@@ -176,25 +176,29 @@ diff --git a/src/compositor/wayland_wrapper/qwldatadevice.cpp b/src/compositor/w
 index 440401d..978f291 100644
 --- a/src/compositor/wayland_wrapper/qwldatadevice.cpp
 +++ b/src/compositor/wayland_wrapper/qwldatadevice.cpp
-@@ -77,7 +77,7 @@
+@@ -77,7 +77,9 @@
  
      uint32_t serial = m_compositor->nextSerial();
  
 -    DataOffer *offer = m_dragDataSource ? new DataOffer(m_dragDataSource, resource) : nullptr;
-+    DataOffer *offer = m_dragDataSource ? new DataOffer(m_dragDataSource, resource, true) : nullptr;
++    m_dragOfferDropped = std::make_shared<bool>(false);
++    DataOffer *offer =
++        m_dragDataSource ? new DataOffer(m_dragDataSource, resource, m_dragOfferDropped) : nullptr;
  
      if (m_dragDataSource && !offer)
          return;
-@@ -117,6 +117,8 @@
+@@ -117,6 +119,10 @@
  {
      if (m_dragFocusResource) {
          send_drop(m_dragFocusResource->handle);
++        if (m_dragOfferDropped)
++            *m_dragOfferDropped = true;
 +        if (m_dragDataSource)
 +            m_dragDataSource->dropPerformed();
          setDragFocus(nullptr, QPoint());
      } else if (m_dragDataSource) {
          m_dragDataSource->cancel();
-@@ -155,6 +157,17 @@
+@@ -155,6 +161,17 @@
  }
  #endif // QT_CONFIG(draganddrop)
  
@@ -216,7 +220,16 @@ diff --git a/src/compositor/wayland_wrapper/qwldatadevice_p.h b/src/compositor/w
 index 839d938..b9b0efd 100644
 --- a/src/compositor/wayland_wrapper/qwldatadevice_p.h
 +++ b/src/compositor/wayland_wrapper/qwldatadevice_p.h
-@@ -54,6 +54,7 @@ protected:
+@@ -18,6 +18,8 @@
+ #include <QtWaylandCompositor/private/qwayland-server-wayland.h>
+ #include <QtWaylandCompositor/private/qtwaylandcompositorglobal_p.h>
+ #include <QtWaylandCompositor/QWaylandSeat>
++
++#include <memory>
+ 
+ QT_REQUIRE_CONFIG(wayland_datadevice);
+ 
+@@ -54,6 +56,7 @@
      void data_device_start_drag(Resource *resource, struct ::wl_resource *source, struct ::wl_resource *origin, struct ::wl_resource *icon, uint32_t serial) override;
  #endif
      void data_device_set_selection(Resource *resource, struct ::wl_resource *source, uint32_t serial) override;
@@ -224,11 +237,20 @@ index 839d938..b9b0efd 100644
  
  private:
  #if QT_CONFIG(draganddrop)
+@@ -68,6 +71,8 @@
+ #if QT_CONFIG(draganddrop)
+     struct ::wl_client *m_dragClient = nullptr;
+     DataSource *m_dragDataSource = nullptr;
++    // Geçerli sürükleme teklifinin "bırakıldı" durumu (teklifle paylaşılır, wl_data_offer.finish için)
++    std::shared_ptr<bool> m_dragOfferDropped;
+ 
+     QWaylandSurface *m_dragFocus = nullptr;
+     Resource *m_dragFocusResource = nullptr;
 diff --git a/src/compositor/wayland_wrapper/qwldatadevicemanager.cpp b/src/compositor/wayland_wrapper/qwldatadevicemanager.cpp
 index dea68a5..42218b4 100644
 --- a/src/compositor/wayland_wrapper/qwldatadevicemanager.cpp
 +++ b/src/compositor/wayland_wrapper/qwldatadevicemanager.cpp
-@@ -23,7 +23,7 @@ QT_BEGIN_NAMESPACE
+@@ -23,7 +23,7 @@
  namespace QtWayland {
  
  DataDeviceManager::DataDeviceManager(QWaylandCompositor *compositor)
@@ -237,7 +259,7 @@ index dea68a5..42218b4 100644
      , m_compositor(compositor)
  {
  }
-@@ -213,13 +213,13 @@ void DataDeviceManager::offerRetainedSelection(wl_resource *clientDataDeviceReso
+@@ -213,13 +213,13 @@
  
  void DataDeviceManager::data_device_manager_create_data_source(Resource *resource, uint32_t id)
  {
@@ -253,16 +275,28 @@ index dea68a5..42218b4 100644
  }
  
  void DataDeviceManager::comp_accept(wl_client *, wl_resource *, uint32_t, const char *)
-@@ -244,13 +244,23 @@ void DataDeviceManager::comp_destroy(wl_client *, wl_resource *)
+@@ -244,13 +244,35 @@
  {
  }
  
-+void DataDeviceManager::comp_finish(wl_client *, wl_resource *)
++// Compositor'un kendi teklifleri hep panodur (sürükle-bırak değil). Bu istekler sürüm 3'ten
++// başlar, daha eski sürümde yok sayılır. Sürüm -1 ile oluşturulduğundan o da denetlenir.
++void DataDeviceManager::comp_finish(wl_client *, wl_resource *resource)
 +{
++    const int version = wl_resource_get_version(resource);
++    if (version >= 0 && version < WL_DATA_OFFER_FINISH_SINCE_VERSION)
++        return;
++    wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_FINISH,
++                           "finish istegi surukle-birak teklifi olmayan teklifte kullanildi");
 +}
 +
-+void DataDeviceManager::comp_set_actions(wl_client *, wl_resource *, uint32_t, uint32_t)
++void DataDeviceManager::comp_set_actions(wl_client *, wl_resource *resource, uint32_t, uint32_t)
 +{
++    const int version = wl_resource_get_version(resource);
++    if (version >= 0 && version < WL_DATA_OFFER_SET_ACTIONS_SINCE_VERSION)
++        return;
++    wl_resource_post_error(resource, WL_DATA_OFFER_ERROR_INVALID_OFFER,
++                           "set_actions istegi surukle-birak teklifi olmayan teklifte kullanildi");
 +}
 +
  QT_WARNING_DISABLE_GCC("-Wmissing-field-initializers")
@@ -306,10 +340,10 @@ index a612ca6..bf84037 100644
 -DataOffer::DataOffer(DataSource *dataSource, QtWaylandServer::wl_data_device::Resource *target)
 -    : QtWaylandServer::wl_data_offer(target->client(), 0, 1)
 +DataOffer::DataOffer(DataSource *dataSource, QtWaylandServer::wl_data_device::Resource *target,
-+                     bool dragAndDrop)
++                     std::shared_ptr<bool> dropped)
 +    : QtWaylandServer::wl_data_offer(target->client(), 0, target->version())
      , m_dataSource(dataSource)
-+    , m_dragAndDrop(dragAndDrop)
++    , m_dropped(std::move(dropped))
  {
      // FIXME: connect to dataSource and reset m_dataSource on destroy
      target->data_device_object->send_data_offer(target->handle, resource()->handle);
@@ -330,7 +364,7 @@ index a612ca6..bf84037 100644
      if (m_dataSource)
          m_dataSource->accept(mimeType);
  }
-@@ -44,6 +49,52 @@
+@@ -44,6 +49,57 @@
          m_dataSource->send(mimeType, fd);
      else
          close(fd);
@@ -338,9 +372,13 @@ index a612ca6..bf84037 100644
 +
 +void DataOffer::data_offer_finish(Resource *resource)
 +{
-+    // Panonun (selection) tekliflerinde finish olmaz. Kabul edilmiş bir mime tipi ve seçilmiş bir
-+    // eylem yoksa, ya da eylem hâlâ "ask" ise istemci erken bitirmiştir (wayland.xml, wl_data_offer.finish)
-+    if (!m_dragAndDrop || !m_accepted || m_action == WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE
++    // İstek sürüm 3'ten başlar, eski sürümde yok sayılır
++    if (resource->version() < WL_DATA_OFFER_FINISH_SINCE_VERSION)
++        return;
++    // Panonun (selection) tekliflerinde finish olmaz. Bırakma olmadan, kabul edilmiş bir mime tipi ve
++    // seçilmiş bir eylem yoksa, ya da eylem hâlâ "ask" ise istemci erken bitirmiştir
++    // (wayland.xml, wl_data_offer.finish)
++    if (!m_dropped || !*m_dropped || !m_accepted || m_action == WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE
 +        || m_action == WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK) {
 +        wl_resource_post_error(resource->handle, WL_DATA_OFFER_ERROR_INVALID_FINISH,
 +                               "finish istegi erken geldi");
@@ -355,7 +393,9 @@ index a612ca6..bf84037 100644
 +{
 +    constexpr uint32_t allActions = WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY
 +        | WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE | WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK;
-+    if (!m_dragAndDrop) {
++    if (resource->version() < WL_DATA_OFFER_SET_ACTIONS_SINCE_VERSION)
++        return;
++    if (!m_dropped) {
 +        wl_resource_post_error(resource->handle, WL_DATA_OFFER_ERROR_INVALID_OFFER,
 +                               "set_actions yalnizca surukle-birak tekliflerinde kullanilir");
 +        return;
@@ -365,9 +405,8 @@ index a612ca6..bf84037 100644
 +                               "gecersiz eylem maskesi");
 +        return;
 +    }
-+    // Tercih en çok bir eylem olmalı ve maskede bulunmalı (0 = tercih yok)
-+    if (preferred_action && ((preferred_action & (preferred_action - 1))
-+                             || !(preferred_action & dnd_actions))) {
++    // Tercih en çok bir geçerli eylem olmalı (0 = tercih yok). Maskede olması şart değil.
++    if ((preferred_action & (preferred_action - 1)) || (preferred_action & ~allActions)) {
 +        wl_resource_post_error(resource->handle, WL_DATA_OFFER_ERROR_INVALID_ACTION,
 +                               "gecersiz tercih edilen eylem");
 +        return;
@@ -387,13 +426,22 @@ diff --git a/src/compositor/wayland_wrapper/qwldataoffer_p.h b/src/compositor/wa
 index aeac6d6..f445233 100644
 --- a/src/compositor/wayland_wrapper/qwldataoffer_p.h
 +++ b/src/compositor/wayland_wrapper/qwldataoffer_p.h
-@@ -31,17 +31,23 @@
+@@ -16,6 +16,8 @@
+ //
+ 
+ #include <QPointer>
++
++#include <memory>
+ #include <QtWaylandCompositor/private/qwayland-server-wayland.h>
+ #include <QtWaylandCompositor/private/qtwaylandcompositorglobal_p.h>
+ 
+@@ -31,17 +33,24 @@
  class DataOffer : public QtWaylandServer::wl_data_offer
  {
  public:
 -    DataOffer(DataSource *data_source, QtWaylandServer::wl_data_device::Resource *target);
 +    DataOffer(DataSource *data_source, QtWaylandServer::wl_data_device::Resource *target,
-+              bool dragAndDrop = false);
++              std::shared_ptr<bool> dropped = {});
      ~DataOffer() override;
  
  protected:
@@ -406,7 +454,8 @@ index aeac6d6..f445233 100644
  
  private:
      QPointer<DataSource> m_dataSource;
-+    bool m_dragAndDrop;
++    // Yalnızca sürükle-bırak tekliflerinde dolu: bırakıldı mı (DataDevice::drop işaretler)
++    std::shared_ptr<bool> m_dropped;
 +    bool m_accepted = false;
 +    uint32_t m_action = 0;
  };
