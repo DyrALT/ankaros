@@ -392,14 +392,21 @@ WaylandCompositor {
             });
             if (!window) {
                 // Pencere olmadan istemcinin yüzeyi çizilemez; yarım durum bırakmamak için istemciyi kapat.
-                console.error("Pencere oluşturulamadı, istemci kapatılıyor:", windowComponent.errorString());
+                const reason = windowComponent.errorString()
+                    || "bilinmeyen neden (bileşen durumu " + windowComponent.status + ")";
+                console.error("Pencere oluşturulamadı, istemci kapatılıyor: app_id=" + toplevel.appId
+                              + " başlık=" + toplevel.title + ":", reason);
                 toplevel.sendClose();
                 return;
             }
             window.workArea = Qt.binding(() => desktop.workArea);
             window.screenArea = Qt.binding(() => Qt.rect(0, 0, desktop.width, desktop.height));
-            // nameForAppId bir özellik değil; names'e bakmak katalog değişince bağlamanın yeniden çalışmasını sağlar
-            window.appName = Qt.binding(() => AppCatalog.names ? AppCatalog.nameForAppId(window.appId) : "");
+            window.appName = Qt.binding(() => {
+                // nameForAppId bir özellik değil; names'i okumak katalog değişince (changed) bağlamanın
+                // yeniden çalışmasını sağlar
+                void AppCatalog.names;
+                return AppCatalog.nameForAppId(window.appId);
+            });
             window.minimizeTarget = () => desktop.taskIconCenter(window.appName);
             window.placementPoint = () => compositor.windows.some(
                 w => w !== window && !w.closing && w.appName === window.appName) ? GlobalKeys.pointerPosition() : null;

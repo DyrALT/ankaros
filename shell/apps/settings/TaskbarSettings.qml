@@ -37,7 +37,7 @@ SettingsPage {
                 pinned.push(apps.get(i).name);
         }
         // Listede görünmeyen (kurulu olmayan ya da katalog henüz yüklenmediği için bilinmeyen) uygulamaların
-        // sabitlemesi ayardan silinmez, yalnızca kullanıcı kaldırınca gider.
+        // sabitlemesi ayardan silinmez; kullanıcı onları buradan kaldıramaz, uygulama kurulunca yeniden görünür.
         const hidden = currentPinned().filter(name => !pinned.includes(name) && !listed(name));
         Appearance.pinnedApps = pinned.concat(hidden);
     }

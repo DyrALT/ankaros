@@ -32,6 +32,7 @@ GlassPanel {
         spacing: 2
 
         MenuItem {
+            keyboardNavigation: true
             icon: "lock"
             label: qsTr("Kilitle")
             shortcut: qsTr("Süper+L")
@@ -39,6 +40,7 @@ GlassPanel {
         }
 
         MenuItem {
+            keyboardNavigation: true
             icon: "logout"
             label: qsTr("Oturumu kapat")
             onClicked: root.logoutRequested()
@@ -47,12 +49,14 @@ GlassPanel {
         MenuSeparator {}
 
         MenuItem {
+            keyboardNavigation: true
             icon: "restart"
             label: qsTr("Yeniden başlat")
             onClicked: root.rebootRequested()
         }
 
         MenuItem {
+            keyboardNavigation: true
             icon: "power"
             label: qsTr("Kapat")
             onClicked: root.poweroffRequested()
