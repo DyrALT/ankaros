@@ -90,7 +90,14 @@ void PtyProcess::read()
         // Kabuk kapandı (Linux'ta EIO, macOS'ta 0)
         if (!data.isEmpty())
             emit received(data);
-        m_notifier->setEnabled(false);
+        // Notifier ve fd kapatılır (yoksa fd sızar, EOF'ta notifier sürekli tetiklenir), alt süreç
+        // toplanır. Yıkıcı aynı fd'yi ikinci kez kapatmasın diye m_fd/m_pid sıfırlanır.
+        delete m_notifier;
+        m_notifier = nullptr;
+        if (m_fd >= 0) {
+            close(m_fd);
+            m_fd = -1;
+        }
         if (m_pid > 0) {
             waitpid(m_pid, nullptr, 0);
             m_pid = -1;

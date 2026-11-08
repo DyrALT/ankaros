@@ -126,6 +126,8 @@ void TerminalView::updateSize()
     if (columns == m_screen->columns() && rows == m_screen->rows())
         return;
     m_screen->resize(rows, columns);
+    // Boyut değişince geçmiş satır sayısı da değişebilir (libvterm satır geri alır/iter)
+    m_scroll = std::clamp(m_scroll, 0, m_screen->scrollbackSize());
     if (m_pty)
         m_pty->resize(rows, columns);
     emit sizeChanged();
@@ -276,7 +278,7 @@ TerminalScreen::Position TerminalView::cellAt(QPointF point) const
 
 void TerminalView::scrollBy(int lines)
 {
-    if (!m_screen)
+    if (!m_screen || m_screen->alternateScreen())
         return;
     const int scroll = std::clamp(m_scroll + lines, 0, m_screen->scrollbackSize());
     if (scroll != m_scroll) {
@@ -334,7 +336,8 @@ void TerminalView::keyPressEvent(QKeyEvent *event)
 {
     if (!m_screen)
         return;
-    if (event->modifiers() == Qt::ShiftModifier &&
+    // Alternatif ekranda (less, vim) ana ekranın geçmişi gösterilmez: tuş uygulamaya gider
+    if (!m_screen->alternateScreen() && event->modifiers() == Qt::ShiftModifier &&
         (event->key() == Qt::Key_PageUp || event->key() == Qt::Key_PageDown)) {
         scrollBy((event->key() == Qt::Key_PageUp ? 1 : -1) * std::max(1, m_screen->rows() - 1));
         return;
