@@ -281,7 +281,7 @@ bool readUserFile(const passwd &account, const std::string &path, std::string &c
     }
     if (fd < 0)
         return false;
-    struct stat info{};
+    struct stat info;
     if (fstat(fd, &info) != 0 || !S_ISREG(info.st_mode) ||
         static_cast<size_t>(info.st_size) > maxSize) {
         close(fd);

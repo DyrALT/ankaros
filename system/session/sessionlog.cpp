@@ -31,7 +31,7 @@ SessionLog::~SessionLog()
 void SessionLog::open()
 {
     m_fd = ::open(m_path.c_str(), O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0644);
-    struct stat info{};
+    struct stat info;
     m_size = m_fd >= 0 && fstat(m_fd, &info) == 0 ? static_cast<size_t>(info.st_size) : 0;
 }
 
