@@ -20,6 +20,11 @@ CURRENT=$(ls -td "$OUT"/build/*/ 2>/dev/null | while read -r d; do
   case "$(basename "$d")" in buildroot-*) continue ;; esac
   [ -f "$d.stamp_installed" ] || { basename "$d"; break; }; done)
 
-echo "Paketler: $DONE / $TOTAL  (%$((DONE * 100 / TOTAL)))"
+# Paket listesi alınamazsa (derleme dizini yok, make hata verdi) TOTAL 0 olur, sıfıra bölünmesin
+if [ "${TOTAL:-0}" -gt 0 ]; then
+  echo "Paketler: $DONE / $TOTAL  (%$((DONE * 100 / TOTAL)))"
+else
+  echo "Paketler: $DONE / ?  (paket listesi alınamadı)"
+fi
 [ -n "$CURRENT" ] && echo "Şu an:    $CURRENT"
 if [ -f "$OUT/images/rootfs.ext4" ]; then echo "İmaj hazır: $OUT/images"; fi
