@@ -190,6 +190,15 @@ WaylandCompositor {
                 battery: Battery
                 audio: Audio
                 visible: !Session.greeter
+                // Öndeki pencere büyütülmüşse (tam ekran) alt çubuk gizlenir
+                fullscreen: {
+                    let top = null;
+                    for (const w of compositor.windows) {
+                        if (!w.minimized && !w.closing && (!top || w.z > top.z))
+                            top = w;
+                    }
+                    return top !== null && top.maximized;
+                }
                 snapPreview: {
                     const dragged = compositor.windows.find(w => w.snapZone !== "");
                     return dragged ? dragged.snapRect : Qt.rect(0, 0, 0, 0);
@@ -366,6 +375,7 @@ WaylandCompositor {
                 y: 60 + offset
             });
             window.workArea = Qt.binding(() => desktop.workArea);
+            window.screenArea = Qt.binding(() => Qt.rect(0, 0, desktop.width, desktop.height));
             window.appName = Qt.binding(() => AppCatalog.nameForAppId(window.appId));
             window.minimizeTarget = () => desktop.taskIconCenter(window.appName);
             window.isTopAt = position => compositor.windowAt(position) === window;

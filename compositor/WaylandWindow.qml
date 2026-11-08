@@ -13,8 +13,10 @@ WindowChrome {
     id: root
 
     required property XdgSurface xdgSurface
-    // Pencerelerin kullanabileceği alan (alt çubuk hariç), büyütmede ve yaslamada kullanılır.
+    // Pencerelerin kullanabileceği alan (alt çubuk hariç), yaslamada ve yerleştirmede kullanılır.
     property rect workArea
+    // Bütün ekran. Büyütülen pencere bunu kaplar (tam ekran), alt çubuk o sırada gizlenir.
+    property rect screenArea
     // Uygulamanın kabuktaki adı ("Terminal" gibi), Main.qml app_id'ye göre verir.
     property string appName
     property bool minimized: false
@@ -24,7 +26,7 @@ WindowChrome {
     property string tiled: ""
     // Sürüklenirken bırakılırsa yaslanacağı yer: "left", "right", "top" (büyüt) ya da ""
     property string snapZone: ""
-    readonly property rect snapRect: snapZone === "top" ? workArea : snapZone !== "" ? tileRect(snapZone)
+    readonly property rect snapRect: snapZone === "top" ? screenArea : snapZone !== "" ? tileRect(snapZone)
                                                                                       : Qt.rect(0, 0, 0, 0)
 
     readonly property XdgToplevel toplevel: xdgSurface ? xdgSurface.toplevel : null
@@ -57,18 +59,19 @@ WindowChrome {
     signal raiseRequested
     signal gone
 
-    // İlk boyut belli olunca pencereyi ekrana sığdır: kullanılabilir alandan büyükse büyüt,
-    // değilse taşmayacak şekilde konumunu düzelt.
+    // İlk boyut belli olunca pencereyi ekrana sığdır: kullanılabilir alandan büyükse ekranın ortasında
+    // ondan küçük bir pencere yap, değilse taşmayacak şekilde konumunu düzelt. Büyütülmez: büyütmek tam
+    // ekran demek, alt çubuk gizlenirdi.
     function place() {
         if (placed || surfaceItem.width <= 0 || surfaceItem.height <= 0)
             return;
         placed = true;
         appear = 1;
         if (width > workArea.width || height > workArea.height) {
-            maximize();
-            // Eski boyutuna döndürülürse ekranın ortasında, ekrandan küçük bir pencere olsun
-            restoreGeometry = Qt.rect(workArea.x + workArea.width * 0.15, workArea.y + workArea.height * 0.1,
-                                      Math.round(workArea.width * 0.7), Math.round(workArea.height * 0.8));
+            const size = Qt.size(Math.round(workArea.width * 0.7), Math.round(workArea.height * 0.8));
+            x = workArea.x + Math.round(workArea.width * 0.15);
+            y = workArea.y + Math.round(workArea.height * 0.1);
+            toplevel.sendUnmaximized(size);
             return;
         }
         x = Math.max(workArea.x, Math.min(x, workArea.x + workArea.width - width));
@@ -123,12 +126,13 @@ WindowChrome {
             restoreGeometry = Qt.rect(x, y, surfaceItem.width, surfaceItem.height);
     }
 
+    // Tam ekran: pencere bütün ekranı kaplar, öndeyken alt çubuk gizlenir (Desktop.fullscreen)
     function maximize() {
         saveGeometry();
         tiled = "";
-        x = workArea.x;
-        y = workArea.y;
-        toplevel.sendMaximized(contentSize(workArea));
+        x = screenArea.x;
+        y = screenArea.y;
+        toplevel.sendMaximized(contentSize(screenArea));
     }
 
     function tile(side) {
