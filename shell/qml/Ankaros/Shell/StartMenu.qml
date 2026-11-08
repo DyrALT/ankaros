@@ -175,7 +175,7 @@ GlassPanel {
             Layout.preferredHeight: 44
             radius: Theme.radius.md
             color: Theme.color.surfaceHover
-            border.color: Theme.color.accent
+            border.color: search.activeFocus ? Theme.color.accent : Theme.color.border
             border.width: 1.5
 
             Icon {

@@ -19,7 +19,7 @@ Rectangle {
     property bool keyboardNavigation: false
 
     activeFocusOnTab: keyboardNavigation
-    border.width: root.visualFocus ? 2 : 0
+    border.width: root.activeFocus ? 2 : 0
     border.color: Theme.color.accent
     Keys.enabled: keyboardNavigation
     Keys.onReturnPressed: clicked()
