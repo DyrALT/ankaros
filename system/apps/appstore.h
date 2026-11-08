@@ -29,6 +29,7 @@ struct DesktopEntry
     std::string name;
     std::string exec;
     std::string wmClass;
+    std::string icon; // Icon=: simge adı ya da mutlak yol
     bool application = false;
     bool terminal = false;
     bool hidden = false; // NoDisplay ya da Hidden
@@ -48,6 +49,7 @@ struct InstalledApp
     std::string name;
     std::string command;
     std::vector<std::string> appIds;
+    std::string icon; // veri diskindeki simge dosyası, yoksa boş
 };
 
 // .desktop dosyasından kayıt oluşturur. Başlat panelinde gösterilmeyecek bir dosyaysa (uygulama
@@ -55,8 +57,8 @@ struct InstalledApp
 InstalledApp makeInstalledApp(const std::string &package, const std::string &layer,
                               const std::string &desktopId, const DesktopEntry &entry);
 
-// Kayıt dosyası: her satırda paket, katman, ad, komut, app_id'ler (boşlukla), alanlar sekmeyle
-// ayrılır
+// Kayıt dosyası: her satırda paket, katman, ad, komut, app_id'ler (boşlukla), simge yolu, alanlar
+// sekmeyle ayrılır. Simge alanından önceki biçimde (5 alan) yazılmış kayıtlar da okunur.
 std::string formatInstalled(const std::vector<InstalledApp> &apps);
 std::vector<InstalledApp> parseInstalled(std::string_view text);
 

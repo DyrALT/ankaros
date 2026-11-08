@@ -105,6 +105,8 @@ DesktopEntry parseDesktopEntry(std::string_view text)
             localizedName = value;
         else if (key == "Exec")
             entry.exec = value;
+        else if (key == "Icon")
+            entry.icon = value;
         else if (key == "StartupWMClass")
             entry.wmClass = value;
         else if (key == "Type")
@@ -165,7 +167,7 @@ std::string formatInstalled(const std::vector<InstalledApp> &apps)
         for (const std::string &id : app.appIds)
             ids += (ids.empty() ? "" : " ") + id;
         text += app.package + '\t' + app.layer + '\t' + app.name + '\t' + app.command + '\t' + ids +
-                '\n';
+                '\t' + singleLine(app.icon) + '\n';
     }
     return text;
 }
@@ -175,7 +177,7 @@ std::vector<InstalledApp> parseInstalled(std::string_view text)
     std::vector<InstalledApp> apps;
     for (const std::string_view line : splitOn(text, '\n')) {
         const auto fields = splitOn(line, '\t');
-        if (fields.size() != 5)
+        if (fields.size() != 5 && fields.size() != 6)
             continue;
         InstalledApp app;
         app.package = fields[0];
@@ -186,6 +188,8 @@ std::vector<InstalledApp> parseInstalled(std::string_view text)
             if (!id.empty())
                 app.appIds.emplace_back(id);
         }
+        if (fields.size() == 6)
+            app.icon = fields[5];
         apps.push_back(std::move(app));
     }
     return apps;
@@ -204,7 +208,10 @@ std::string formatCatalog(const std::vector<InstalledApp> &apps)
                 ", \"command\": " + jsonString(app.command) + ", \"appIds\": [";
         for (size_t i = 0; i < app.appIds.size(); ++i)
             text += (i ? ", " : "") + jsonString(app.appIds[i]);
-        text += "] }";
+        text += "]";
+        if (!app.icon.empty())
+            text += ", \"icon\": " + jsonString(app.icon);
+        text += " }";
     }
     return text + (first ? "]\n}\n" : "\n    ]\n}\n");
 }
