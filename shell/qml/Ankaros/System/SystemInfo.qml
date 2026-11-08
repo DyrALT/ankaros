@@ -5,7 +5,7 @@ pragma Singleton
 import QtQuick
 
 QtObject {
-    readonly property string version: "0.4 · Faz 3"
+    readonly property string version: "0.5.0"
     readonly property string kernel: "Linux 6.18.7 (aarch64)"
     readonly property string processor: qsTr("4 çekirdek")
     readonly property string memory: "2 GB"
