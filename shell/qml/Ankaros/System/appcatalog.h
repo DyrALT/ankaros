@@ -26,8 +26,8 @@ class AppCatalog : public QObject
     // alt çubukta yalnızca bunlar gösterilir, diğerleri ileride yazılacak uygulamaların yer
     // tutucusudur.
     Q_PROPERTY(QStringList launchable READ launchable NOTIFY changed)
-    // Uygulama adından kendi simgesinin adresine (file://). Yalnızca resmi olanlar bulunur, AppIcon
-    // bunu AppImages üzerinden kullanır.
+    // Uygulama adından kendi simgesinin adresine (file:// metni). Yalnızca resmi olanlar bulunur,
+    // AppIcon bunu AppImages üzerinden kullanır.
     Q_PROPERTY(QVariantMap icons READ icons NOTIFY changed)
 
 public:

@@ -84,7 +84,7 @@ bool AppCatalog::load(const QString &path)
         // döner
         const QString icon = app.value(QLatin1String("icon")).toString();
         if (QFileInfo::exists(icon))
-            m_icons.insert(name, QUrl::fromLocalFile(icon));
+            m_icons.insert(name, QUrl::fromLocalFile(icon).toString());
         for (const QJsonValue &appId : app.value(QLatin1String("appIds")).toArray())
             m_namesByAppId.insert(appId.toString(), name);
     }
