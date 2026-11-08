@@ -23,7 +23,7 @@ boyutlandırma tutamakları) `Ankaros.Shell` modülündeki `WindowChrome`'dur. W
 | Kısayol | İş |
 |---|---|
 | Süper | Başlat panelini aç ve kapat (tek başına basılıp bırakılınca) |
-| Süper+D | Bütün pencereleri küçült, ikinci basışta geri getir |
+| Süper+D | Bütün pencereleri küçült, ikinci basışta geri getir (yalnızca Süper+D’nin küçülttüğü, hâlâ var olan ve küçültülmüş duran pencereler) |
 | Süper+← / → | Etkin pencereyi sola ya da sağa yasla |
 | Süper+↑ | Tam ekran |
 | Süper+↓ | Tam ekran ya da yaslanmışsa eski boyutuna döndür, değilse küçült |
