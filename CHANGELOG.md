@@ -44,6 +44,12 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 - `utm-olustur.sh` `qemu-img` yoksa UTM'ye dokunmadan duruyor.
 - Masaüstünün çıktısı (`/var/log/ankaros-compositor.log`) oturum yöneticisinden geçiyor: dosya 4 MB'ta
   döndürülüyor, uygulamalar dosyaya doğrudan yazamıyor ([docs/oturum.md](docs/oturum.md)).
+- init, güç komutu verildikten sonra hiçbir servisi başlatmıyor ya da yeniden başlatmıyor. Kapanış sürerken
+  farklı bir güç isteği hata veriyor.
+- `ankarosctl mark` metnindeki terminal kontrol karakterleri (C0 ve C1) ayıklanıyor.
+- `ankarosctl session passwd` şifreleri `ps`'te görünmesin diye argüman olarak değil, stdin'den (terminalde
+  yankısız) okuyor. Boş, sekmeli, satır sonu ya da NUL içeren şifreler kabukta, ankarosctl'de ve oturum
+  yöneticisinde açık hatayla reddediliyor.
 
 ## [0.5.0] - 2026-11-07
 
