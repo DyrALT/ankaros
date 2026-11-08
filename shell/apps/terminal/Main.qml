@@ -1,51 +1,26 @@
-// Terminal penceresi: sekme çubuğu ve sekmeler. Pencere çerçevesini ankaros'ta compositor çizer
-// (karar 0007). Figma: "Faz 3 · Uygulamalar" sayfası, Terminal (açık/koyu).
-//
-// Kısayollar: Ctrl+Shift+T yeni sekme, Ctrl+Shift+W sekmeyi kapat, Ctrl+Tab sonraki sekme,
-// Ctrl+Shift+C kopyala, Ctrl+Shift+V yapıştır, Ctrl+artı/eksi/0 yazı boyutu, Shift+PageUp/Down kaydır.
+// Terminal uygulaması: pencereler (TerminalWindow) ve sekmelerin terminalleri (TerminalView). Bir süreç
+// birden çok pencere açabilir. Terminaller pencereye değil buraya aittir: sekme bir pencereden ötekine
+// taşınınca içinde çalışan kabuk kapanmaz. Son pencere kapanınca uygulama çıkar.
 pragma ComponentBehavior: Bound
 
 import QtCore
 import QtQuick
-import QtQuick.Layouts
 
 import Ankaros.UI
 
-Window {
-    id: window
+QtObject {
+    id: app
 
-    // Boş değilse açılıştan kısa süre sonra pencerenin görüntüsü bu dosyaya kaydedilir ve uygulama kapanır
+    // Boş değilse ilk pencerenin görüntüsü açılıştan kısa süre sonra bu dosyaya kaydedilir (CI)
     property string screenshot
-    property int current: 0
-    property int nextId: 1
-    readonly property TerminalView currentView: viewAt(window.current)
+    property list<TerminalWindow> windows
 
-    // Sekmenin terminali. views.count okunduğu için binding'ler sekme eklenince yeniden hesaplanır.
-    function viewAt(index: int): TerminalView {
-        return index < views.count ? views.itemAt(index) as TerminalView : null;
+    readonly property TerminalSettings settings: TerminalSettings {}
+
+    component TerminalSettings: Settings {
+        category: "terminal"
+        property int fontSize: 13
     }
-
-    function newTab() {
-        tabs.append({ uid: window.nextId++ });
-        window.current = tabs.count - 1;
-    }
-
-    function closeTab(index: int) {
-        tabs.remove(index);
-        if (tabs.count === 0) {
-            Qt.quit();
-            return;
-        }
-        window.current = Math.min(index, tabs.count - 1);
-    }
-
-    width: 880
-    height: 560
-    minimumWidth: 420
-    minimumHeight: 240
-    visible: true
-    title: qsTr("Terminal")
-    color: colors.background
 
     // Renkler temaya göre. 0-7 normal, 8-15 parlak ANSI renkleri.
     readonly property Colors colors: Colors {}
@@ -60,203 +35,67 @@ Window {
                "#6b6560", "#d4523f", "#4fa865", "#c99a2e", "#3f7fc6", "#b86bb3", "#3aa5a5", "#8a847e"]
     }
 
-    Settings {
-        id: settings
-
-        category: "terminal"
-        property int fontSize: 13
+    readonly property Component windowComponent: Component {
+        TerminalWindow {}
     }
 
-    ListModel {
-        id: tabs
+    readonly property Component viewComponent: Component {
+        TerminalView {
+            id: view
 
-        Component.onCompleted: window.newTab()
-    }
-
-    Shortcut {
-        sequence: "Ctrl+Shift+T"
-        onActivated: window.newTab()
-    }
-
-    Shortcut {
-        sequence: "Ctrl+Shift+W"
-        onActivated: window.closeTab(window.current)
-    }
-
-    Shortcut {
-        sequences: ["Ctrl+Tab", "Ctrl+PgDown"]
-        onActivated: window.current = (window.current + 1) % tabs.count
-    }
-
-    Shortcut {
-        sequences: ["Ctrl+Shift+Tab", "Ctrl+PgUp"]
-        onActivated: window.current = (window.current + tabs.count - 1) % tabs.count
-    }
-
-    Shortcut {
-        sequence: "Ctrl+Shift+C"
-        onActivated: window.currentView?.copy()
-    }
-
-    Shortcut {
-        sequence: "Ctrl+Shift+V"
-        onActivated: window.currentView?.paste()
-    }
-
-    Shortcut {
-        sequences: ["Ctrl++", "Ctrl+="]
-        onActivated: settings.fontSize = Math.min(settings.fontSize + 1, 32)
-    }
-
-    Shortcut {
-        sequence: "Ctrl+-"
-        onActivated: settings.fontSize = Math.max(settings.fontSize - 1, 8)
-    }
-
-    Shortcut {
-        sequence: "Ctrl+0"
-        onActivated: settings.fontSize = 13
-    }
-
-    ColumnLayout {
-        id: content
-
-        anchors.fill: parent
-        spacing: 0
-
-        // Sekme çubuğu
-        Rectangle {
-            Layout.fillWidth: true
-            implicitHeight: 35
-            color: Theme.color.surfaceSidebar
-
-            Row {
-                x: 8
-                y: 6
-                spacing: 4
-
-                Repeater {
-                    model: tabs
-
-                    Rectangle {
-                        id: tab
-
-                        required property int index
-                        readonly property bool selected: index === window.current
-                        readonly property TerminalView view: window.viewAt(index)
-
-                        width: Math.min(tabRow.implicitWidth + 28, 220)
-                        height: 29
-                        radius: Theme.radius.sm
-                        color: selected ? window.colors.background
-                                        : tabHover.hovered ? Theme.color.surfaceHover : "transparent"
-
-                        // Alt köşeler düz: sekme altındaki terminale bağlanır
-                        Rectangle {
-                            anchors.bottom: parent.bottom
-                            width: parent.width
-                            height: parent.radius
-                            color: parent.color
-                        }
-
-                        Row {
-                            id: tabRow
-
-                            x: 14
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 10
-
-                            Label {
-                                width: Math.min(implicitWidth, 160)
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: tab.view ? tab.view.title : ""
-                                elide: Text.ElideRight
-                                color: tab.selected ? Theme.color.textPrimary : Theme.color.textSecondary
-                                font.pixelSize: Theme.font.small
-                                font.weight: tab.selected ? Font.DemiBold : Font.Normal
-                            }
-
-                            HoverButton {
-                                anchors.verticalCenter: parent.verticalCenter
-                                implicitWidth: 16
-                                implicitHeight: 16
-                                radius: 8
-                                onClicked: window.closeTab(tab.index)
-
-                                Icon {
-                                    anchors.centerIn: parent
-                                    name: "close"
-                                    size: 12
-                                    color: Theme.color.textSecondary
-                                }
-                            }
-                        }
-
-                        HoverHandler {
-                            id: tabHover
-                        }
-
-                        TapHandler {
-                            onTapped: window.current = tab.index
-                        }
-                    }
-                }
-
-                HoverButton {
-                    implicitWidth: 28
-                    implicitHeight: 28
-                    radius: Theme.radius.sm
-                    onClicked: window.newTab()
-
-                    Icon {
-                        anchors.centerIn: parent
-                        name: "plus"
-                        size: 14
-                        color: Theme.color.textPrimary
-                    }
-                }
-            }
-        }
-
-        StackLayout {
-            id: stack
-
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            currentIndex: window.current
-
-            Repeater {
-                id: views
-
-                model: tabs
-
-                TerminalView {
-                    id: view
-
-                    required property int index
-
-                    fontSize: settings.fontSize
-                    foreground: window.colors.foreground
-                    background: window.colors.background
-                    cursorColor: Theme.color.accent
-                    selectionColor: Theme.color.accentSoft
-                    ansiColors: window.colors.ansi
-                    focus: index === window.current
-                    onFinished: window.closeTab(index)
-                    Component.onCompleted: if (focus) forceActiveFocus()
-                }
-            }
+            anchors.fill: parent
+            fontSize: app.settings.fontSize
+            foreground: app.colors.foreground
+            background: app.colors.background
+            cursorColor: Theme.color.accent
+            selectionColor: Theme.color.accentSoft
+            ansiColors: app.colors.ansi
+            onFinished: app.viewFinished(view)
         }
     }
 
-    onCurrentChanged: Qt.callLater(() => window.currentView?.forceActiveFocus())
+    // Yeni bir terminal (kabuğuyla birlikte). parent: ilk boyutunu alacağı yer.
+    function createView(parent: Item): TerminalView {
+        return viewComponent.createObject(parent) as TerminalView;
+    }
 
-    Timer {
-        running: window.screenshot.length > 0
-        interval: 1500
-        onTriggered: content.grabToImage(result => {
-            result.saveToFile(window.screenshot);
+    // Yeni pencere: view verilirse o sekmeyle (başka pencereden taşınan), verilmezse yeni bir sekmeyle
+    function newWindow(view: TerminalView, size: size): TerminalWindow {
+        const properties = { app: app, screenshot: windows.length === 0 ? screenshot : "" };
+        if (size.width > 0) {
+            properties.width = size.width;
+            properties.height = size.height;
+        }
+        const window = windowComponent.createObject(app, properties) as TerminalWindow;
+        windows = Array.from(windows).concat([window]);
+        if (view)
+            window.addView(view, -1);
+        else
+            window.newTab();
+        window.visible = true;
+        return window;
+    }
+
+    function windowClosed(window: TerminalWindow) {
+        if (!windows.includes(window))
+            return;
+        windows = Array.from(windows).filter(w => w !== window);
+        window.visible = false;
+        window.destroy();
+        if (windows.length === 0)
             Qt.quit();
-        })
     }
+
+    // Sekmedeki kabuk çıktı (exit): sekmeyi hangi penceredeyse orada kapat
+    function viewFinished(view: TerminalView) {
+        for (const window of windows) {
+            const index = window.views.indexOf(view);
+            if (index >= 0) {
+                window.closeTab(index);
+                return;
+            }
+        }
+    }
+
+    Component.onCompleted: newWindow(null, Qt.size(0, 0))
 }

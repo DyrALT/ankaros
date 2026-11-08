@@ -16,6 +16,11 @@ ankaros'un kendi terminali `ankaros-terminal`. Kodu `shell/apps/terminal/` klas�
   `kullanıcı@makine: klasör` olarak ayarlar (`/etc/profile.d/ankaros-kabuk.sh`). Başlık verilmezse
   Terminal kabuğun klasörünü `/proc` üzerinden okumayı dener. Busybox setuid kurulu olduğu için bu ankaros'un
   kendi kabuğunda (`/bin/sh`) çalışmaz, başka kabuklarda çalışır.
+- Sekmeler sürüklenerek sıralanır. Sekme çubuğun dışına (40 px'ten uzağa) sürüklenip bırakılınca yeni bir
+  pencereye taşınır, içinde çalışan program kesilmez. Yeni pencere farenin olduğu yerde açılır (compositor bir
+  uygulamanın ikinci ve sonraki pencerelerini fareye yerleştirir). Tek sekmeli pencerede sekme taşınmaz.
+- Birden çok pencere: hepsi aynı süreçtedir. Başlat panelinden ya da alt çubuktan Terminal'e tıklamak en son
+  kullanılan penceresini öne getirir, yeni pencere Ctrl+Shift+N ile açılır.
 - Fareyle seçme (çift tıklama kelimeyi seçer), kopyalama ve yapıştırma. Pano compositor üzerinden diğer
   uygulamalarla paylaşılır. Kabuk istediyse yapıştırılan metin işaretlenir ("bracketed paste").
 - 5000 satırlık kaydırma geçmişi (fare tekerleği, Shift+PageUp/PageDown)
@@ -28,6 +33,7 @@ ankaros'un kendi terminali `ankaros-terminal`. Kodu `shell/apps/terminal/` klas�
 | Kısayol | İşlem |
 |---|---|
 | Ctrl+Shift+T | Yeni sekme |
+| Ctrl+Shift+N | Yeni pencere |
 | Ctrl+Shift+W | Sekmeyi kapat (son sekmeyle pencere de kapanır) |
 | Ctrl+Tab, Ctrl+PageDown / Ctrl+Shift+Tab, Ctrl+PageUp | Sonraki / önceki sekme |
 | Ctrl+Shift+C / Ctrl+Shift+V | Kopyala / yapıştır (orta tuş da yapıştırır) |
@@ -43,7 +49,8 @@ Diğer bütün tuşlar (Ctrl+C, Ctrl+D, Ctrl+W...) kabuğa gider.
 | `terminalscreen.cpp` (`TerminalScreen`) | libvterm'i sarar: kabuğun çıktısını yorumlar, görünen satırları ve geçmişi tutar, tuşları baytlara çevirir. Qt Quick'e bağlı değil, birim testleri bunu dener. |
 | `ptyprocess.cpp` (`PtyProcess`) | Kullanıcının giriş kabuğunu sözde terminalde (`forkpty`) başlatır, çalışma klasörünü bulur |
 | `terminalview.cpp` (`TerminalView`) | Bir sekme: ekranı çizer (`QQuickPaintedItem`), klavye, fare, seçim ve kaydırma |
-| `Main.qml` | Pencere, sekme çubuğu, kısayollar, temaya göre renkler |
+| `Main.qml` | Uygulama: pencereler, sekmelerin terminalleri, ayarlar, temaya göre renkler. Terminaller pencereye değil buraya aittir, sekme pencereler arasında taşınırken kabuk kapanmaz. |
+| `TerminalWindow.qml` | Bir pencere: sekme çubuğu (sürükleyerek sıralama ve ayırma), kısayollar |
 
 Ekran her değiştiğinde görünen satırlar QPainter ile çizilir. Aynı biçimdeki karakterler tek seferde
 çizilir. Bu, yazılımsal çizimde (QEMU, softpipe) bile akıcı. Çok büyük çıktıda (ör. `cat` ile büyük bir

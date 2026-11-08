@@ -8,6 +8,7 @@ boyutlandırma tutamakları) `Ankaros.Shell` modülündeki `WindowChrome`'dur. W
 
 | İş | Nasıl |
 |---|---|
+| Yeni pencerenin yeri | Yeni pencereler hafifçe kaydırılarak üst üste açılır. Bir uygulamanın açık başka bir penceresi varsa yenisi farenin olduğu yerde açılır, başlık çubuğu farenin altına gelir (ör. Terminal'den dışarı sürüklenip bırakılan sekme). Ekrandan taşmaz. |
 | Öne getirme | Pencerenin herhangi bir yerine (uygulamanın içi dahil) basınca pencere öne gelir ve klavye odağını alır. |
 | Taşıma | Başlık çubuğundan sürükleyerek. Başlık çubuğu ekranın üstünden dışarı çıkmaz. |
 | Boyutlandırma | Kenarlardan ve köşelerden sürükleyerek. Tutamaklar çerçevenin hemen dışındadır (6 px), uygulamanın içine taşmaz. Uygulamanın en küçük ve en büyük boyutu korunur. |

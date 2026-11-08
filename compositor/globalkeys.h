@@ -26,6 +26,10 @@ public:
     bool enabled() const { return m_enabled; }
     void setEnabled(bool enabled);
     bool switching() const { return m_switching; }
+    // Farenin son konumu (ekran koordinatında). Bir uygulamanın yeni penceresi buraya açılır (ör.
+    // Terminal'den dışarı sürüklenip bırakılan sekme). Sürekli değiştiği için bildirimi yok,
+    // okunur.
+    Q_INVOKABLE QPointF pointerPosition() const { return m_pointerPosition; }
 
 signals:
     void enabledChanged();
@@ -53,4 +57,5 @@ private:
     bool m_superDown = false;
     // Süper basılıyken başka bir tuşa ya da fareye basıldıysa bırakınca başlat paneli açılmaz
     bool m_superUsed = false;
+    QPointF m_pointerPosition;
 };
