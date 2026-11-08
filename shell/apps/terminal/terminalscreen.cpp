@@ -121,10 +121,31 @@ void TerminalScreen::key(int qtKey, Qt::KeyboardModifiers modifiers, const QStri
         vterm_keyboard_key(m_vterm, special, mod);
         return;
     }
-    // Ctrl+harf: libvterm kontrol karakterine çevirir (Ctrl+C -> 0x03)
-    if ((modifiers & Qt::ControlModifier) && qtKey >= Qt::Key_A && qtKey <= Qt::Key_Z) {
-        vterm_keyboard_unichar(m_vterm, uint32_t('a' + (qtKey - Qt::Key_A)), mod);
-        return;
+    // Ctrl+harf ve Ctrl+[ \ ] ^ _ boşluk @: kontrol karakteri (Ctrl+C -> 0x03, Ctrl+[ -> ESC). Bayt
+    // doğrudan gönderilir: libvterm Ctrl+I/J/M/[ için çoğu programın tanımadığı CSI u dizisi
+    // üretir.
+    if (modifiers & Qt::ControlModifier) {
+        int control = -1;
+        if (qtKey >= Qt::Key_A && qtKey <= Qt::Key_Z)
+            control = 1 + (qtKey - Qt::Key_A);
+        else if (qtKey == Qt::Key_BracketLeft)
+            control = 0x1b;
+        else if (qtKey == Qt::Key_Backslash)
+            control = 0x1c;
+        else if (qtKey == Qt::Key_BracketRight)
+            control = 0x1d;
+        else if (qtKey == Qt::Key_AsciiCircum)
+            control = 0x1e;
+        else if (qtKey == Qt::Key_Underscore)
+            control = 0x1f;
+        else if (qtKey == Qt::Key_Space || qtKey == Qt::Key_At)
+            control = 0;
+        if (control >= 0) {
+            if (modifiers & Qt::AltModifier)
+                vterm_keyboard_unichar(m_vterm, 0x1b, VTERM_MOD_NONE);
+            vterm_keyboard_unichar(m_vterm, uint32_t(control), VTERM_MOD_NONE);
+            return;
+        }
     }
     // Yazılan metinde Shift zaten büyük harfe yansımıştır
     const VTermModifier textMod = VTermModifier(mod & ~VTERM_MOD_SHIFT);
@@ -256,10 +277,13 @@ int TerminalScreen::setTermProp(VTermProp prop, VTermValue *val, void *user)
         self->m_alternate = val->boolean;
         break;
     case VTERM_PROP_TITLE:
-        // Başlık parça parça gelebilir
+        // Başlık parça parça gelebilir. Sonu gelmeyen bir başlık belleği doldurmasın: 4 KiB'tan
+        // sonrası atılır.
         if (val->string.initial)
             self->m_titleBuffer.clear();
-        self->m_titleBuffer.append(val->string.str, qsizetype(val->string.len));
+        if (self->m_titleBuffer.size() < 4096)
+            self->m_titleBuffer.append(val->string.str, qMin(qsizetype(val->string.len),
+                                                             4096 - self->m_titleBuffer.size()));
         if (val->string.final) {
             self->m_title = QString::fromUtf8(self->m_titleBuffer);
             if (self->titleChanged)

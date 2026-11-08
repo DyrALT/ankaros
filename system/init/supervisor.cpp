@@ -26,9 +26,29 @@ constexpr std::array restartDelays = {0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 30.0};
 // Bu kadar çalıştıktan sonra çöken servisin sayacı sıfırlanır
 constexpr double stableRuntime = 10.0;
 
-bool settled(ServiceState state)
+// Hiç hazır olmadan art arda bu kadar çöken bağımlılık beklenmez, bağımlı servisler yine başlar
+// (çöken bir servis ör. masaüstünü sonsuza dek bekletmesin)
+constexpr int dependencyRetries = 3;
+
+// Bağımlı servisler bu servisi beklemeyi bırakabilir mi
+bool settled(const Service &service)
 {
-    return state != ServiceState::Waiting && state != ServiceState::Starting;
+    switch (service.state) {
+    case ServiceState::Waiting:
+    case ServiceState::Starting:
+        return false;
+    case ServiceState::RestartWait:
+        return service.readyAt >= 0 || service.restarts >= dependencyRetries;
+    default:
+        return true;
+    }
+}
+
+// Süreç grubunda hâlâ süreç var mı (grubun kimliği liderin pid'i; grup yaşadıkça bu pid başka
+// bir sürece verilmez)
+bool groupAlive(pid_t group)
+{
+    return group > 0 && (kill(-group, 0) == 0 || errno == EPERM);
 }
 
 std::string describeStatus(int status)
@@ -126,7 +146,7 @@ bool Supervisor::dependenciesSettled(const Service &service) const
 {
     for (const std::string &dependency : service.definition.after) {
         for (const Service &other : m_services) {
-            if (other.definition.name == dependency && !settled(other.state))
+            if (other.definition.name == dependency && !settled(other))
                 return false;
         }
     }
@@ -137,18 +157,25 @@ void Supervisor::update()
 {
     const double now = log::now();
     for (Service &service : m_services) {
-        if (service.pid > 0 && service.killAt >= 0 && now >= service.killAt) {
+        if (service.group > 0 && !groupAlive(service.group)) {
+            service.group = 0;
+            if (service.pid <= 0)
+                service.killAt = -1;
+        }
+        const pid_t target = service.pid > 0 ? service.pid : service.group;
+        if (target > 0 && service.killAt >= 0 && now >= service.killAt) {
             log::write("%s: durmadı, öldürülüyor", service.definition.name.c_str());
-            kill(-service.pid, SIGKILL);
+            kill(-target, SIGKILL);
             service.killAt = -1;
         }
-        if (service.state == ServiceState::RestartWait && now >= service.restartAt)
+        if (service.state == ServiceState::RestartWait && service.wanted && service.group <= 0 &&
+            now >= service.restartAt)
             spawn(service);
     }
     // Bir servisin başlaması başka bir servisi hazır yapabilir (simple), sırayla dolaşmak yeter:
     // m_services bağımlılık sırasında.
     for (Service &service : m_services) {
-        if (service.state == ServiceState::Waiting && service.wanted &&
+        if (service.state == ServiceState::Waiting && service.wanted && service.group <= 0 &&
             dependenciesSettled(service))
             spawn(service);
     }
@@ -159,7 +186,7 @@ double Supervisor::timeout() const
     double earliest = -1;
     for (const Service &service : m_services) {
         for (double at : {service.state == ServiceState::RestartWait ? service.restartAt : -1.0,
-                          service.pid > 0 ? service.killAt : -1.0}) {
+                          service.pid > 0 || service.group > 0 ? service.killAt : -1.0}) {
             if (at >= 0 && (earliest < 0 || at < earliest))
                 earliest = at;
         }
@@ -217,7 +244,7 @@ void Supervisor::spawn(Service &service)
         sigemptyset(&none);
         sigprocmask(SIG_SETMASK, &none, nullptr);
         setsid();
-        const int nullFd = open("/dev/null", O_RDWR);
+        const int nullFd = open("/dev/null", O_RDWR | O_CLOEXEC);
         dup2(nullFd, STDIN_FILENO);
         dup2(logFd >= 0 ? logFd : nullFd, STDOUT_FILENO);
         dup2(logFd >= 0 ? logFd : nullFd, STDERR_FILENO);
@@ -273,19 +300,30 @@ bool Supervisor::childExited(pid_t pid, int status)
     const ServiceDefinition &definition = service.definition;
     const bool success = WIFEXITED(status) && WEXITSTATUS(status) == 0;
     const double now = log::now();
+    const double killAt = service.killAt;
     service.pid = 0;
     service.killAt = -1;
 
+    // Durdurulurken lider çıktı: grubun geri kalanı da bitene kadar (en geç killAt) beklenir
+    const auto waitForGroup = [&] {
+        if (!groupAlive(pid))
+            return;
+        service.group = pid;
+        service.killAt = killAt >= 0 ? killAt : now + stopTimeout;
+        log::write("%s: süreç grubunda kalan süreçler bekleniyor", definition.name.c_str());
+    };
     if (service.restartRequested) {
         service.restartRequested = false;
         service.wanted = true;
         service.restarts = 0;
         finish(service, ServiceState::Waiting);
+        waitForGroup();
         return true;
     }
     if (!service.wanted) {
         log::write("%s: durduruldu", definition.name.c_str());
         finish(service, ServiceState::Stopped);
+        waitForGroup();
         return true;
     }
 
@@ -336,7 +374,9 @@ void Supervisor::terminate(Service &service)
         if (kill(-service.pid, signal) != 0)
             kill(service.pid, signal);
     }
-    service.killAt = log::now() + stopTimeout;
+    // Tekrarlanan durdurma isteği SIGKILL'i ertelemesin
+    if (service.killAt < 0)
+        service.killAt = log::now() + stopTimeout;
 }
 
 bool Supervisor::start(const std::string &name, std::string &error)
@@ -348,6 +388,10 @@ bool Supervisor::start(const std::string &name, std::string &error)
     }
     if (service->pid > 0) {
         error = name + " zaten çalışıyor";
+        return false;
+    }
+    if (service->group > 0) {
+        error = name + " hâlâ duruyor, biraz sonra tekrar deneyin";
         return false;
     }
     service->wanted = true;
@@ -392,22 +436,31 @@ void Supervisor::stopAll(double timeout)
     for (auto it = m_services.rbegin(); it != m_services.rend(); ++it) {
         it->wanted = false;
         it->restartRequested = false;
+        if (it->state == ServiceState::Waiting || it->state == ServiceState::RestartWait)
+            finish(*it, ServiceState::Stopped);
         terminate(*it);
     }
+    // SIGTERM'den sonra süre dolunca SIGKILL (update()), ardından süreçlerin bitmesi için kısa bir
+    // bekleme
     const double deadline = log::now() + timeout;
+    const auto alive = [](const Service &s) { return s.pid > 0 || s.group > 0; };
+    for (auto &service : m_services) {
+        if (alive(service))
+            service.killAt = std::min(service.killAt >= 0 ? service.killAt : deadline, deadline);
+    }
     for (;;) {
         int status = 0;
         pid_t pid;
         while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
             childExited(pid, status);
-        const bool running = std::any_of(m_services.begin(), m_services.end(),
-                                         [](const Service &s) { return s.pid > 0; });
-        if (!running || pid < 0 || log::now() >= deadline)
+        update();
+        if (std::none_of(m_services.begin(), m_services.end(), alive) ||
+            log::now() >= deadline + 1.0)
             break;
         usleep(50 * 1000);
     }
     for (const Service &service : m_services) {
-        if (service.pid > 0)
+        if (alive(service))
             log::write("%s: zamanında durmadı", service.definition.name.c_str());
     }
 }

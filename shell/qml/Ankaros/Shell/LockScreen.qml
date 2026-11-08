@@ -43,9 +43,10 @@ Item {
         }
     }
 
-    // Arkadaki uygulamalara tıklama ve tekerlek olayı geçmesin
+    // Arkadaki uygulamalara tıklama (her tuş) ve tekerlek olayı geçmesin
     MouseArea {
         anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
         hoverEnabled: true
         onWheel: wheel => wheel.accepted = true
     }

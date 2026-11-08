@@ -290,9 +290,16 @@ void TerminalView::copy()
     if (!m_screen || !hasSelection())
         return;
     const int dropped = m_screen->droppedLines();
-    QGuiApplication::clipboard()->setText(
-        m_screen->text({m_selectionStart.line - dropped, m_selectionStart.column},
-                       {m_selectionEnd.line - dropped, m_selectionEnd.column}));
+    TerminalScreen::Position from{m_selectionStart.line - dropped, m_selectionStart.column};
+    TerminalScreen::Position to{m_selectionEnd.line - dropped, m_selectionEnd.column};
+    if (to < from)
+        std::swap(from, to);
+    // Seçimin geçmişten atılmış satırları boş satır olarak kopyalanmasın: kalan kısımdan başlanır
+    if (to.line < 0)
+        return;
+    if (from.line < 0)
+        from = {0, 0};
+    QGuiApplication::clipboard()->setText(m_screen->text(from, to));
 }
 
 void TerminalView::paste()
@@ -405,7 +412,10 @@ void TerminalView::wheelEvent(QWheelEvent *event)
 {
     if (!m_screen)
         return;
-    const int lines = event->angleDelta().y() / 40;
+    // Dokunmatik yüzey ve hassas tekerlekler küçük adımlar gönderir: kalan biriktirilir
+    m_wheelRemainder += event->angleDelta().y();
+    const int lines = m_wheelRemainder / 40;
+    m_wheelRemainder -= lines * 40;
     if (lines == 0)
         return;
     // Tam ekran uygulamalarda (less, vi) tekerlek ok tuşu olur

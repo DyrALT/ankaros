@@ -59,12 +59,13 @@ add_data_disk() {
 }
 
 [ -d /Applications/UTM.app ] || fail "UTM kurulu değil: https://mac.getutm.app"
+# Veri diski için gerekli: yeni makinede UTM'yi kapatıp yapılandırmayı değiştirmeden önce bakılır
+command -v qemu-img >/dev/null || fail "qemu-img gerekli: brew install qemu"
 if [ ! -f "$IMAGES/Image" ] || [ ! -f "$IMAGES/rootfs.ext4" ]; then
   fail "İmaj bulunamadı: $IMAGES"
 fi
 if [ "$UPDATE" = 1 ]; then
   [ -d "$BUNDLE" ] || fail "\"$NAME\" adında bir sanal makine yok."
-  command -v qemu-img >/dev/null || fail "qemu-img gerekli: brew install qemu"
   if pgrep -xq UTM && utm "get status of virtual machine \"$NAME\"" | grep -qv stopped; then
     fail "\"$NAME\" çalışıyor. Önce UTM'den kapat."
   fi
@@ -115,7 +116,6 @@ plutil -insert Drive.0 -json \
   "$BUNDLE/config.plist"
 plutil -replace QEMU.AdditionalArguments -json "$ARGUMENTS" "$BUNDLE/config.plist"
 set_display
-command -v qemu-img >/dev/null || fail "qemu-img gerekli: brew install qemu"
 add_data_disk
 
 open -g -a UTM

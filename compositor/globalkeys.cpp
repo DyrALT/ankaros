@@ -19,6 +19,12 @@ GlobalKeys::GlobalKeys(QObject *parent)
     qApp->installEventFilter(this);
 }
 
+void GlobalKeys::clearKeyboardFocus(QWaylandSeat *seat)
+{
+    if (seat)
+        seat->setKeyboardFocus(nullptr);
+}
+
 void GlobalKeys::setEnabled(bool enabled)
 {
     if (m_enabled == enabled)

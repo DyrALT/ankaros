@@ -10,7 +10,9 @@ LABEL=ankaros-veri
 log() { echo "veri-diski: $*"; }
 
 # blkid BusyBox'ınki: -L, -o ve -s seçeneklerini tanımaz, yalnızca bulduklarını listeler.
-device=$(blkid 2>/dev/null | sed -n "s/^\([^:]*\):.* LABEL=\"$LABEL\".*/\1/p" | head -n 1)
+# Yalnızca sanal makinenin virtio diskleri (/dev/vd*) aranır: açılışta takılı, aynı etiketi taşıyan
+# bir USB bellek (/dev/sd*) veri diski diye bağlanmasın.
+device=$(blkid 2>/dev/null | sed -n "s|^\(/dev/vd[^:]*\):.* LABEL=\"$LABEL\".*|\1|p" | head -n 1)
 if [ -z "$device" ] && [ -b /dev/vdb ]; then
   # Biçimlendirmeden önce diskin gerçekten boş olduğundan emin ol: blkid hiçbir imza bulmamalı,
   # ilk 1 MB tamamen sıfır olmalı (bölüm tablosu, başka işletim sistemi, şifreli disk...)

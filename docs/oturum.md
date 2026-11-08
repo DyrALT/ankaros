@@ -33,7 +33,9 @@ ankaros-init
    ikisi hiçbir zaman aynı anda çalışmaz.
 4. Oturum kapatılınca giriş ekranı yeniden açılır.
 5. Masaüstü çökerse aynı kullanıcıyla yeniden açılır. 10 saniye içinde art arda 3 kez çökerse giriş
-   ekranına dönülür.
+   ekranına dönülür. Ekran kilitliyken çökerse yeniden açılmaz, giriş ekranına dönülür: yoksa
+   compositor'ı öldürmek kilidi şifresiz aşmanın yolu olurdu. Kabuk kilitlenince bunu oturum
+   yöneticisine bildirir (`lock`), kilidi oturum yöneticisinin doğruladığı şifre açar.
 
 Her oturum için `/run/user/<uid>` hazırlanır (`XDG_RUNTIME_DIR`). Wayland soketi oradadır. Ortamın geri
 kalanı (eglfs/KMS, dil, klavye) `/etc/profile.d/ankaros-grafik.sh`'den gelir. Compositor'ı `masaustu-baslat` betiği
@@ -59,7 +61,8 @@ Ayarlar › Kullanıcı'dan kapatılabilir.
 |---|---|---|
 | `status` | herkes | Ekrandakini (`greeter`, `session`), kullanıcıyı ve otomatik giriş ayarını döner |
 | `login`, kullanıcı, şifre | giriş ekranı, root | Şifre doğruysa oturumu açar |
-| `unlock`, şifre | oturumdaki kullanıcı | Kilit ekranı için şifreyi doğrular |
+| `lock` | oturumdaki kullanıcı | Ekranın kilitlendiğini bildirir |
+| `unlock`, şifre | oturumdaki kullanıcı | Kilit ekranı için şifreyi doğrular, doğruysa kilit kalkar |
 | `logout` | oturumdaki kullanıcı, root | Oturumu kapatır, giriş ekranına döner |
 | `poweroff`, `reboot` | ekrandaki kullanıcı, root | init'e iletir |
 | `autologin`, `on`/`off` | oturumdaki kullanıcı | `session.conf`'u yazar |

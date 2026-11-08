@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QPointF>
+#include <QWaylandSeat>
 #include <QtQml/qqmlregistration.h>
 
 // Uygulamaya gitmeden önce yakalanması gereken girdiler. QML Shortcut'larının yapamadığı iki şey
@@ -30,6 +31,10 @@ public:
     // Terminal'den dışarı sürüklenip bırakılan sekme). Sürekli değiştiği için bildirimi yok,
     // okunur.
     Q_INVOKABLE QPointF pointerPosition() const { return m_pointerPosition; }
+
+    // Klavye odağını hiçbir pencereye vermez (QWaylandSeat::setKeyboardFocus QML'de yok). Son
+    // görünür pencere küçültülünce yazılanlar gizli pencereye gitmesin diye.
+    Q_INVOKABLE void clearKeyboardFocus(QWaylandSeat *seat);
 
 signals:
     void enabledChanged();

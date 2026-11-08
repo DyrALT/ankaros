@@ -31,6 +31,8 @@ public:
     bool autologin() const { return m_autologin; }
 
     Q_INVOKABLE void login(const QString &user, const QString &password);
+    // Ekran kilitlendi: oturum yöneticisi kilitliyken çöken oturumu şifresiz yeniden açmaz
+    Q_INVOKABLE void lock();
     Q_INVOKABLE void unlock(const QString &password);
     Q_INVOKABLE void logout();
     Q_INVOKABLE void reboot();

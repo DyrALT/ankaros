@@ -93,6 +93,9 @@ private:
     Child m_child;
     std::string m_pendingUser; // giriş başarılı, giriş ekranı kapanınca açılacak oturum
     bool m_logoutRequested = false;
+    // Oturumun ekranı kilitli (kabuk "lock" ile bildirir, doğru şifreli "unlock" açar). Kilitliyken
+    // compositor çökerse oturum şifresiz yeniden açılmaz, giriş ekranına dönülür.
+    bool m_locked = false;
     int m_quickCrashes = 0;
     double m_restartAt = -1; // çöken compositor'ın yeniden başlatılma zamanı
     Mode m_restartMode = Mode::None;
@@ -185,6 +188,44 @@ std::string preferredMode()
     return mode;
 }
 
+// Kullanıcının kendi dosyasını root olarak okumak yerine onun yetkisiyle okur: bağlantılarla
+// root'un dosyalarına ulaşılamaz. Yalnızca düz dosya ve en fazla maxSize bayt (büyük bir dosya
+// oturum yöneticisinin belleğini doldurmasın).
+bool readUserFile(const passwd &account, const std::string &path, std::string &contents,
+                  size_t maxSize = 64 * 1024)
+{
+    if (setegid(account.pw_gid) != 0)
+        return false;
+    if (seteuid(account.pw_uid) != 0) {
+        if (setegid(0) != 0)
+            abort();
+        return false;
+    }
+    const int fd = open(path.c_str(), O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC);
+    const bool restored = seteuid(0) == 0 && setegid(0) == 0;
+    if (!restored) {
+        say("yetki geri alınamadı: %s", strerror(errno));
+        abort();
+    }
+    if (fd < 0)
+        return false;
+    struct stat info{};
+    if (fstat(fd, &info) != 0 || !S_ISREG(info.st_mode) ||
+        static_cast<size_t>(info.st_size) > maxSize) {
+        close(fd);
+        return false;
+    }
+    contents.clear();
+    char buffer[4096];
+    ssize_t count;
+    while ((count = read(fd, buffer, sizeof buffer)) > 0 && contents.size() < maxSize)
+        contents.append(buffer, static_cast<size_t>(count));
+    close(fd);
+    if (contents.size() > maxSize)
+        contents.resize(maxSize);
+    return count >= 0;
+}
+
 bool SessionManager::spawn(Mode mode, const std::string &user)
 {
     const passwd *account = getpwnam(user.c_str());
@@ -216,8 +257,10 @@ bool SessionManager::spawn(Mode mode, const std::string &user)
     // ve klavye düzeni tercihi (karar 0015)
     std::string conf;
     const std::string owner = mode == Mode::Greeter ? firstLoginUser() : user;
-    if (const passwd *shown = owner.empty() ? nullptr : getpwnam(owner.c_str()))
-        readFile(std::string(shown->pw_dir) + "/.config/ankaros/shell.conf", conf);
+    if (const passwd *shown = owner.empty() ? nullptr : getpwnam(owner.c_str())) {
+        const passwd copy = *shown;
+        readUserFile(copy, std::string(copy.pw_dir) + "/.config/ankaros/shell.conf", conf);
+    }
     if (mode == Mode::Greeter) {
         for (const std::string &entry : greeterAppearance(conf))
             environment.push_back(entry);
@@ -286,8 +329,10 @@ void SessionManager::childExited(pid_t pid, int status)
     if (pid != m_child.pid)
         return;
     const Child child = m_child;
+    const bool wasLocked = m_locked;
     m_child = {};
     m_killAt = -1;
+    m_locked = false;
     const bool clean = WIFEXITED(status) && WEXITSTATUS(status) == 0;
     say("%s bitti: %s (%s %d)", child.mode == Mode::Greeter ? "giriş ekranı" : "oturum",
         child.user.c_str(), WIFEXITED(status) ? "çıkış kodu" : "sinyal",
@@ -310,6 +355,12 @@ void SessionManager::childExited(pid_t pid, int status)
     }
 
     if (m_logoutRequested || clean) {
+        m_quickCrashes = 0;
+        startGreeter();
+        return;
+    }
+    if (wasLocked) {
+        say("oturum kilitliyken çöktü, giriş ekranı açılıyor");
         m_quickCrashes = 0;
         startGreeter();
         return;
@@ -422,10 +473,19 @@ ControlServer::Reply SessionManager::handle(const std::vector<std::string> &comm
     } else if (name == "unlock" && args == 1) {
         if (!fromSession || peer == 0) {
             reply.error = "kilit yalnızca oturumdaki kullanıcı tarafından açılabilir";
-        } else if (allowAttempt(reply.error) && !checkPassword(sessionUser(), command[1])) {
-            failedAttempt();
-            reply.error = "Şifre yanlış";
+        } else if (allowAttempt(reply.error)) {
+            if (checkPassword(sessionUser(), command[1])) {
+                m_locked = false;
+            } else {
+                failedAttempt();
+                reply.error = "Şifre yanlış";
+            }
         }
+    } else if (name == "lock" && args == 0) {
+        if (!fromSession || peer == 0)
+            reply.error = "kilit yalnızca oturumdaki kullanıcı tarafından bildirilebilir";
+        else
+            m_locked = true;
     } else if (name == "logout" && args == 0) {
         if (!fromSession) {
             reply.error = "açık bir oturum yok";
