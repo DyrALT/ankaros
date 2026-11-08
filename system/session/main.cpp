@@ -9,6 +9,7 @@
 #include "control.h"
 #include "protocol.h"
 #include "sessionconfig.h"
+#include "sessionlog.h"
 
 #include <cerrno>
 #include <csignal>
@@ -36,6 +37,8 @@ constexpr const char *compositorLog = "/var/log/ankaros-compositor.log";
 constexpr double failedLoginDelay = 1.5; // hatalı şifreden sonra yeni deneme için beklenen süre
 constexpr double stopTimeout = 5.0;
 constexpr int maxQuickCrashes = 3; // art arda bu kadar çöken oturum yerine giriş ekranı açılır
+// Masaüstü günlüğünün en büyük boyutu, sonra .1 olur (kök dosya sistemini doldurmasın)
+constexpr size_t compositorLogSize = 4 * 1024 * 1024;
 
 double now()
 {
@@ -80,12 +83,17 @@ public:
     double timeout() const;
     void shutdown();
     ControlServer::Reply handle(const std::vector<std::string> &command, uid_t peer);
+    void setEpoll(int fd) { m_epollFd = fd; }
+    // fd masaüstünün çıktı borusuysa okur ve true döner
+    bool handleOutput(int fd);
 
 private:
     void startGreeter();
     void startSession(const std::string &user);
     bool spawn(Mode mode, const std::string &user);
     void terminate();
+    int openOutput();
+    void closeOutput();
     bool allowAttempt(std::string &error);
     void failedAttempt();
     std::string sessionUser() const { return m_child.mode == Mode::Session ? m_child.user : ""; }
@@ -93,6 +101,9 @@ private:
     Child m_child;
     std::string m_pendingUser; // giriş başarılı, giriş ekranı kapanınca açılacak oturum
     bool m_logoutRequested = false;
+    // Oturumun ekranı kilitli (kabuk "lock" ile bildirir, doğru şifreli "unlock" açar). Kilitliyken
+    // compositor çökerse oturum şifresiz yeniden açılmaz, giriş ekranına dönülür.
+    bool m_locked = false;
     int m_quickCrashes = 0;
     double m_restartAt = -1; // çöken compositor'ın yeniden başlatılma zamanı
     Mode m_restartMode = Mode::None;
@@ -100,7 +111,71 @@ private:
     double m_killAt = -1;
     double m_nextAttemptAt = 0;
     bool m_shuttingDown = false;
+    // Masaüstünün çıktısı: uygulamalar borunun yazma ucunu devralır, oturum yöneticisi okuyup
+    // günlüğe yazar (SessionLog)
+    SessionLog m_log{compositorLog, compositorLogSize, now};
+    int m_epollFd = -1;
+    int m_output = -1;
 };
+
+int SessionManager::openOutput()
+{
+    closeOutput();
+    int fds[2];
+    if (pipe2(fds, O_CLOEXEC) != 0) {
+        say("çıktı borusu açılamadı: %s", strerror(errno));
+        return -1;
+    }
+    fcntl(fds[0], F_SETFL, fcntl(fds[0], F_GETFL) | O_NONBLOCK);
+    m_output = fds[0];
+    if (m_epollFd >= 0) {
+        epoll_event event{};
+        event.events = EPOLLIN;
+        event.data.fd = m_output;
+        epoll_ctl(m_epollFd, EPOLL_CTL_ADD, m_output, &event);
+    }
+    return fds[1];
+}
+
+void SessionManager::closeOutput()
+{
+    if (m_output < 0)
+        return;
+    handleOutput(m_output); // kalanı oku
+    if (m_output < 0)
+        return;
+    if (m_epollFd >= 0)
+        epoll_ctl(m_epollFd, EPOLL_CTL_DEL, m_output, nullptr);
+    close(m_output);
+    m_output = -1;
+    m_log.flush();
+}
+
+bool SessionManager::handleOutput(int fd)
+{
+    if (fd < 0 || fd != m_output)
+        return false;
+    // Seviye tetiklemeli: bir seferde en fazla 256 KiB, kalanı sonraki turda (denetim soketi
+    // beklemesin)
+    char buffer[16 * 1024];
+    for (int i = 0; i < 16; ++i) {
+        const ssize_t count = read(fd, buffer, sizeof buffer);
+        if (count > 0) {
+            m_log.append(buffer, static_cast<size_t>(count));
+            continue;
+        }
+        if (count < 0 && (errno == EAGAIN || errno == EINTR))
+            break;
+        // Bütün yazanlar kapandı (ya da hata): boru kapatılır
+        if (m_epollFd >= 0)
+            epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, nullptr);
+        close(fd);
+        m_output = -1;
+        m_log.flush();
+        break;
+    }
+    return true;
+}
 
 SessionConfig readConfig()
 {
@@ -185,6 +260,44 @@ std::string preferredMode()
     return mode;
 }
 
+// Kullanıcının kendi dosyasını root olarak okumak yerine onun yetkisiyle okur: bağlantılarla
+// root'un dosyalarına ulaşılamaz. Yalnızca düz dosya ve en fazla maxSize bayt (büyük bir dosya
+// oturum yöneticisinin belleğini doldurmasın).
+bool readUserFile(const passwd &account, const std::string &path, std::string &contents,
+                  size_t maxSize = 64 * 1024)
+{
+    if (setegid(account.pw_gid) != 0)
+        return false;
+    if (seteuid(account.pw_uid) != 0) {
+        if (setegid(0) != 0)
+            abort();
+        return false;
+    }
+    const int fd = open(path.c_str(), O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC);
+    const bool restored = seteuid(0) == 0 && setegid(0) == 0;
+    if (!restored) {
+        say("yetki geri alınamadı: %s", strerror(errno));
+        abort();
+    }
+    if (fd < 0)
+        return false;
+    struct stat info;
+    if (fstat(fd, &info) != 0 || !S_ISREG(info.st_mode) ||
+        static_cast<size_t>(info.st_size) > maxSize) {
+        close(fd);
+        return false;
+    }
+    contents.clear();
+    char buffer[4096];
+    ssize_t count;
+    while ((count = read(fd, buffer, sizeof buffer)) > 0 && contents.size() < maxSize)
+        contents.append(buffer, static_cast<size_t>(count));
+    close(fd);
+    if (contents.size() > maxSize)
+        contents.resize(maxSize);
+    return count >= 0;
+}
+
 bool SessionManager::spawn(Mode mode, const std::string &user)
 {
     const passwd *account = getpwnam(user.c_str());
@@ -216,8 +329,10 @@ bool SessionManager::spawn(Mode mode, const std::string &user)
     // ve klavye düzeni tercihi (karar 0015)
     std::string conf;
     const std::string owner = mode == Mode::Greeter ? firstLoginUser() : user;
-    if (const passwd *shown = owner.empty() ? nullptr : getpwnam(owner.c_str()))
-        readFile(std::string(shown->pw_dir) + "/.config/ankaros/shell.conf", conf);
+    if (const passwd *shown = owner.empty() ? nullptr : getpwnam(owner.c_str())) {
+        const passwd copy = *shown;
+        readUserFile(copy, std::string(copy.pw_dir) + "/.config/ankaros/shell.conf", conf);
+    }
     if (mode == Mode::Greeter) {
         for (const std::string &entry : greeterAppearance(conf))
             environment.push_back(entry);
@@ -234,10 +349,11 @@ bool SessionManager::spawn(Mode mode, const std::string &user)
     const char *argv[] = {"/bin/sh", "/usr/libexec/ankaros/masaustu-baslat",
                           mode == Mode::Greeter ? "--login" : nullptr, nullptr};
 
-    const int logFd = open(compositorLog, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
-    if (logFd >= 0)
-        dprintf(logFd, "--- ankaros-session: %s (%s) ---\n",
-                mode == Mode::Greeter ? "giriş ekranı" : "oturum", user.c_str());
+    // Önceki oturumdan kalan boru kapatılır, kalan yazanlar (oturumla birlikte öldürülür) EPIPE
+    // alır
+    const int logFd = openOutput();
+    m_log.note(std::string("--- ankaros-session: ") +
+               (mode == Mode::Greeter ? "giriş ekranı" : "oturum") + " (" + user + ") ---");
 
     const pid_t pid = fork();
     if (pid == 0) {
@@ -245,7 +361,7 @@ bool SessionManager::spawn(Mode mode, const std::string &user)
         sigemptyset(&none);
         sigprocmask(SIG_SETMASK, &none, nullptr);
         setsid();
-        const int nullFd = open("/dev/null", O_RDWR);
+        const int nullFd = open("/dev/null", O_RDWR | O_CLOEXEC);
         dup2(nullFd, STDIN_FILENO);
         dup2(logFd >= 0 ? logFd : nullFd, STDOUT_FILENO);
         dup2(logFd >= 0 ? logFd : nullFd, STDERR_FILENO);
@@ -286,8 +402,10 @@ void SessionManager::childExited(pid_t pid, int status)
     if (pid != m_child.pid)
         return;
     const Child child = m_child;
+    const bool wasLocked = m_locked;
     m_child = {};
     m_killAt = -1;
+    m_locked = false;
     const bool clean = WIFEXITED(status) && WEXITSTATUS(status) == 0;
     say("%s bitti: %s (%s %d)", child.mode == Mode::Greeter ? "giriş ekranı" : "oturum",
         child.user.c_str(), WIFEXITED(status) ? "çıkış kodu" : "sinyal",
@@ -310,6 +428,12 @@ void SessionManager::childExited(pid_t pid, int status)
     }
 
     if (m_logoutRequested || clean) {
+        m_quickCrashes = 0;
+        startGreeter();
+        return;
+    }
+    if (wasLocked) {
+        say("oturum kilitliyken çöktü, giriş ekranı açılıyor");
         m_quickCrashes = 0;
         startGreeter();
         return;
@@ -422,10 +546,19 @@ ControlServer::Reply SessionManager::handle(const std::vector<std::string> &comm
     } else if (name == "unlock" && args == 1) {
         if (!fromSession || peer == 0) {
             reply.error = "kilit yalnızca oturumdaki kullanıcı tarafından açılabilir";
-        } else if (allowAttempt(reply.error) && !checkPassword(sessionUser(), command[1])) {
-            failedAttempt();
-            reply.error = "Şifre yanlış";
+        } else if (allowAttempt(reply.error)) {
+            if (checkPassword(sessionUser(), command[1])) {
+                m_locked = false;
+            } else {
+                failedAttempt();
+                reply.error = "Şifre yanlış";
+            }
         }
+    } else if (name == "lock" && args == 0) {
+        if (!fromSession || peer == 0)
+            reply.error = "kilit yalnızca oturumdaki kullanıcı tarafından bildirilebilir";
+        else
+            m_locked = true;
     } else if (name == "logout" && args == 0) {
         if (!fromSession) {
             reply.error = "açık bir oturum yok";
@@ -504,6 +637,7 @@ int main()
         fprintf(stderr, "soket açılamadı: %s: %s\n", sessionSocketPath, strerror(errno));
         return 1;
     }
+    manager.setEpoll(epollFd);
     manager.start();
 
     for (;;) {
@@ -513,7 +647,8 @@ int main()
                                      timeout < 0 ? -1 : static_cast<int>(timeout * 1000) + 1);
         for (int i = 0; i < count; ++i) {
             if (events[i].data.fd != signalFd) {
-                control.handle(events[i].data.fd);
+                if (!manager.handleOutput(events[i].data.fd))
+                    control.handle(events[i].data.fd);
                 continue;
             }
             signalfd_siginfo info{};

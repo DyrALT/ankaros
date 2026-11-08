@@ -27,6 +27,12 @@ GlassPanel {
         NumberAnimation { duration: Theme.motion.fast }
     }
 
+    // Menünün kenar boşluğuna ve ayraçlarına tıklamak arkaya geçip menüyü kapatmasın
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
+    }
+
     ColumnLayout {
         id: column
 

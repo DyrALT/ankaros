@@ -29,6 +29,7 @@ target_link_libraries(ankaros-services PUBLIC ankaros-common)
 add_library(ankaros-session-core STATIC
     session/accounts.cpp
     session/sessionconfig.cpp
+    session/sessionlog.cpp
 )
 target_include_directories(ankaros-session-core PUBLIC session)
 target_link_libraries(ankaros-session-core PUBLIC ankaros-common)

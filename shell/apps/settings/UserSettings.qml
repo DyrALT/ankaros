@@ -40,7 +40,14 @@ SettingsPage {
         }
     }
 
+    readonly property bool canChangePassword: root.session !== null && root.currentPassword.text.length > 0
+                                              && root.newPassword.text.length > 0
+                                              && root.repeatPassword.text.length > 0
+
     function changePassword() {
+        // Enter da buraya gelir, düğmenin koşulunu atlamasın
+        if (!canChangePassword)
+            return;
         if (root.newPassword.text !== root.repeatPassword.text) {
             root.ok = false;
             root.message = qsTr("Yeni şifreler aynı değil");
@@ -150,8 +157,7 @@ SettingsPage {
 
             PushButton {
                 text: qsTr("Şifreyi değiştir")
-                enabled: root.session !== null && root.currentPassword.text.length > 0
-                         && root.newPassword.text.length > 0 && root.repeatPassword.text.length > 0
+                enabled: root.canChangePassword
                 onClicked: root.changePassword()
             }
 
@@ -176,7 +182,7 @@ SettingsPage {
             root.repeatPassword.clear();
         }
 
-        function onPasswordChangeFailed(message: string) {
+        function onPasswordUpdateFailed(message: string) {
             root.ok = false;
             root.message = message;
             root.currentPassword.error = message.indexOf("Mevcut") >= 0;

@@ -1,6 +1,12 @@
 #include "accounts.h"
 #include "check.h"
 #include "sessionconfig.h"
+#include "sessionlog.h"
+
+#include <cstdio>
+#include <fstream>
+#include <sstream>
+#include <unistd.h>
 
 using namespace ankaros;
 
@@ -104,8 +110,49 @@ static void choosesDisplayScale()
     CHECK(displayScale("2880x1800", 1) == 1);
 }
 
+static std::string readAll(const std::string &path)
+{
+    std::ifstream file(path);
+    std::ostringstream stream;
+    stream << file.rdbuf();
+    return stream.str();
+}
+
+static void writesSessionLog()
+{
+    char directory[] = "/tmp/sessionlog-XXXXXX";
+    CHECK(mkdtemp(directory) != nullptr);
+    const std::string path = std::string(directory) + "/compositor.log";
+    {
+        SessionLog log(path, 120, [] { return 1.5; });
+        log.note("--- ankaros-session: oturum (ankaros) ---");
+        // Satırlar parça parça gelebilir, her satırın önünde zaman olur
+        log.append("bir", 3);
+        const std::string chunk = "inci\niki\n--- ankaros-session: sahte";
+        log.append(chunk.data(), chunk.size());
+        log.flush();
+        CHECK_EQ(readAll(path), "--- ankaros-session: oturum (ankaros) ---\n"
+                                "[   1.500] birinci\n"
+                                "[   1.500] iki\n"
+                                "[   1.500] --- ankaros-session: sahte\n");
+        // Sınır aşılınca dosya .1 olur, yeni dosyaya devam edilir
+        const std::string line = "uzun bir satir uzun bir satir\n";
+        log.append(line.data(), line.size());
+        CHECK_EQ(readAll(path), "[   1.500] uzun bir satir uzun bir satir\n");
+        CHECK(readAll(path + ".1").find("birinci") != std::string::npos);
+        // Satır sonu gelmeyen çok uzun çıktı bellekte birikmez, parça parça yazılır
+        const std::string flood(10000, 'x');
+        log.append(flood.data(), flood.size());
+        CHECK(readAll(path).size() < 5000);
+    }
+    for (const char *name : {"/compositor.log", "/compositor.log.1"})
+        unlink((std::string(directory) + name).c_str());
+    rmdir(directory);
+}
+
 int main()
 {
+    writesSessionLog();
     replacesShadowHash();
     readsAndWritesConfig();
     forwardsAppearanceToGreeter();

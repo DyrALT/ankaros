@@ -50,7 +50,10 @@ layer_list() {
 layer_install() {
   need_root
   name="$1"
-  path="$(distribution "$name")/$(architecture)/default"
+  # Ayrı atamalar: "$(a)/$(b)" yalnızca son komutun sonucuna bakar, bilinmeyen adda fail durdurmazdı
+  dist=$(distribution "$name")
+  arch=$(architecture)
+  path="$dist/$arch/default"
   [ ! -d "$LAYERS/$name/kok" ] || fail "\"$name\" zaten kurulu (yeniden kurmak için önce: ank katman sil $name)"
 
   echo "Sürümler okunuyor: $SOURCE/$path/"
@@ -73,7 +76,9 @@ layer_install() {
   mkdir -p "$work/kok"
   unxz -c "$work/rootfs.tar.xz" | tar -x -C "$work/kok"
   # ankaros-katman ad çözümü için ankaros'un /etc/resolv.conf'unu bunun üstüne bağlar: düz bir dosya
-  # olmalı (kök dosya sistemlerinde çoğu zaman systemd-resolved'a bağlantıdır)
+  # olmalı (kök dosya sistemlerinde çoğu zaman systemd-resolved'a bağlantıdır). etc'nin kendisi bir
+  # bağlantıysa (ör. etc -> /etc) aşağıdaki satırlar root olarak ankaros'un dosyasına dokunurdu.
+  [ -d "$work/kok/etc" ] && [ ! -L "$work/kok/etc" ] || fail "katman arşivinde /etc düz bir dizin değil"
   rm -f "$work/kok/etc/resolv.conf"
   : > "$work/kok/etc/resolv.conf"
   echo "$build" > "$work/surum"

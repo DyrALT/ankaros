@@ -20,7 +20,7 @@ Item {
     property string userName
     // Oturum işlemleri: kilit açma, oturumu kapatma, kapatma, otomatik giriş, şifre (docs/oturum.md).
     // Compositor'da C++ Session nesnesi, Mac önizlemesinde sahte bir oturum verilir. Beklenen üyeler:
-    // userName, autologin, unlock(), logout(), reboot(), poweroff(), setAutologin(), changePassword()
+    // userName, autologin, lock(), unlock(), logout(), reboot(), poweroff(), setAutologin(), changePassword()
     // ve unlocked, unlockFailed, passwordUpdated, passwordUpdateFailed sinyalleri.
     property var session: null
     // Kablolu ağın durumu ve ayarı (docs/ag.md). Compositor'da C++ Network nesnesi, önizlemede sahtesi.
@@ -116,6 +116,8 @@ Item {
     function lock() {
         closePanels();
         locked = true;
+        if (session)
+            session.lock();
     }
 
     function launch(app) {

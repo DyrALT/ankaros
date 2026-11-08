@@ -29,6 +29,9 @@ QtObject {
         timer.start();
     }
 
+    function lock() {
+    }
+
     function unlock(password) {
         later(() => password === root.password ? root.unlocked() : root.unlockFailed(qsTr("Şifre yanlış")));
     }

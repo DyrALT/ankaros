@@ -100,6 +100,7 @@ private:
     QString m_title;
     // Kaç satır yukarı kaydırıldı (0: en altta)
     int m_scroll = 0;
+    int m_wheelRemainder = 0; // tekerleğin satıra yetmeyen kısmı (1/8 derece)
     TerminalScreen::Position m_selectionStart;
     TerminalScreen::Position m_selectionEnd;
     bool m_selecting = false;

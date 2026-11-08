@@ -57,11 +57,16 @@ WaylandCompositor {
         return windows.find(w => w.active && !w.minimized) ?? null;
     }
 
-    // Küçültülen pencerenin odağını en son kullanılan görünür pencereye ver
+    // Küçültülen pencerenin odağını en son kullanılan görünür pencereye ver. Görünür pencere kalmadıysa
+    // odak hiçbir pencerede kalmaz: yazılanlar küçültülmüş uygulamaya gitmesin.
     function focusNext(previous) {
-        const next = focusHistory.find(w => w !== previous && !w.minimized);
-        if (next)
+        const next = focusHistory.find(w => w !== previous && !w.minimized && !w.closing);
+        if (next) {
             next.takeFocus();
+            return;
+        }
+        GlobalKeys.clearKeyboardFocus(compositor.defaultSeat);
+        desktop.forceActiveFocus();
     }
 
     // Süper+D: bütün pencereleri küçült, ikinci basışta geri getir

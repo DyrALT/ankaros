@@ -74,6 +74,14 @@ void Session::login(const QString &user, const QString &password)
             });
 }
 
+void Session::lock()
+{
+    request(sessionSocket, {QStringLiteral("lock")}, [](const QStringList &, const QString &error) {
+        if (!error.isEmpty())
+            qCWarning(lcSession) << "Kilit bildirilemedi:" << error;
+    });
+}
+
 void Session::unlock(const QString &password)
 {
     request(sessionSocket, {QStringLiteral("unlock"), password},

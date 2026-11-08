@@ -25,6 +25,25 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 - Üst üste duran pencerelerde öndekinin başlık çubuğuna basmak arkadaki pencereyi öne getirmiyor, öndeki
   pencere taşınabiliyor.
+- Ekran kilitliyken masaüstü çökerse oturum yeniden açılmıyor, giriş ekranına dönülüyor. Kabuk kilitlendiğini
+  oturum yöneticisine bildiriyor (`lock`, [docs/oturum.md](docs/oturum.md)).
+- Kilit ekranı sağ ve orta tıklamayı arkadaki pencerelere geçirmiyor.
+- Son görünür pencere küçültülünce klavye odağı onda kalmıyor.
+- `ank katman kur` bilinmeyen katman adında duruyor, `/etc`'si bağlantı olan katman arşivini kurmuyor.
+- Ayarlar › Kullanıcı'da şifre değiştirme hatası gösteriliyor, alanlar boşken Enter istek göndermiyor.
+- init: durdurulan servisin süreç grubunda kalan süreçler bitene (en geç 5 sn, sonra SIGKILL) kadar servis
+  yeniden başlatılmıyor. Kapanışta duramayan servisler öldürülüyor. Hiç hazır olmadan çöken bir bağımlılık
+  üç denemeden sonra bağımlı servisleri bekletmiyor.
+- Oturum yöneticisi kullanıcının `shell.conf`'unu onun yetkisiyle ve en fazla 64 KiB okuyor.
+- Veri diski yalnızca sanal makinenin virtio disklerinde aranıyor, aynı etiketli bir USB bellek bağlanmıyor.
+- WirePlumber ve pipewire-pulse PipeWire'ın soketi hazır olunca başlıyor.
+- Terminal: Ctrl+[ \ ] ^ _ ve Ctrl+Boşluk kontrol karakteri gönderiyor (Ctrl+I/J/M da), küçük tekerlek
+  adımları birikiyor, geçmişten atılan satırlar seçimdeyse kopyalama boş satır vermiyor, sonu gelmeyen
+  başlık dizisi belleği büyütmüyor.
+- Masaüstü menüsünün boşluklarına tıklamak menüyü kapatmıyor.
+- `utm-olustur.sh` `qemu-img` yoksa UTM'ye dokunmadan duruyor.
+- Masaüstünün çıktısı (`/var/log/ankaros-compositor.log`) oturum yöneticisinden geçiyor: dosya 4 MB'ta
+  döndürülüyor, uygulamalar dosyaya doğrudan yazamıyor ([docs/oturum.md](docs/oturum.md)).
 
 ## [0.5.0] - 2026-11-07
 

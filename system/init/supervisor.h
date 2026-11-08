@@ -34,7 +34,10 @@ struct Service
     double lastStartAt = -1;
     double restartAt = -1; // RestartWait: ne zaman yeniden başlatılacak
     double killAt = -1;    // durdurulurken SIGKILL zamanı
-    bool wanted = true;    // false: durdurulması istendi
+    // Durdurulan servisin lideri çıktı ama süreç grubunda hâlâ süreç var (ör. bir alt süreç kilit
+    // tutuyor): grup boşalana ya da killAt gelene kadar beklenir, servis yeniden başlatılmaz.
+    pid_t group = 0;
+    bool wanted = true; // false: durdurulması istendi
     bool restartRequested = false;
 };
 
