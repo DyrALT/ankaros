@@ -13,6 +13,7 @@ qt_add_qml_module(ankaros-terminal
     VERSION 1.0
     QML_FILES
         Main.qml
+        TerminalWindow.qml
     SOURCES
         terminalview.h
         terminalview.cpp

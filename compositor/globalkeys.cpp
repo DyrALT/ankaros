@@ -39,8 +39,20 @@ void GlobalKeys::setSwitching(bool switching)
 
 bool GlobalKeys::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::MouseButtonPress && watched->isWindowType())
-        emit pointerPressed(static_cast<QMouseEvent *>(event)->scenePosition());
+    if (watched->isWindowType()) {
+        switch (event->type()) {
+        case QEvent::MouseMove:
+        case QEvent::MouseButtonRelease:
+            m_pointerPosition = static_cast<QMouseEvent *>(event)->scenePosition();
+            break;
+        case QEvent::MouseButtonPress:
+            m_pointerPosition = static_cast<QMouseEvent *>(event)->scenePosition();
+            emit pointerPressed(m_pointerPosition);
+            break;
+        default:
+            break;
+        }
+    }
     if (!m_enabled)
         return false;
 

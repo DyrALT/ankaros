@@ -20,6 +20,9 @@ WindowChrome {
     // Uygulamanın kabuktaki adı ("Terminal" gibi), Main.qml app_id'ye göre verir.
     property string appName
     property bool minimized: false
+    // Pencere farenin olduğu yere açılacaksa o nokta, değilse null. Main.qml verir: uygulamanın açık başka
+    // bir penceresi varsa (ör. Terminal'den dışarı sürüklenip bırakılan sekme) fare noktası.
+    property var placementPoint: () => null
     // Küçültülürken pencerenin uçacağı yer (alt çubuktaki simgesi). Main.qml verir.
     property var minimizeTarget: () => Qt.point(x + width / 2, workArea.y + workArea.height)
     // Ekranın yarısına yaslanmışsa "left" ya da "right"
@@ -67,15 +70,25 @@ WindowChrome {
             return;
         placed = true;
         appear = 1;
-        if (width > workArea.width || height > workArea.height) {
+        // Çerçeveli boyut yüzeyden hesaplanır: place() genişlik değişince çağrılır, root.height o anda
+        // henüz güncellenmemiş olabilir
+        const fullWidth = surfaceItem.width + 2 * frameWidth;
+        const fullHeight = titleBarHeight + surfaceItem.height + 2 * frameWidth;
+        if (fullWidth > workArea.width || fullHeight > workArea.height) {
             const size = Qt.size(Math.round(workArea.width * 0.7), Math.round(workArea.height * 0.8));
             x = workArea.x + Math.round(workArea.width * 0.15);
             y = workArea.y + Math.round(workArea.height * 0.1);
             toplevel.sendUnmaximized(size);
             return;
         }
-        x = Math.max(workArea.x, Math.min(x, workArea.x + workArea.width - width));
-        y = Math.max(workArea.y, Math.min(y, workArea.y + workArea.height - height));
+        // Başlık çubuğunun ortası farenin altına gelsin
+        const pointer = placementPoint();
+        if (pointer) {
+            x = Math.round(pointer.x - fullWidth / 2);
+            y = Math.round(pointer.y - titleBarHeight / 2);
+        }
+        x = Math.max(workArea.x, Math.min(x, workArea.x + workArea.width - fullWidth));
+        y = Math.max(workArea.y, Math.min(y, workArea.y + workArea.height - fullHeight));
     }
 
     // Fare olayları uygulamanın çizebileceğinden çok daha sık gelir. Hepsi gönderilirse uygulamanın

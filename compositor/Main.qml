@@ -122,7 +122,8 @@ WaylandCompositor {
                 console.warn("Bu uygulama için komut tanımlı değil:", app);
             return;
         }
-        const window = own[own.length - 1];
+        // Birden çok penceresi varsa (ör. Terminal) en son kullanılanı
+        const window = focusHistory.find(w => w.appName === app) ?? own[own.length - 1];
         if (window.active && !window.minimized) {
             window.minimized = true;
         } else {
@@ -378,6 +379,8 @@ WaylandCompositor {
             window.screenArea = Qt.binding(() => Qt.rect(0, 0, desktop.width, desktop.height));
             window.appName = Qt.binding(() => AppCatalog.nameForAppId(window.appId));
             window.minimizeTarget = () => desktop.taskIconCenter(window.appName);
+            window.placementPoint = () => compositor.windows.some(
+                w => w !== window && !w.closing && w.appName === window.appName) ? GlobalKeys.pointerPosition() : null;
             window.isTopAt = position => compositor.windowAt(position) === window;
             window.raiseRequested.connect(() => compositor.raise(window));
             window.activeChanged.connect(() => {

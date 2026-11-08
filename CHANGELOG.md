@@ -5,10 +5,11 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 
 ## [Yayınlanmamış]
 
-### Düzeltildi
+### Eklendi
 
-- Üst üste duran pencerelerde öndekinin başlık çubuğuna basmak arkadaki pencereyi öne getirmiyor, öndeki
-  pencere taşınabiliyor.
+- Terminal'de sekmeler sürüklenerek sıralanıyor, çubuğun dışına bırakılan sekme yeni bir pencereye taşınıyor
+  (içinde çalışan program kesilmiyor). Terminal birden çok pencere açabiliyor (Ctrl+Shift+N). Bir uygulamanın
+  ikinci ve sonraki pencereleri farenin olduğu yerde açılıyor ([docs/terminal.md](docs/terminal.md)).
 
 ### Değişti
 
@@ -19,6 +20,11 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 - Büyütülen pencere bütün ekranı kaplıyor (tam ekran), öndeyken alt çubuk animasyonla aşağı iniyor. Fare
   ekranın en altına gelince alt çubuk geri çıkıyor ([docs/pencere-yonetimi.md](docs/pencere-yonetimi.md)).
   Ekrandan büyük açılan pencere artık büyütülmüyor, ekranın ortasında daha küçük açılıyor.
+
+### Düzeltildi
+
+- Üst üste duran pencerelerde öndekinin başlık çubuğuna basmak arkadaki pencereyi öne getirmiyor, öndeki
+  pencere taşınabiliyor.
 
 ## [0.5.0] - 2026-11-07
 
