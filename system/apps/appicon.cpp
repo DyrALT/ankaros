@@ -84,6 +84,18 @@ bool safeSvg(const std::string &data)
     if (text.find("<!doctype") != std::string::npos || text.find("<!entity") != std::string::npos ||
         text.find("@import") != std::string::npos)
         return false;
+    // Ters bölü CSS kaçışıyla ("u\\72l(") denetimleri atlatır, foreignObject ve src dış içerik
+    // getirir
+    if (text.find('\\') != std::string::npos || text.find("foreignobject") != std::string::npos)
+        return false;
+    for (size_t at = text.find("src"); at != std::string::npos; at = text.find("src", at + 1)) {
+        size_t i = at + 3;
+        while (i < text.size() &&
+               (text[i] == ' ' || text[i] == '\t' || text[i] == '\n' || text[i] == '\r'))
+            ++i;
+        if (i < text.size() && text[i] == '=')
+            return false;
+    }
     const auto skip = [&](size_t i) {
         while (i < text.size() && (text[i] == ' ' || text[i] == '\t' || text[i] == '\n' ||
                                    text[i] == '\r' || text[i] == '"' || text[i] == '\''))
@@ -165,16 +177,16 @@ std::optional<std::string> readRootFile(const std::string &root, std::string_vie
             return part == "." || part == "..";
         }))
         return std::nullopt;
-    Fd dir(open(root.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC));
+    Fd dir(open(root.c_str(), O_RDONLY | O_DIRECTORY | O_NOCTTY | O_CLOEXEC));
     for (size_t i = 0; i + 1 < parts.size() && dir.get() >= 0; ++i) {
-        dir = Fd(
-            openat(dir.get(), parts[i].c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC));
+        dir = Fd(openat(dir.get(), parts[i].c_str(),
+                        O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_NOCTTY | O_CLOEXEC));
     }
     if (dir.get() < 0)
         return std::nullopt;
     // O_NONBLOCK: boru ya da aygıt dosyası açılırken takılmasın, zaten S_ISREG ile elenir
-    const Fd file(
-        openat(dir.get(), parts.back().c_str(), O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK));
+    const Fd file(openat(dir.get(), parts.back().c_str(),
+                         O_RDONLY | O_NOFOLLOW | O_NOCTTY | O_CLOEXEC | O_NONBLOCK));
     if (file.get() < 0)
         return std::nullopt;
     return readRegular(file.get(), maxSize);

@@ -48,16 +48,22 @@ std::string readFile(const std::string &path)
     return text.str();
 }
 
-// Geçici dosyaya yazıp yerine taşır: AppCatalog dosyayı izler, yarım dosya okumamalı
+// Geçici dosyaya yazıp yerine taşır: AppCatalog dosyayı izler, yarım dosya okumamalı. O_EXCL ve
+// O_NOFOLLOW: önceden konmuş bir bağlantıya yazılmaz.
 bool writeFile(const std::string &path, const std::string &text)
 {
     const std::string temporary = path + ".yeni";
-    const int fd = open(temporary.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
+    unlink(temporary.c_str());
+    const int fd =
+        open(temporary.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0644);
     if (fd < 0)
         return false;
     const bool ok = write(fd, text.data(), text.size()) == static_cast<ssize_t>(text.size());
     close(fd);
-    return ok && rename(temporary.c_str(), path.c_str()) == 0;
+    if (ok && rename(temporary.c_str(), path.c_str()) == 0)
+        return true;
+    unlink(temporary.c_str());
+    return false;
 }
 
 // Komutu çalıştırır, çıktısı günlüğe (output verilmişse oraya) gider. Çıkış kodunu döner.
@@ -126,20 +132,8 @@ std::string storeIcon(const std::string &package, const std::string &id, const s
     }
     const std::string path =
         std::string(iconDirectory) + '/' + iconFileName(package, id, file->extension);
-    // Önce geçici dosyaya (O_EXCL: önceden konmuş bir bağlantıya yazılmaz), sonra yerine taşınır
-    const std::string temporary = path + ".yeni";
-    unlink(temporary.c_str());
-    const int fd =
-        open(temporary.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0644);
-    if (fd < 0) {
-        fprintf(stderr, "simge yazılamadı: %s: %s\n", temporary.c_str(), strerror(errno));
-        return {};
-    }
-    const bool written =
-        write(fd, file->data.data(), file->data.size()) == static_cast<ssize_t>(file->data.size());
-    close(fd);
-    if (!written || rename(temporary.c_str(), path.c_str()) != 0) {
-        unlink(temporary.c_str());
+    if (!writeFile(path, file->data)) {
+        fprintf(stderr, "simge yazılamadı: %s: %s\n", path.c_str(), strerror(errno));
         return {};
     }
     return path;
@@ -271,10 +265,12 @@ ControlServer::Reply install(const std::string &path)
                 apps.push_back(app);
                 reply.lines.push_back(package + '\t' + app.name);
             }
-            if (saveRegistry(apps))
+            if (saveRegistry(apps)) {
                 removeUnusedIcons(before, apps);
-            else
+            } else {
+                removeUnusedIcons(apps, before);
                 reply.error = "Uygulama listesi yazılamadı";
+            }
         }
     }
     if (!directory.empty()) {

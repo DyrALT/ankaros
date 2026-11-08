@@ -216,6 +216,12 @@ static void findsIcons()
     CHECK(!svgWith("<style>@import url(http://x);</style>"));
     CHECK(!svgWith("<rect style=\"fill:url(http://x/a)\"/>"));
     CHECK(svgWith("<rect style=\"fill:url(#g)\"/>"));
+    CHECK(!svgWith("<rect style=\"fill:u\\72l(http://x/a)\"/>"));
+    CHECK(!svgWith("<foreignObject><p/></foreignObject>"));
+    CHECK(!svgWith("<FOREIGNOBJECT/>"));
+    CHECK(!svgWith("<audio src=\"x\"/>"));
+    CHECK(!svgWith("<audio SRC = 'x'/>"));
+    CHECK(svgWith("<desc>srcset yok</desc>"));
 
     // PNG boyutu sınırı: çok büyük olan atlanır, küçüğü seçilir
     write(root / "usr/share/icons/hicolor/512x512/apps/dev.png", pngHeader(60000, 60000));
@@ -262,11 +268,21 @@ static void namesIconFiles()
     CHECK(safeIconFile(iconFileName("p", "../../etc/x y\n", "png")));
     CHECK(safeIconFile(iconFileName("p", std::string(500, 'a'), "png")));
 
-    // NUL içeren .desktop satırı atlanır
-    const DesktopEntry entry =
-        parseDesktopEntry(std::string("[Desktop Entry]\nIcon=/..\0a/x.png\nName=Uyg\n", 43));
-    CHECK(entry.icon.empty());
-    CHECK_EQ(entry.name, "Uyg");
+    // FNV-1a standart test vektörleri
+    CHECK_EQ(fnv1a(""), 0xcbf29ce484222325ull);
+    CHECK_EQ(fnv1a("a"), 0xaf63dc4c8601ec8cull);
+    CHECK_EQ(fnv1a("foobar"), 0x85944171f73967e8ull);
+
+    // NUL içeren .desktop dosyası tümden reddedilir (bölüm başlığı atlatmasıyla ana girişe
+    // yazılmasın)
+    const DesktopEntry nul =
+        parseDesktopEntry(std::string("[Desktop Entry]\nType=Application\nName=Uyg\nExec=uyg\n"
+                                      "[Desktop Action x\0y]\nName=Kotu\nExec=kotu\n",
+                                      92));
+    CHECK(nul.name.empty());
+    CHECK(nul.exec.empty());
+    CHECK(!nul.application);
+    CHECK(parseDesktopEntry(std::string("[Desktop Entry]\nIcon=/..\0a/x.png\n", 33)).icon.empty());
 }
 
 int main()
