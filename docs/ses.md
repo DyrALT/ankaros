@@ -40,7 +40,9 @@ D-Bus
 | `volume` | 0-100. Yazınca `wpctl set-volume -l 1.0` çalışır (yazılımsal yükseltme yok). |
 | `muted` | Sessiz durumu. `toggleMuted()` değiştirir. |
 
-İki saniyede bir yeniden okunur, başka bir yerde yapılan değişiklik de yansır. `wpctl` çıktısının çözümlenmesi
+İki saniyede bir yeniden okunur, başka bir yerde yapılan değişiklik de yansır. Kullanıcı değer yazdıysa o sırada başlamış eski okuma
+sonucu atılır. `wpctl` başlamazsa (PipeWire geç hazır olabilir) 60 saniyeye kadar artan aralıkla yeniden denenir,
+5 saniyede dönmeyen `wpctl` öldürülür. `wpctl` çıktısının çözümlenmesi
 Qt'siz [wpctl.h](../shell/qml/Ankaros/System/wpctl.h)'dedir, birim testi `wpctl_test`.
 Mac önizlemesinde sahte `Audio.qml` kullanılır (aygıt varmış gibi).
 

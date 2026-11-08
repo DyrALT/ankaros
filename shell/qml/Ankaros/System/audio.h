@@ -39,7 +39,8 @@ signals:
 
 private:
     void read();
-    void readFinished(int exitCode);
+    void readFinished(int exitCode, QProcess::ExitStatus status);
+    void startFailed();
     void applyPending();
 
     QTimer m_timer;
@@ -51,5 +52,10 @@ private:
     // Kaydırıcı sürüklenirken wpctl'nin arkasında kalmamak için son istenen değer tutulur
     int m_pendingVolume = -1;
     int m_pendingMuted = -1;
-    bool m_missing = false; // wpctl çalıştırılamadı: bir daha denenmez
+    // Her yazma isteğinde artar; okuma başlarken kopyası alınır, farklıysa okuma sonucu eskidir
+    quint64 m_writeSeq = 0;
+    quint64 m_readWriteSeq = 0;
+    QTimer m_readTimeout;
+    QTimer m_writeTimeout;
+    int m_retryInterval = 2000; // wpctl başlamazsa artar, başarılı okumada sıfırlanır
 };

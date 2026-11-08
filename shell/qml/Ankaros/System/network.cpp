@@ -58,8 +58,10 @@ void Network::disconnectFromService()
         ::close(m_fd);
     m_fd = -1;
     m_buffer.clear();
-    if (m_available) {
+    // Kopuk servisin eski değerleri "bağlı" göstermeye devam etmesin; geri gelince yeniden okunur
+    if (m_available || !m_values.isEmpty()) {
         m_available = false;
+        m_values.clear();
         emit changed();
     }
 }
