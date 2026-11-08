@@ -16,9 +16,13 @@ SettingsPage {
 
     title: qsTr("Alt çubuk")
 
+    function currentPinned() {
+        return Appearance.customPinnedApps ? Appearance.pinnedApps : AppCatalog.pinned;
+    }
+
     // Sabitlenmiş uygulamalar sırasıyla önde, diğerleri listedeki sırasıyla arkada
     function fill() {
-        const pinned = Appearance.customPinnedApps ? Appearance.pinnedApps : AppCatalog.pinned;
+        const pinned = currentPinned();
         const names = pinned.filter(name => AppCatalog.launchable.includes(name))
             .concat(AppCatalog.launchable.filter(name => !pinned.includes(name)));
         apps.clear();
@@ -32,10 +36,30 @@ SettingsPage {
             if (apps.get(i).pinned)
                 pinned.push(apps.get(i).name);
         }
-        Appearance.pinnedApps = pinned;
+        // Listede görünmeyen (kurulu olmayan ya da katalog henüz yüklenmediği için bilinmeyen) uygulamaların
+        // sabitlemesi ayardan silinmez, yalnızca kullanıcı kaldırınca gider.
+        const hidden = currentPinned().filter(name => !pinned.includes(name) && !listed(name));
+        Appearance.pinnedApps = pinned.concat(hidden);
+    }
+
+    function listed(name) {
+        for (let i = 0; i < apps.count; ++i) {
+            if (apps.get(i).name === name)
+                return true;
+        }
+        return false;
     }
 
     Component.onCompleted: fill()
+
+    // Katalog sonradan yüklenirse ya da servis yeni uygulama eklerse liste yenilenir
+    Connections {
+        target: AppCatalog
+
+        function onChanged() {
+            root.fill();
+        }
+    }
 
     ListModel {
         id: apps
