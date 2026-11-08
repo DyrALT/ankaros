@@ -198,6 +198,11 @@ jobs:
         # hazırlanmamıştır, durulur.
         run: |
           surum=${TAG#v}
+          # İmajın os-release sürümü VERSION'dan gelir, etiketle aynı olmalı
+          if [ "$(tr -d '[:space:]' < VERSION)" != "$surum" ]; then
+            echo "::error::VERSION dosyası ($(cat VERSION)) etiketle ($surum) uyuşmuyor"
+            exit 1
+          fi
           awk -v baslik="## [$surum]" \
             'index($0, baslik) == 1 { bulundu = 1; next } bulundu && /^## \[/ { exit } bulundu' \
             CHANGELOG.md > degisiklikler.md
