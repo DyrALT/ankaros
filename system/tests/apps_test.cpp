@@ -128,12 +128,24 @@ static void write(const fs::path &path, const std::string &data)
     std::ofstream(path, std::ios::binary) << data;
 }
 
+// Geçerli bir PNG başlığı (imza + IHDR) ve verilen boyut
+static std::string pngHeader(unsigned width = 64, unsigned height = 64)
+{
+    std::string data = "\x89PNG\r\n\x1a\n";
+    data += std::string("\0\0\0\x0d", 4) + "IHDR";
+    for (const unsigned value : {width, height}) {
+        for (int shift = 24; shift >= 0; shift -= 8)
+            data += static_cast<char>((value >> shift) & 0xff);
+    }
+    return data + std::string(8, '\0');
+}
+
 static void findsIcons()
 {
     char pattern[] = "/tmp/ankaros-simge-test-XXXXXX";
     CHECK(mkdtemp(pattern) != nullptr);
     const fs::path root = fs::path(pattern) / "kok";
-    const std::string png = "\x89PNG\r\n\x1a\n....";
+    const std::string png = pngHeader();
     const std::string svg = "<?xml version=\"1.0\"?><svg xmlns=\"http://www.w3.org/2000/svg\"/>";
 
     // SVG, PNG'den önce gelir
@@ -143,11 +155,11 @@ static void findsIcons()
     CHECK(icon && icon->extension == "svg" && icon->data == svg);
 
     // PNG'lerden en büyüğü seçilir
-    write(root / "usr/share/icons/hicolor/48x48/apps/png.png", png + "48");
-    write(root / "usr/share/icons/hicolor/256x256/apps/png.png", png + "256");
-    write(root / "usr/share/icons/hicolor/128x128/apps/png.png", png + "128");
+    write(root / "usr/share/icons/hicolor/48x48/apps/png.png", pngHeader(48, 48));
+    write(root / "usr/share/icons/hicolor/256x256/apps/png.png", pngHeader(256, 256));
+    write(root / "usr/share/icons/hicolor/128x128/apps/png.png", pngHeader(128, 128));
     icon = readIcon(root, "png");
-    CHECK(icon && icon->extension == "png" && icon->data == png + "256");
+    CHECK(icon && icon->extension == "png" && icon->data == pngHeader(256, 256));
 
     // En son pixmaps denenir
     write(root / "usr/share/pixmaps/eski.png", png);
@@ -179,6 +191,49 @@ static void findsIcons()
     fs::create_symlink(pattern, root / "usr/share/kacis");
     CHECK(!readIcon(root, "/usr/share/kacis/gizli.png").has_value());
 
+    // NUL ile yol kaçışı: "..\0x" karşılaştırmayı geçip ".." olarak açılmasın
+    CHECK(!readIcon(root, std::string("/..\0a/..\0a/gizli.png", 21)).has_value());
+    CHECK(!readIcon(root, std::string("/opt/..\0a/..\0a/gizli.png", 25)).has_value());
+    CHECK(!readIcon(root, std::string("uyg\0x", 5)).has_value());
+    CHECK(!readIcon(root, "uy\ng").has_value());
+    CHECK(!readRootFile(root, std::string("/opt/uyg/logo.png\0.x", 20), maxIconSize).has_value());
+    CHECK(readRootFile(root, "//opt///uyg/./logo.png", maxIconSize) == std::nullopt);
+    CHECK(readRootFile(root, "//opt///uyg/logo.png", maxIconSize).has_value());
+
+    // SVG: DTD, varlık ve dış başvurular reddedilir, "#" ile başlayanlar kabul
+    const auto svgWith = [&](const std::string &body) {
+        write(root / "usr/share/pixmaps/s.svg",
+              "<svg xmlns=\"http://www.w3.org/2000/svg\">" + body + "</svg>");
+        return readIcon(root, "s").has_value();
+    };
+    CHECK(svgWith("<use href=\"#a\"/>"));
+    CHECK(svgWith("<use xlink:href='#a'/>"));
+    CHECK(!svgWith("<image href=\"file:///etc/passwd\"/>"));
+    CHECK(!svgWith("<image xlink:href = \"http://x/y.png\"/>"));
+    CHECK(!svgWith("<image href=\"baska.png\"/>"));
+    CHECK(!svgWith("<!DOCTYPE svg><g/>"));
+    CHECK(!svgWith("<!ENTITY x SYSTEM \"file:///etc/passwd\">"));
+    CHECK(!svgWith("<style>@import url(http://x);</style>"));
+    CHECK(!svgWith("<rect style=\"fill:url(http://x/a)\"/>"));
+    CHECK(svgWith("<rect style=\"fill:url(#g)\"/>"));
+
+    // PNG boyutu sınırı: çok büyük olan atlanır, küçüğü seçilir
+    write(root / "usr/share/icons/hicolor/512x512/apps/dev.png", pngHeader(60000, 60000));
+    write(root / "usr/share/icons/hicolor/64x64/apps/dev.png", pngHeader(64, 64));
+    icon = readIcon(root, "dev");
+    CHECK(icon && icon->data == pngHeader(64, 64));
+    write(root / "usr/share/pixmaps/dev2.png", pngHeader(0, 10));
+    CHECK(!readIcon(root, "dev2").has_value());
+
+    // .desktop gibi dosyalar için bağlantı izlenmez, boyut sınırı uygulanır
+    write(root / "usr/share/applications/a.desktop", "[Desktop Entry]\n");
+    CHECK(readRootFile(root, "/usr/share/applications/a.desktop", 64 * 1024).has_value());
+    CHECK(!readRootFile(root, "/usr/share/applications/a.desktop", 4).has_value());
+    fs::create_symlink("/dev/zero", root / "usr/share/applications/zero.desktop");
+    CHECK(!readRootFile(root, "/usr/share/applications/zero.desktop", 64 * 1024).has_value());
+    fs::create_symlink(fs::path(pattern) / "gizli.png", root / "usr/share/applications/h.desktop");
+    CHECK(!readRootFile(root, "/usr/share/applications/h.desktop", 64 * 1024).has_value());
+
     // Normal dosya olmalı ve sınırı aşmamalı
     fs::create_directories(root / "usr/share/pixmaps/klasor.png");
     CHECK(!readIcon(root, "klasor").has_value());
@@ -189,6 +244,31 @@ static void findsIcons()
     fs::remove_all(pattern, ignored);
 }
 
+static void namesIconFiles()
+{
+    CHECK(safeIconFile("foot_foot-0123456789ab.svg"));
+    CHECK(!safeIconFile(""));
+    CHECK(!safeIconFile("."));
+    CHECK(!safeIconFile(".."));
+    CHECK(!safeIconFile("../x"));
+    CHECK(!safeIconFile("a/b"));
+    CHECK(!safeIconFile(std::string("a\0b", 3)));
+    CHECK(!safeIconFile("a\nb"));
+
+    // Temizlenince aynı olan çiftler farklı ad alır
+    CHECK(iconFileName("a", "b c", "png") != iconFileName("a", "b_c", "png"));
+    CHECK(iconFileName("ab", "c", "png") != iconFileName("a", "bc", "png"));
+    CHECK_EQ(iconFileName("foot", "foot", "svg"), iconFileName("foot", "foot", "svg"));
+    CHECK(safeIconFile(iconFileName("p", "../../etc/x y\n", "png")));
+    CHECK(safeIconFile(iconFileName("p", std::string(500, 'a'), "png")));
+
+    // NUL içeren .desktop satırı atlanır
+    const DesktopEntry entry =
+        parseDesktopEntry(std::string("[Desktop Entry]\nIcon=/..\0a/x.png\nName=Uyg\n", 43));
+    CHECK(entry.icon.empty());
+    CHECK_EQ(entry.name, "Uyg");
+}
+
 int main()
 {
     recognizesPackages();
@@ -196,5 +276,6 @@ int main()
     makesAppRecords();
     savesRecords();
     findsIcons();
+    namesIconFiles();
     return check::result("apps_test");
 }

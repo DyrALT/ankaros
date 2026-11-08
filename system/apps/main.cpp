@@ -9,6 +9,7 @@
 #include "layer.h"
 #include "protocol.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
@@ -34,6 +35,7 @@ namespace {
 constexpr const char *registryPath = "/var/lib/ankaros/kurulu.tsv";
 constexpr const char *catalogPath = "/var/lib/ankaros/uygulamalar.json";
 constexpr const char *iconDirectory = "/var/lib/ankaros/simgeler";
+constexpr size_t maxDesktopSize = 64 * 1024;
 constexpr const char *logPath = "/var/log/ankaros-apps.log";
 constexpr const char *layerName = "debian";
 const std::string logHint = std::string(" (ayrıntı: ") + logPath + ")";
@@ -111,36 +113,58 @@ bool saveRegistry(const std::vector<InstalledApp> &apps)
            writeFile(catalogPath, formatCatalog(apps));
 }
 
-// Simge dosyasının adı paket ve .desktop kimliğinden gelir, yol ayracı ve garip karakterler elenir
-std::string iconFileName(const std::string &package, const std::string &id, const std::string &ext)
-{
-    std::string name = package + '_' + id;
-    for (char &c : name) {
-        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
-              c == '.' || c == '-' || c == '_' || c == '+'))
-            c = '_';
-    }
-    return name + '.' + ext;
-}
-
-// Katmandaki simgeyi veri diskine kopyalar ve yolunu döner. Simge yoksa ya da güvenli değilse boş.
+// Katmandaki simgeyi veri diskine kopyalar ve yolunu döner. Simge yoksa, güvenli değilse ya da
+// yazılamazsa boş döner (uygulama simgesiz kurulur).
 std::string storeIcon(const std::string &package, const std::string &id, const std::string &icon)
 {
     const std::optional<IconFile> file = readIcon(layerRoot(layerName), icon);
     if (!file)
         return {};
-    mkdir(iconDirectory, 0755);
+    if (mkdir(iconDirectory, 0755) != 0 && errno != EEXIST) {
+        fprintf(stderr, "simge klasörü açılamadı: %s: %s\n", iconDirectory, strerror(errno));
+        return {};
+    }
     const std::string path =
         std::string(iconDirectory) + '/' + iconFileName(package, id, file->extension);
-    return writeFile(path, file->data) ? path : std::string();
+    // Önce geçici dosyaya (O_EXCL: önceden konmuş bir bağlantıya yazılmaz), sonra yerine taşınır
+    const std::string temporary = path + ".yeni";
+    unlink(temporary.c_str());
+    const int fd =
+        open(temporary.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0644);
+    if (fd < 0) {
+        fprintf(stderr, "simge yazılamadı: %s: %s\n", temporary.c_str(), strerror(errno));
+        return {};
+    }
+    const bool written =
+        write(fd, file->data.data(), file->data.size()) == static_cast<ssize_t>(file->data.size());
+    close(fd);
+    if (!written || rename(temporary.c_str(), path.c_str()) != 0) {
+        unlink(temporary.c_str());
+        return {};
+    }
+    return path;
 }
 
-// Kaydın simge dosyasını siler. Yalnızca simge klasöründeki dosyalar silinir.
-void removeIcon(const InstalledApp &app)
+// Kaydın simge dosyasını siler. Yalnızca simge klasöründeki tek bileşenli dosya adları silinir.
+void removeIcon(const std::string &icon)
 {
     const std::string directory = std::string(iconDirectory) + '/';
-    if (app.icon.starts_with(directory) && app.icon.find("..") == std::string::npos)
-        unlink(app.icon.c_str());
+    if (icon.starts_with(directory) &&
+        safeIconFile(std::string_view(icon).substr(directory.size())))
+        unlink(icon.c_str());
+}
+
+// Kayıtlar değişip kaydedildikten sonra, artık hiçbir kayıtta olmayan eski simgeleri siler
+void removeUnusedIcons(const std::vector<InstalledApp> &oldApps,
+                       const std::vector<InstalledApp> &newApps)
+{
+    for (const InstalledApp &old : oldApps) {
+        const bool used = std::any_of(newApps.begin(), newApps.end(), [&](const InstalledApp &app) {
+            return app.icon == old.icon;
+        });
+        if (!old.icon.empty() && !used)
+            removeIcon(old.icon);
+    }
 }
 
 // Paketin .desktop dosyalarından kayıtlar. Hiç uygulaması yoksa yine de bir kayıt döner, paket
@@ -160,7 +184,12 @@ std::vector<InstalledApp> readPackageApps(const std::string &package)
             line.substr(directory.size(), line.size() - directory.size() - suffix.size());
         if (id.find('/') != std::string::npos)
             continue;
-        const DesktopEntry entry = parseDesktopEntry(readFile(layerRoot(layerName) + line));
+        // Katmanın dosyası: bağlantı izlenmez, boyut sınırlıdır
+        const std::optional<std::string> desktop =
+            readRootFile(layerRoot(layerName), line, maxDesktopSize);
+        if (!desktop)
+            continue;
+        const DesktopEntry entry = parseDesktopEntry(*desktop);
         InstalledApp app = makeInstalledApp(package, layerName, id, entry);
         if (app.name.empty())
             continue;
@@ -236,17 +265,15 @@ ControlServer::Reply install(const std::string &path)
             reply.error = "Paket kurulamadı" + logHint;
         } else {
             std::vector<InstalledApp> apps = loadRegistry();
-            std::erase_if(apps, [&](const InstalledApp &app) {
-                if (app.package != package)
-                    return false;
-                removeIcon(app);
-                return true;
-            });
+            const std::vector<InstalledApp> before = apps;
+            std::erase_if(apps, [&](const InstalledApp &app) { return app.package == package; });
             for (const InstalledApp &app : readPackageApps(package)) {
                 apps.push_back(app);
                 reply.lines.push_back(package + '\t' + app.name);
             }
-            if (!saveRegistry(apps))
+            if (saveRegistry(apps))
+                removeUnusedIcons(before, apps);
+            else
                 reply.error = "Uygulama listesi yazılamadı";
         }
     }
@@ -267,13 +294,10 @@ ControlServer::Reply remove(const std::string &package)
         reply.error = "Bu paket ank ile kurulmamış: " + package;
     } else if (runInLayer({"apt-get", "purge", "--autoremove", "-y", "-q", package}) != 0) {
         reply.error = "Paket kaldırılamadı" + logHint;
+    } else if (saveRegistry(apps)) {
+        removeUnusedIcons(before, apps);
     } else {
-        for (const InstalledApp &app : before) {
-            if (app.package == package)
-                removeIcon(app);
-        }
-        if (!saveRegistry(apps))
-            reply.error = "Uygulama listesi yazılamadı";
+        reply.error = "Uygulama listesi yazılamadı";
     }
     return reply;
 }

@@ -1,6 +1,7 @@
 #include "appstore.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdio>
 
 namespace ankaros {
@@ -88,7 +89,8 @@ DesktopEntry parseDesktopEntry(std::string_view text)
     for (std::string_view line : splitOn(text, '\n')) {
         if (!line.empty() && line.back() == '\r')
             line.remove_suffix(1);
-        if (line.empty() || line.front() == '#')
+        // NUL içeren satırlar atlanır: değer c_str() ile kesilince başka bir anlama gelebilir
+        if (line.empty() || line.front() == '#' || line.find('\0') != std::string_view::npos)
             continue;
         if (line.front() == '[') {
             inEntry = line == "[Desktop Entry]";
@@ -157,6 +159,36 @@ InstalledApp makeInstalledApp(const std::string &package, const std::string &lay
     if (!entry.wmClass.empty() && entry.wmClass != desktopId)
         app.appIds.push_back(singleLine(entry.wmClass));
     return app;
+}
+
+bool safeIconFile(std::string_view name)
+{
+    return !name.empty() && name.size() <= 255 && name != "." && name != ".." &&
+           std::all_of(name.begin(), name.end(), [](char c) {
+               return static_cast<unsigned char>(c) >= 0x20 && c != 0x7f && c != '/';
+           });
+}
+
+std::string iconFileName(std::string_view package, std::string_view id, std::string_view extension)
+{
+    std::string name = std::string(package) + '_' + std::string(id);
+    for (char &c : name) {
+        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
+              c == '.' || c == '-' || c == '_' || c == '+'))
+            c = '_';
+    }
+    if (name.size() > 80)
+        name.resize(80);
+    // Temizlik farklı çiftleri aynı ada düşürebilir ("a b" ve "a_b"), özet bunu ayırır (FNV-1a)
+    uint64_t hash = 1469598103934665603ull;
+    for (const std::string_view part : {package, id}) {
+        for (const char c : part)
+            hash = (hash ^ static_cast<unsigned char>(c)) * 1099511628211ull;
+        hash = (hash ^ 0xff) * 1099511628211ull;
+    }
+    char digest[20];
+    snprintf(digest, sizeof digest, "%012llx", static_cast<unsigned long long>(hash >> 16));
+    return name + '-' + digest + '.' + std::string(extension);
 }
 
 std::string formatInstalled(const std::vector<InstalledApp> &apps)

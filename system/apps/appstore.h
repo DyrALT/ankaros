@@ -57,6 +57,14 @@ struct InstalledApp
 InstalledApp makeInstalledApp(const std::string &package, const std::string &layer,
                               const std::string &desktopId, const DesktopEntry &entry);
 
+// Simge klasöründeki bir dosyanın adı olabilir mi: tek bileşen, "/" ve kontrol karakteri yok, "."
+// ya da
+// ".." değil
+bool safeIconFile(std::string_view name);
+
+// Paket ve .desktop kimliğinden simge dosyası adı. Farklı çiftler aynı adı üretmez.
+std::string iconFileName(std::string_view package, std::string_view id, std::string_view extension);
+
 // Kayıt dosyası: her satırda paket, katman, ad, komut, app_id'ler (boşlukla), simge yolu, alanlar
 // sekmeyle ayrılır. Simge alanından önceki biçimde (5 alan) yazılmış kayıtlar da okunur.
 std::string formatInstalled(const std::vector<InstalledApp> &apps);
