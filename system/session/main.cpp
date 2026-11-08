@@ -521,6 +521,14 @@ ControlServer::Reply SessionManager::handle(const std::vector<std::string> &comm
     const bool fromGreeter = m_child.mode == Mode::Greeter && fromChild;
     const bool fromSession = m_child.mode == Mode::Session && fromChild;
 
+    // crypt_r NUL'da keser ("ab\0cd" fiilen "ab" olur, uzunluk kuralı aşılır): hiçbir alanda olamaz
+    for (const std::string &field : command) {
+        if (field.find('\0') != std::string::npos) {
+            reply.error = "komut alanlarında NUL baytı olamaz";
+            return reply;
+        }
+    }
+
     if (name == "status" && args == 0) {
         reply.lines.push_back(std::string("mode\t") + (m_child.mode == Mode::Greeter   ? "greeter"
                                                        : m_child.mode == Mode::Session ? "session"

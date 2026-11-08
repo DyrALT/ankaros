@@ -7,6 +7,7 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <strings.h>
 #include <termios.h>
 #include <unistd.h>
 #include <vector>
@@ -103,6 +104,7 @@ void printBoot(const std::vector<std::string> &lines)
 }
 
 termios savedTerminal;
+constexpr int terminalSignals[] = {SIGINT, SIGTERM, SIGHUP, SIGQUIT};
 
 void restoreTerminal(int signal)
 {
@@ -124,8 +126,8 @@ bool readPassword(const char *prompt, std::string &password)
             hidden = savedTerminal;
             hidden.c_lflag &= ~static_cast<tcflag_t>(ECHO);
             // Ctrl-C ile çıkılırsa terminal yankısız kalmasın
-            signal(SIGINT, restoreTerminal);
-            signal(SIGTERM, restoreTerminal);
+            for (int s : terminalSignals)
+                signal(s, restoreTerminal);
             tcsetattr(STDIN_FILENO, TCSAFLUSH, &hidden);
             hiding = true;
         }
@@ -133,8 +135,8 @@ bool readPassword(const char *prompt, std::string &password)
     const bool ok = static_cast<bool>(std::getline(std::cin, password));
     if (hiding) {
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &savedTerminal);
-        signal(SIGINT, SIG_DFL);
-        signal(SIGTERM, SIG_DFL);
+        for (int s : terminalSignals)
+            signal(s, SIG_DFL);
     }
     if (terminal)
         fputc('\n', stderr);
@@ -148,10 +150,27 @@ const char *passwordProblem(const std::string &password)
 {
     if (password.empty())
         return "şifre boş olamaz";
-    if (password.find_first_of("\t\r\n") != std::string::npos)
-        return "şifre sekme ya da satır sonu içeremez";
+    if (password.find_first_of(std::string("\t\r\n\0", 4)) != std::string::npos)
+        return "şifre sekme, satır sonu ya da NUL içeremez";
     return nullptr;
 }
+
+// Şifreler iş bitince bellekten silinir (derleyici silmeyi atlamasın diye explicit_bzero)
+void wipe(std::string &secret)
+{
+    explicit_bzero(secret.data(), secret.size());
+    secret.clear();
+}
+
+struct Wiper
+{
+    std::vector<std::string *> secrets;
+    ~Wiper()
+    {
+        for (std::string *secret : secrets)
+            wipe(*secret);
+    }
+};
 
 // "session passwd": eski şifre, yeni şifre (terminalde bir de tekrarı) okunup komuta çevrilir
 bool readPasswordCommand(std::vector<std::string> &command)
@@ -159,6 +178,7 @@ bool readPasswordCommand(std::vector<std::string> &command)
     std::string current;
     std::string next;
     std::string repeat;
+    Wiper wiper{{&current, &next, &repeat}};
     const bool terminal = isatty(STDIN_FILENO);
     if (!readPassword("Eski şifre: ", current) || !readPassword("Yeni şifre: ", next) ||
         (terminal && !readPassword("Yeni şifre (tekrar): ", repeat))) {
@@ -210,6 +230,10 @@ int main(int argc, char *argv[])
                              : network ? ankaros::networkSocketPath
                                        : ankaros::initSocketPath;
     const std::string error = ankaros::request(socketPath, command, lines);
+    if (session && command[0] == "passwd") {
+        for (std::string &field : command)
+            wipe(field);
+    }
     if (!error.empty()) {
         fprintf(stderr, "ankarosctl: %s\n", error.c_str());
         return 1;

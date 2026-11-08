@@ -23,8 +23,8 @@ QString passwordProblem(const QString &password)
     if (password.isEmpty())
         return QObject::tr("Şifre boş olamaz");
     if (password.contains(QLatin1Char('\t')) || password.contains(QLatin1Char('\n')) ||
-        password.contains(QLatin1Char('\r')))
-        return QObject::tr("Şifre sekme ya da satır sonu içeremez");
+        password.contains(QLatin1Char('\r')) || password.contains(QChar(0)))
+        return QObject::tr("Şifre sekme, satır sonu ya da NUL içeremez");
     return {};
 }
 

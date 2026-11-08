@@ -1,5 +1,6 @@
 #include "supervisor.h"
 
+#include "command.h"
 #include "graph.h"
 #include "log.h"
 
@@ -427,6 +428,10 @@ bool Supervisor::restart(const std::string &name, std::string &error)
         error = "böyle bir servis yok: " + name;
         return false;
     }
+    if (m_shuttingDown) {
+        error = "sistem kapanıyor";
+        return false;
+    }
     if (service->pid > 0) {
         service->restartRequested = true;
         terminate(*service);
@@ -481,13 +486,9 @@ void Supervisor::stopAll(double timeout)
 
 void Supervisor::mark(const std::string &rawName)
 {
-    // Ad init'in günlüğüne ve konsoluna yazılır: istemciye güvenilmez, kontrol baytları (ESC gibi
-    // terminal kaçış dizileri) ayıklanır
-    std::string name = rawName;
-    for (char &c : name) {
-        if (static_cast<unsigned char>(c) < 0x20 || c == 0x7f)
-            c = '?';
-    }
+    // Ad init'in günlüğüne ve konsoluna yazılır: istemciye güvenilmez, kontrol karakterleri
+    // (ESC gibi terminal kaçış dizileri) ayıklanır
+    const std::string name = stripControlCharacters(rawName);
     for (const auto &entry : m_marks) {
         if (entry.first == name)
             return; // yalnızca ilk zaman tutulur

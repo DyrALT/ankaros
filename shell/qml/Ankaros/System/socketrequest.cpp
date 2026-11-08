@@ -30,6 +30,17 @@ QString parse(const QByteArray &response, QStringList &lines)
 
 void send(QObject *context, const char *socketPath, const QStringList &command, Reply reply)
 {
+    // Alanlar sekmeyle, komut satır sonuyla biter, sunucu tarafında NUL de kabul edilmez: böyle bir
+    // alan komutu sessizce bozar. Hiçbir komut yolu bunu göndermez (markBoot dahil).
+    for (const QString &field : command) {
+        if (field.contains(QLatin1Char('\t')) || field.contains(QLatin1Char('\n')) ||
+            field.contains(QLatin1Char('\r')) || field.contains(QChar(0))) {
+            if (reply)
+                reply({}, QStringLiteral("Komut alanlarında sekme, satır sonu ya da NUL olamaz"));
+            return;
+        }
+    }
+
     // Unix soketi: QtNetwork gerekmesin diye doğrudan POSIX, okuma QSocketNotifier ile olay
     // döngüsünde.
     const int fd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);

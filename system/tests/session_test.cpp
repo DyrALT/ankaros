@@ -124,6 +124,8 @@ static void hashesPasswords()
     CHECK(!matchesHash("", hash));
     CHECK(makeHash("gizli şifre") != hash); // tuz her seferinde farklı
     CHECK(!matchesHash("", ""));
+    // crypt NUL'da keser: "gizli şifre\0x" hash'i "gizli şifre" ile aynı olurdu, reddedilmeli
+    CHECK(!matchesHash(std::string("gizli şifre\0x", 15), hash));
     CHECK(!matchesHash("x", "!"));
     CHECK(!matchesHash("x", "*"));
 }
