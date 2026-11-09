@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <cstring>
 #include <optional>
+#include <string>
 #include <sys/epoll.h>
 #include <sys/reboot.h>
 #include <sys/signalfd.h>
@@ -26,6 +27,18 @@ namespace {
 constexpr const char *servicesDirectory = "/etc/ankaros/services";
 
 std::optional<PowerAction> requestedAction;
+
+// İlk güç isteği geçerlidir. Kapanış hemen başlatılır: ana döngünün aynı turunda gelen başka bir
+// komut ya da süreç bitişi servisleri yeniden başlatmasın.
+// Kapanış zaten başlamışsa ve başka bir eylem isteniyorsa hata döner (aynı eylem sorun değil).
+std::string requestPower(Supervisor &supervisor, PowerAction action)
+{
+    if (requestedAction)
+        return *requestedAction == action ? std::string() : "sistem zaten kapanıyor";
+    requestedAction = action;
+    supervisor.beginShutdown();
+    return {};
+}
 
 // BusyBox'ın halt, poweroff ve reboot komutları PID 1'e bu sinyalleri gönderir.
 // SIGINT: Ctrl-Alt-Del (RB_DISABLE_CAD ile çekirdek yeniden başlatmak yerine sinyal gönderir).
@@ -57,6 +70,8 @@ ControlServer::Reply handleCommand(Supervisor &supervisor, const std::vector<std
         reply.lines = supervisor.bootLines();
     } else if (name == "mark" && command.size() == 2) {
         supervisor.mark(argument);
+    } else if (name == "mark") {
+        reply.error = "yanlış argüman sayısı: mark";
     } else if (uid != 0) {
         reply.error = "bu komut için root olmalısınız";
     } else if ((name == "start" || name == "stop" || name == "restart") && command.size() == 2) {
@@ -67,9 +82,12 @@ ControlServer::Reply handleCommand(Supervisor &supervisor, const std::vector<std
         if (!ok)
             reply.error = error;
     } else if (name == "poweroff" && command.size() == 1) {
-        requestedAction = PowerAction::Poweroff;
+        reply.error = requestPower(supervisor, PowerAction::Poweroff);
     } else if (name == "reboot" && command.size() == 1) {
-        requestedAction = PowerAction::Reboot;
+        reply.error = requestPower(supervisor, PowerAction::Reboot);
+    } else if (name == "start" || name == "stop" || name == "restart" || name == "poweroff" ||
+               name == "reboot") {
+        reply.error = "yanlış argüman sayısı: " + name;
     } else {
         reply.error = "bilinmeyen komut: " + name;
     }
@@ -145,10 +163,12 @@ int main()
                     reapChildren(
                         [&](pid_t pid, int status) { supervisor.childExited(pid, status); });
                 } else if (const auto action = actionForSignal(static_cast<int>(info.ssi_signo))) {
-                    requestedAction = action;
+                    requestPower(supervisor, *action);
                 }
             }
         }
+        if (requestedAction)
+            break;
         supervisor.update();
     }
 

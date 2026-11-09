@@ -1,5 +1,6 @@
 #include "supervisor.h"
 
+#include "command.h"
 #include "graph.h"
 #include "log.h"
 
@@ -386,6 +387,10 @@ bool Supervisor::start(const std::string &name, std::string &error)
         error = "böyle bir servis yok: " + name;
         return false;
     }
+    if (m_shuttingDown) {
+        error = "sistem kapanıyor";
+        return false;
+    }
     if (service->pid > 0) {
         error = name + " zaten çalışıyor";
         return false;
@@ -423,6 +428,10 @@ bool Supervisor::restart(const std::string &name, std::string &error)
         error = "böyle bir servis yok: " + name;
         return false;
     }
+    if (m_shuttingDown) {
+        error = "sistem kapanıyor";
+        return false;
+    }
     if (service->pid > 0) {
         service->restartRequested = true;
         terminate(*service);
@@ -431,11 +440,21 @@ bool Supervisor::restart(const std::string &name, std::string &error)
     return start(name, error);
 }
 
+void Supervisor::beginShutdown()
+{
+    // wanted=false olunca update() başlatmaz, childExited() de yeniden başlatma ya da oneshot'ın
+    // sıradaki komutunu çalıştırma yoluna girmez. m_shuttingDown sonradan gelen start'ı engeller.
+    m_shuttingDown = true;
+    for (Service &service : m_services) {
+        service.wanted = false;
+        service.restartRequested = false;
+    }
+}
+
 void Supervisor::stopAll(double timeout)
 {
+    beginShutdown();
     for (auto it = m_services.rbegin(); it != m_services.rend(); ++it) {
-        it->wanted = false;
-        it->restartRequested = false;
         if (it->state == ServiceState::Waiting || it->state == ServiceState::RestartWait)
             finish(*it, ServiceState::Stopped);
         terminate(*it);
@@ -465,8 +484,11 @@ void Supervisor::stopAll(double timeout)
     }
 }
 
-void Supervisor::mark(const std::string &name)
+void Supervisor::mark(const std::string &rawName)
 {
+    // Ad init'in günlüğüne ve konsoluna yazılır: istemciye güvenilmez, kontrol karakterleri
+    // (ESC gibi terminal kaçış dizileri) ayıklanır
+    const std::string name = stripControlCharacters(rawName);
     for (const auto &entry : m_marks) {
         if (entry.first == name)
             return; // yalnızca ilk zaman tutulur

@@ -13,6 +13,11 @@ std::string request(const char *socketPath, const std::vector<std::string> &comm
                     std::vector<std::string> &lines)
 {
     lines.clear();
+    // Alanlar sekmeyle, komut satır sonuyla biter: içlerinde olursa komut sessizce bölünür
+    for (const std::string &field : command) {
+        if (field.find_first_of(std::string("\t\r\n\0", 4)) != std::string::npos)
+            return "komut alanlarında sekme, satır sonu ya da NUL olamaz";
+    }
     const int fd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
     sockaddr_un address{};
     address.sun_family = AF_UNIX;

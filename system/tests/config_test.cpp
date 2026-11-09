@@ -39,6 +39,22 @@ static void lastValueWins()
     CHECK_EQ(config.value("mode"), "static");
 }
 
+static void stripsControlCharacters()
+{
+    CHECK_EQ(stripControlCharacters("masaüstü"), "masaüstü");
+    CHECK_EQ(stripControlCharacters("Çığ şöyle ÖĞÜ İ"), "Çığ şöyle ÖĞÜ İ");
+    CHECK_EQ(stripControlCharacters(""), "");
+    // C0: ESC dizisi, satır sonu, sekme, DEL
+    CHECK_EQ(stripControlCharacters("a\033[2Jb"), "a?[2Jb");
+    CHECK_EQ(stripControlCharacters("a\nb\tc\x7f"), "a?b?c?");
+    CHECK_EQ(stripControlCharacters(std::string_view("a\0b", 3)), "a?b");
+    // C1 (UTF-8'de C2 80 - C2 9F): CSI (U+009B) bazı terminallerde ESC [ gibi çalışır
+    CHECK_EQ(stripControlCharacters("a\302\2332Jb"), "a?2Jb");
+    CHECK_EQ(stripControlCharacters("\xC2\x80\xC2\x9f"), "??");
+    // U+00A0 (C2 A0) ve U+007F'nin ötesindeki öteki karakterler korunur
+    CHECK_EQ(stripControlCharacters("\xC2\xA0\xC2\xA9"), "\xC2\xA0\xC2\xA9");
+}
+
 static void splitsCommands()
 {
     std::vector<std::string> arguments;
@@ -74,5 +90,6 @@ int main()
     reportsErrors();
     lastValueWins();
     splitsCommands();
+    stripsControlCharacters();
     return check::result("config_test");
 }

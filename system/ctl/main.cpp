@@ -1,10 +1,15 @@
 // ankarosctl: ankaros-init'i denetler. Kullanım: ankarosctl help
 #include "protocol.h"
 
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <string>
+#include <strings.h>
+#include <termios.h>
+#include <unistd.h>
 #include <vector>
 
 namespace {
@@ -16,7 +21,8 @@ const char *usage =
     "  start|stop|restart AD   servisi başlat, durdur, yeniden başlat (root)\n"
     "  poweroff | reboot       sistemi kapat, yeniden başlat (root)\n"
     "  boot                    açılışta her adımın süresi\n"
-    "  mark AD                 açılış süresine bir işaret ekle (ör. masaüstünün ilk karesi)\n";
+    "  mark AD                 açılış süresine bir işaret ekle (ör. masaüstünün ilk karesi)\n"
+    "  session passwd          oturumdaki kullanıcının şifresini değiştir (şifreler stdin'den)\n";
 
 std::vector<std::string> split(const std::string &line, char separator)
 {
@@ -97,6 +103,102 @@ void printBoot(const std::vector<std::string> &lines)
         printf("masaüstü henüz çizilmedi\n");
 }
 
+termios savedTerminal;
+constexpr int terminalSignals[] = {SIGINT, SIGTERM, SIGHUP, SIGQUIT};
+
+void restoreTerminal(int signal)
+{
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &savedTerminal);
+    _exit(128 + signal);
+}
+
+// Şifreyi okur. Terminalse yankı kapatılır, değilse stdin'den bir satır alınır. Şifre komut satırı
+// argümanı olarak alınmaz: ps ve /proc/*/cmdline herkese gösterir.
+bool readPassword(const char *prompt, std::string &password)
+{
+    const bool terminal = isatty(STDIN_FILENO);
+    termios hidden;
+    bool hiding = false;
+    if (terminal) {
+        fputs(prompt, stderr);
+        fflush(stderr);
+        if (tcgetattr(STDIN_FILENO, &savedTerminal) == 0) {
+            hidden = savedTerminal;
+            hidden.c_lflag &= ~static_cast<tcflag_t>(ECHO);
+            // Ctrl-C ile çıkılırsa terminal yankısız kalmasın
+            for (int s : terminalSignals)
+                signal(s, restoreTerminal);
+            tcsetattr(STDIN_FILENO, TCSAFLUSH, &hidden);
+            hiding = true;
+        }
+    }
+    const bool ok = static_cast<bool>(std::getline(std::cin, password));
+    if (hiding) {
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &savedTerminal);
+        for (int s : terminalSignals)
+            signal(s, SIG_DFL);
+    }
+    if (terminal)
+        fputc('\n', stderr);
+    if (!password.empty() && password.back() == '\r')
+        password.pop_back();
+    return ok;
+}
+
+// Protokol alanları sekmeyle ayrılır, boş alanlar atlanır: bu şifreler komutu bozar
+const char *passwordProblem(const std::string &password)
+{
+    if (password.empty())
+        return "şifre boş olamaz";
+    if (password.find_first_of(std::string("\t\r\n\0", 4)) != std::string::npos)
+        return "şifre sekme, satır sonu ya da NUL içeremez";
+    return nullptr;
+}
+
+// Şifreler iş bitince bellekten silinir (derleyici silmeyi atlamasın diye explicit_bzero)
+void wipe(std::string &secret)
+{
+    explicit_bzero(secret.data(), secret.size());
+    secret.clear();
+}
+
+struct Wiper
+{
+    std::vector<std::string *> secrets;
+    ~Wiper()
+    {
+        for (std::string *secret : secrets)
+            wipe(*secret);
+    }
+};
+
+// "session passwd": eski şifre, yeni şifre (terminalde bir de tekrarı) okunup komuta çevrilir
+bool readPasswordCommand(std::vector<std::string> &command)
+{
+    std::string current;
+    std::string next;
+    std::string repeat;
+    Wiper wiper{{&current, &next, &repeat}};
+    const bool terminal = isatty(STDIN_FILENO);
+    if (!readPassword("Eski şifre: ", current) || !readPassword("Yeni şifre: ", next) ||
+        (terminal && !readPassword("Yeni şifre (tekrar): ", repeat))) {
+        fputs("ankarosctl: şifreler okunamadı\n", stderr);
+        return false;
+    }
+    if (terminal && next != repeat) {
+        fputs("ankarosctl: yeni şifreler aynı değil\n", stderr);
+        return false;
+    }
+    for (const std::string *password : {&current, &next}) {
+        if (const char *problem = passwordProblem(*password)) {
+            fprintf(stderr, "ankarosctl: %s\n", problem);
+            return false;
+        }
+    }
+    command = {"passwd", current, next};
+    return true;
+}
+
 } // namespace
 
 int main(int argc, char *argv[])
@@ -112,12 +214,26 @@ int main(int argc, char *argv[])
         fputs(usage, stderr);
         return 2;
     }
+    if (session && command[0] == "passwd") {
+        if (command.size() > 1) {
+            fputs("ankarosctl: şifreler argüman olarak verilmez (ps'te görünürler), stdin'den "
+                  "okunur\n",
+                  stderr);
+            return 2;
+        }
+        if (!readPasswordCommand(command))
+            return 1;
+    }
 
     std::vector<std::string> lines;
     const char *socketPath = session   ? ankaros::sessionSocketPath
                              : network ? ankaros::networkSocketPath
                                        : ankaros::initSocketPath;
     const std::string error = ankaros::request(socketPath, command, lines);
+    if (session && command[0] == "passwd") {
+        for (std::string &field : command)
+            wipe(field);
+    }
     if (!error.empty()) {
         fprintf(stderr, "ankarosctl: %s\n", error.c_str());
         return 1;

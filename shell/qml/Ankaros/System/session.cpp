@@ -4,6 +4,7 @@
 
 #include <QCoreApplication>
 #include <QLoggingCategory>
+#include <QTimer>
 
 #include <pwd.h>
 
@@ -13,6 +14,19 @@ namespace {
 
 constexpr const char *sessionSocket = "/run/ankaros/session.sock";
 constexpr const char *initSocket = "/run/ankaros/init.sock";
+
+// Kontrol protokolü alanları sekmeyle, komutu satır sonuyla ayırır ve boş alanları atlar: böyle bir
+// şifre gönderilirse komut sessizce bozulur ("bilinmeyen komut" gibi anlaşılmaz bir hata döner).
+// Bu yüzden istemci tarafında açık bir hatayla reddedilir. Boş dize: şifre uygun.
+QString passwordProblem(const QString &password)
+{
+    if (password.isEmpty())
+        return QObject::tr("Şifre boş olamaz");
+    if (password.contains(QLatin1Char('\t')) || password.contains(QLatin1Char('\n')) ||
+        password.contains(QLatin1Char('\r')) || password.contains(QChar(0)))
+        return QObject::tr("Şifre sekme, satır sonu ya da NUL içeremez");
+    return {};
+}
 
 // Giriş ekranında gösterilecek kullanıcı: uid'si 1000 ve üstü olan ilk kullanıcı
 QString firstLoginUser()
@@ -66,6 +80,13 @@ void Session::refresh()
 
 void Session::login(const QString &user, const QString &password)
 {
+    QString problem = user.isEmpty() ? tr("Kullanıcı adı boş olamaz") : passwordProblem(password);
+    if (problem.isEmpty() && (user.contains(QLatin1Char('\t')) || user.contains(QLatin1Char('\n'))))
+        problem = tr("Kullanıcı adı geçersiz");
+    if (!problem.isEmpty()) {
+        QTimer::singleShot(0, this, [this, problem] { emit loginFailed(problem); });
+        return;
+    }
     // Başarılı girişte oturum yöneticisi bu süreci kapatır, başarısızlıkta hata döner.
     request(sessionSocket, {QStringLiteral("login"), user, password},
             [this](const QStringList &, const QString &error) {
@@ -84,6 +105,10 @@ void Session::lock()
 
 void Session::unlock(const QString &password)
 {
+    if (const QString problem = passwordProblem(password); !problem.isEmpty()) {
+        QTimer::singleShot(0, this, [this, problem] { emit unlockFailed(problem); });
+        return;
+    }
     request(sessionSocket, {QStringLiteral("unlock"), password},
             [this](const QStringList &, const QString &error) {
                 if (error.isEmpty())
@@ -121,6 +146,13 @@ void Session::setAutologin(bool enabled)
 
 void Session::changePassword(const QString &current, const QString &next)
 {
+    QString problem = passwordProblem(current);
+    if (problem.isEmpty())
+        problem = passwordProblem(next);
+    if (!problem.isEmpty()) {
+        QTimer::singleShot(0, this, [this, problem] { emit passwordUpdateFailed(problem); });
+        return;
+    }
     request(sessionSocket, {QStringLiteral("passwd"), current, next},
             [this](const QStringList &, const QString &error) {
                 if (error.isEmpty())

@@ -39,6 +39,9 @@ bool matchesHash(const std::string &password, const std::string &hash)
 {
     if (hash.empty() || hash[0] == '!' || hash[0] == '*')
         return false;
+    // crypt_r NUL'da keser, şifrenin kalanı sessizce yok sayılırdı
+    if (password.find('\0') != std::string::npos)
+        return false;
     crypt_data data{};
     const char *result = crypt_r(password.c_str(), hash.c_str(), &data);
     // Hatada crypt_r "*" ile başlayan bir değer döner, o da eşleşmez
