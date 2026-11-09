@@ -8,6 +8,7 @@
 | [ses.md](ses.md) | Ses (PipeWire, WirePlumber), D-Bus, `Audio` sınıfı ve ses arayüzü |
 | [ag.md](ag.md) | Kablolu ağ servisi (ankaros-network) ve Ayarlar › Ağ |
 | [katmanlar.md](katmanlar.md) | Uyumluluk katmanları: `ank katman`, `ankaros-katman`, Debian katmanı |
+| [xwayland.md](xwayland.md) | X11 uygulamaları: Xwayland, xwayland-satellite, ankaros-x11 |
 | [wayland-protokolleri.md](wayland-protokolleri.md) | Compositor'ın sunduğu protokoller, sınırları, eklenmeyenler |
 | [pencere-yonetimi.md](pencere-yonetimi.md) | Pencere taşıma, boyutlandırma, yaslama, Alt+Tab ve kısayollar |
 | [masaustu-menusu.md](masaustu-menusu.md) | Masaüstüne sağ tıklayınca açılan menü: davranış, maddeler, yapı |

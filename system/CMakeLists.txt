@@ -86,12 +86,14 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_executable(ank-paket apps/client.cpp)
     target_link_libraries(ank-paket PRIVATE ankaros-common)
 
+    add_executable(ankaros-x11 x11/main.cpp)
+
     add_executable(ankarosctl ctl/main.cpp)
     target_link_libraries(ankarosctl PRIVATE ankaros-common)
 
     install(TARGETS ankaros-init ankaros-session ankaros-network ankaros-apps
         RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR})
     install(TARGETS ank-paket RUNTIME DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/ankaros)
-    install(TARGETS ankarosctl ankaros-katman RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS ankarosctl ankaros-katman ankaros-x11 RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(PROGRAMS scripts/ank DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

@@ -1,0 +1,33 @@
+qtwaylandcompositor: xdg_output 3'te ilk değerleri wl_output.done ile bitir
+
+zxdg_output_v1 sürüm 3'te done olayı kullanılmaz, istemci logical_position, logical_size,
+name ve description'ı wl_output.done gelince uygular. Qt bağlanma anında yine de
+zxdg_output_v1.done gönderiyor, wl_output.done göndermiyor. İstemci bu değerleri hiç
+uygulamıyor: Xwayland (xwayland-satellite üzerinden) ekranı 0x0 sanıyor, fare imleci
+(0,0)'a sabitleniyor ve X11 pencerelerine tıklanamıyor. Qt uygulamalarının yazdığı
+"received on version 3 or newer" uyarısı da buradan geliyor (ankaros, docs/xwayland.md).
+
+diff --git a/src/compositor/extensions/qwaylandxdgoutputv1.cpp b/src/compositor/extensions/qwaylandxdgoutputv1.cpp
+--- a/src/compositor/extensions/qwaylandxdgoutputv1.cpp
++++ b/src/compositor/extensions/qwaylandxdgoutputv1.cpp
+@@ -551,7 +551,19 @@
+         send_name(resource->handle, name);
+     if (resource->version() >= ZXDG_OUTPUT_V1_DESCRIPTION_SINCE_VERSION)
+         send_description(resource->handle, description);
+-    send_done(resource->handle);
++    // Sürüm 3 ve sonrasında zxdg_output_v1.done kullanılmaz: istemci özellikleri wl_output.done
++    // ile uygular. Yalnızca xdg_output.done gönderilirse (Xwayland gibi) bu değerleri hiç uygulamaz
++    // (ankaros, docs/xwayland.md).
++    if (resource->version() < 3) {
++        send_done(resource->handle);
++    } else {
++        auto *outputPrivate = QWaylandOutputPrivate::get(output);
++        const auto outputs = outputPrivate->resourceMap().values(resource->client());
++        for (auto *outputResource : outputs) {
++            if (outputResource->version() >= 2)
++                outputPrivate->send_done(outputResource->handle);
++        }
++    }
+ 
+     initialized = true;
+ }

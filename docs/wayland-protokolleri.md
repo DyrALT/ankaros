@@ -9,8 +9,8 @@
 |---|---|---|---|
 | `wl_compositor`, `wl_subcompositor`, `wl_shm`, `wl_output` | 4, 1, 2, 2 | Temel | Qt |
 | `wl_seat`, `wl_data_device_manager` | 5, 3 | Girdi, pano, sürükle-bırak | Qt'ye yama (`external/patches/qt6wayland/`) |
-| `xdg_wm_base`, `zxdg_decoration_manager_v1` | 1, 1 | Pencereler ve çerçeve (karar 0007) | Qt |
-| `zxdg_output_manager_v1` | 3 | Ekranın mantıksal boyutu | Qt |
+| `xdg_wm_base`, `zxdg_decoration_manager_v1` | 2, 1 | Pencereler ve çerçeve (karar 0007) | Qt, `xdg_wm_base` 2 için yama (xwayland-satellite ister) |
+| `zxdg_output_manager_v1` | 3 | Ekranın mantıksal boyutu | Qt, ilk değerler için yama |
 | `wp_viewporter` | 1 | Ölçekleme | Qt, `WaylandCompositor` kendisi sunar |
 | `zwp_linux_dmabuf_v1` | 3 | GPU ile çizilen arabellekler | Qt eklentisi, `main.cpp` seçer |
 | `wp_cursor_shape_manager_v1` | 1 | Uygulamanın imleç şekli | `cursorshape.cpp` |
@@ -32,8 +32,9 @@ Kendi yazdıklarımızın tanımları `wayland-protocols` paketinden gelir, Qt'n
 - **Seri numaraları:** `primary-selection` ve `cursor-shape` istekteki olay numarasına bakmaz, yalnızca
   uygulamanın odakta olup olmadığına bakar. `xdg-activation` de bakmaz: jeton, uygulama odaktayken ve son 10 saniyede
   tuşa ya da fareye basıldıysa geçerli olur (en fazla 64 jeton, 30 saniye).
-- **`zxdg_output_v1.done` uyarısı:** Qt uygulamaları günlüğe `received on version 3 or newer` yazar. Qt'nin
-  compositor'ı bu olayı sürüm 3'te de gönderiyor, zararsızdır.
+- **`zxdg_output_v1` 3:** Qt bağlanma anında `zxdg_output_v1.done` gönderiyordu, sürüm 3 istemcileri ise
+  değerleri `wl_output.done` ile uygular. Yamayla (`0003-xdg-output-3-done.patch`) `wl_output.done` gönderiliyor.
+  Yamasız Xwayland ekranı 0x0 sanıyordu ([xwayland.md](xwayland.md)).
 
 ## Bilerek eklenmeyenler
 

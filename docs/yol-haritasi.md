@@ -75,7 +75,7 @@ Ayrıntılı plan: [faz-4-plani.md](faz-4-plani.md), E–H adımları
 
 - [ ] E: Figma'da Paket Merkezi
 - [ ] F: Paket Merkezi
-- [ ] G: XWayland
+- [x] G: XWayland ([xwayland.md](xwayland.md)): xwayland-satellite ile, ilk X11 uygulamasında başlar
 - [ ] H: Fedora katmanı (`.rpm`) ve AppImage
 - [ ] `v0.6.0`
 

@@ -65,6 +65,8 @@ ona `ank-paket` üzerinden bağlanır.
   - `/dev`, `/proc`, `/sys`, `/tmp`
   - `/etc/resolv.conf` (ad çözümü)
   - kullanıcının ev klasörü ve `XDG_RUNTIME_DIR` (Wayland soketi)
+  - `/tmp`'deki X soketi de böylece katmana geçer, X11 uygulamaları `DISPLAY=:0` ile bağlanır
+    ([xwayland.md](xwayland.md))
 - Katman bir sandbox değildir: uygulama kullanıcının dosyalarına erişir, dağıtımlarda paket kurmakla aynı.
 
 ## Bilinen eksikler

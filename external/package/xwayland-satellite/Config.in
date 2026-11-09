@@ -1,0 +1,18 @@
+config BR2_PACKAGE_XWAYLAND_SATELLITE
+	bool "xwayland-satellite"
+	depends on BR2_PACKAGE_HOST_RUSTC_TARGET_ARCH_SUPPORTS
+	depends on BR2_PACKAGE_XWAYLAND
+	select BR2_PACKAGE_HOST_RUSTC
+	select BR2_PACKAGE_LIBXCB
+	select BR2_PACKAGE_XCB_UTIL_CURSOR
+	help
+	  Yalnızca X11 bilen uygulamaların pencerelerini sıradan
+	  Wayland pencerelerine çevirir (rootless Xwayland). Compositor
+	  X11 pencere yöneticisi olmak zorunda kalmaz (karar 0019,
+	  docs/xwayland.md).
+
+	  https://github.com/Supreeeme/xwayland-satellite
+
+comment "xwayland-satellite needs xwayland"
+	depends on BR2_PACKAGE_HOST_RUSTC_TARGET_ARCH_SUPPORTS
+	depends on !BR2_PACKAGE_XWAYLAND
