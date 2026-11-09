@@ -20,6 +20,7 @@
 | [faz-3-plani.md](faz-3-plani.md) | Faz 3'ün (uygulamalar) ayrıntılı planı |
 | [faz-4-plani.md](faz-4-plani.md) | Faz 4'ün (başka sistemlerin uygulamaları: `.deb`, `.rpm`, AppImage) ayrıntılı planı |
 | [uygulama-listesi.md](uygulama-listesi.md) | Başlat paneli ve alt çubuktaki uygulamalar (`apps.json`) |
+| [pano.md](pano.md) | UTM ile pano paylaşımı (SPICE, compositor'daki SpiceAgent) |
 | [utm.md](utm.md) | ankaros'u UTM'de GPU hızlandırmasıyla çalıştırmak |
 | [tasarim-akisi.md](tasarim-akisi.md) | Figma tasarımlarının QML'e aktarılması, kabuk önizlemesi |
 | [kararlar/](kararlar/) | Mimari karar kayıtları (ADR): neyi neden seçtik |

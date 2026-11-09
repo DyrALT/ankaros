@@ -1,0 +1,26 @@
+qtwaylandcompositor: compositor'un panosunu odağı alan uygulamaya da sun
+
+Klavye odağı bir uygulamaya geçince Qt yalnızca başka bir uygulamanın panosunu sunuyor.
+Pano compositor'daysa (overrideSelection ya da kopyalayan uygulama kapandıktan sonra
+saklanan içerik) yalnızca o an odakta olan uygulama görüyor, sonradan odaklanan
+uygulamalar boş pano görüyor. SPICE pano paylaşımı (Mac'te kopyalanan metin) bu yüzden
+yalnızca o an öndeki pencereye ulaşıyordu (ankaros, docs/pano.md).
+
+Numara 0004: 0002 ve 0003 XWayland dalında (feat/xwayland).
+
+diff --git a/src/compositor/wayland_wrapper/qwldatadevice.cpp b/src/compositor/wayland_wrapper/qwldatadevice.cpp
+--- a/src/compositor/wayland_wrapper/qwldatadevice.cpp
++++ b/src/compositor/wayland_wrapper/qwldatadevice.cpp
+@@ -43,6 +43,12 @@
+     if (m_selectionSource) {
+         DataOffer *offer = new DataOffer(m_selectionSource, resource);
+         send_selection(resource->handle, offer->resource()->handle);
++    } else {
++        // Pano compositor'daysa (overrideSelection, ya da kopyalayan uygulama kapandıktan sonra
++        // saklanan içerik) odağı yeni alan uygulama da görsün (ankaros, docs/pano.md)
++        QWaylandCompositorPrivate::get(m_compositor)
++                ->dataDeviceManager()
++                ->offerFromCompositorToClient(resource->handle);
+     }
+ }
+ 

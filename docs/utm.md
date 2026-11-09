@@ -35,6 +35,8 @@ masaüstü gelir. Başka bir ad için: `./scripts/utm-olustur.sh deneme`.
   [karar 0017](kararlar/0017-veri-diski.md)). ankaros onu ilk açılışta biçimlendirip `/var/lib/ankaros`'a
   bağlar. Kurulan uygulamalar ve katmanlar burada durur, `--guncelle` ona dokunmaz. Eski bir sanal makinede
   yoksa `--guncelle` UTM kapalıyken ekler.
+- Pano Mac ile paylaşılır (UTM'de Sharing › Clipboard Sharing açıkken, varsayılan): Mac'te kopyalanan metin
+  ankaros'ta yapıştırılır, tersi de çalışır ([pano.md](pano.md)).
 
 ## Sanal makinenin ayarları
 
