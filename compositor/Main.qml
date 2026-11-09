@@ -11,7 +11,8 @@ import Ankaros.Shell
 import Ankaros.System
 import Ankaros.UI
 
-WaylandCompositor {
+// WaylandCompositor'ın pano paylaşımlı hali (ankaroscompositor.h, docs/pano.md)
+AnkarosCompositor {
     id: compositor
 
     // Açık pencereler (WaylandWindow), açılış sırasıyla

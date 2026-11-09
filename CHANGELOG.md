@@ -14,6 +14,9 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   pencere değiştiricide ve başlık çubuğunda görünüyor. Üçüncü taraf logosu olduğu gibi gösteriliyor. Simge
   katmandan güvenle okunuyor: sembolik bağlantı izlenmiyor, boyut ve içerik denetleniyor
   ([docs/katmanlar.md](docs/katmanlar.md)).
+- UTM'de pano paylaşımı: Mac'te kopyalanan metin ankaros'ta, ankaros'ta kopyalanan metin Mac'te
+  yapıştırılabiliyor. Compositor SPICE ajan protokolünün pano kısmını konuşuyor (yalnızca metin). Pano
+  compositor'dayken sonradan odaklanan uygulamalar da onu görüyor (Qt yaması) ([docs/pano.md](docs/pano.md)).
 - XWayland: yalnızca X11 bilen uygulamalar ankaros'un pencereleri olarak açılıyor (başlık çubuğu, alt çubuk,
   Alt+Tab). Xwayland ve xwayland-satellite ilk X11 uygulaması bağlanınca başlıyor, kullanılmayan oturumda hiç
   çalışmıyor. X soketi yalnızca kullanıcıya açık ([docs/xwayland.md](docs/xwayland.md), karar 0019).

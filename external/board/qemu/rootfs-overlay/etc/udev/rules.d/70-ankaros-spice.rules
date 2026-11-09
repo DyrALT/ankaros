@@ -1,0 +1,3 @@
+# SPICE ajan kanalı (UTM'nin pano paylaşımı, docs/pano.md): compositor kullanıcı olarak açar.
+# Yalnızca users grubu (oturum açan kullanıcı), giriş ekranının kullanıcısı (ankaros-login) değil.
+SUBSYSTEM=="virtio-ports", ATTR{name}=="com.redhat.spice.0", GROUP="users", MODE="0660"

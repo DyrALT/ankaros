@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(Qt6 6.9 REQUIRED COMPONENTS Quick WaylandCompositor GuiPrivate)
+find_package(Qt6 6.9 REQUIRED COMPONENTS Quick WaylandCompositor WaylandCompositorPrivate GuiPrivate)
 # Klavye düzeninin compositor'ın kendi arayüzüne anında uygulanması (keyboardlayout.cpp)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
@@ -27,7 +27,11 @@ qt_add_qml_module(ankaros-compositor
     QML_FILES
         Main.qml
         WaylandWindow.qml
+    DEPENDENCIES
+        QtWayland.Compositor
     SOURCES
+        ankaroscompositor.h
+        ankaroscompositor.cpp
         applauncher.h
         applauncher.cpp
         cursorshape.h
@@ -38,6 +42,8 @@ qt_add_qml_module(ankaros-compositor
         keyboardlayout.cpp
         primaryselection.h
         primaryselection.cpp
+        spiceagent.h
+        spiceagent.cpp
         xdgactivation.h
         xdgactivation.cpp
 )
@@ -52,7 +58,8 @@ qt6_generate_wayland_protocol_server_sources(ankaros-compositor
 )
 target_include_directories(ankaros-compositor PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-target_link_libraries(ankaros-compositor PRIVATE Qt6::Quick Qt6::WaylandCompositor Qt6::GuiPrivate
+target_link_libraries(ankaros-compositor PRIVATE Qt6::Quick Qt6::WaylandCompositor
+    Qt6::WaylandCompositorPrivate Qt6::GuiPrivate
     PkgConfig::XKBCOMMON)
 
 install(TARGETS ankaros-compositor RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
