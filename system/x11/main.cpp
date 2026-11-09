@@ -155,7 +155,7 @@ void cleanUp(int fd)
 
 int main()
 {
-    struct sigaction action{};
+    struct sigaction action = {};
     action.sa_handler = onSignal;
     sigemptyset(&action.sa_mask);
     // SA_RESTART yok: sinyal poll'u ve waitpid'i bölsün
