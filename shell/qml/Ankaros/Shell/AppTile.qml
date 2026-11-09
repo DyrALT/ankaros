@@ -7,6 +7,8 @@ import Ankaros.UI
 HoverButton {
     id: root
 
+    keyboardNavigation: true
+
     property string app
 
     implicitWidth: Theme.size.pinnedTile

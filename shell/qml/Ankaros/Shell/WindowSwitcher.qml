@@ -32,6 +32,14 @@ Item {
         opacity: 0.5
     }
 
+    // Arka plana tıklamalar arkadaki pencerelere geçmesin. Geçişi Alt'ın bırakılması bitirir
+    // (docs'taki davranış), o yüzden burada ayrıca kapatma yok.
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
+        enabled: root.shown
+    }
+
     GlassPanel {
         id: panel
 

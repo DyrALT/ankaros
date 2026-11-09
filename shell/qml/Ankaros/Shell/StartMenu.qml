@@ -143,6 +143,7 @@ GlassPanel {
         }
 
         HoverButton {
+            keyboardNavigation: true
             visible: header.action.length > 0
             Layout.preferredWidth: actionLabel.implicitWidth + 20
             Layout.preferredHeight: 24
@@ -174,7 +175,7 @@ GlassPanel {
             Layout.preferredHeight: 44
             radius: Theme.radius.md
             color: Theme.color.surfaceHover
-            border.color: Theme.color.accent
+            border.color: search.activeFocus ? Theme.color.accent : Theme.color.border
             border.width: 1.5
 
             Icon {
@@ -344,6 +345,7 @@ GlassPanel {
                                     HoverButton {
                                         id: appRow
 
+                                        keyboardNavigation: true
                                         required property string modelData
 
                                         width: group.width
@@ -409,6 +411,7 @@ GlassPanel {
                     }
 
                     HoverButton {
+                        keyboardNavigation: true
                         width: parent.width
                         height: 50
                         radius: 10
@@ -494,6 +497,7 @@ GlassPanel {
             }
 
             HoverButton {
+                keyboardNavigation: true
                 Layout.preferredWidth: 36
                 Layout.preferredHeight: 36
                 radius: Theme.radius.sm
@@ -509,6 +513,7 @@ GlassPanel {
             HoverButton {
                 id: powerButton
 
+                keyboardNavigation: true
                 Layout.preferredWidth: 36
                 Layout.preferredHeight: 36
                 radius: Theme.radius.sm

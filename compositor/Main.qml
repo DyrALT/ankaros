@@ -69,19 +69,29 @@ WaylandCompositor {
         desktop.forceActiveFocus();
     }
 
-    // Süper+D: bütün pencereleri küçült, ikinci basışta geri getir
+    // Süper+D: bütün pencereleri küçült, ikinci basışta geri getir. Liste yalnızca Süper+D'nin küçülttüğü ve
+    // hâlâ küçültülmüş duran pencereleri tutar (kapanan ya da elle geri getirilen düşer, bkz. forgetHidden).
+    // Başka pencere görünürken yeniden basılırsa (ör. biri elle geri getirildi ya da yeni pencere açıldı)
+    // eski liste silinmez, yeni küçültülenler ona eklenir.
     function showDesktop() {
-        const shown = windows.filter(w => !w.minimized);
+        const shown = windows.filter(w => !w.minimized && !w.closing);
         if (shown.length > 0) {
-            hiddenByShowDesktop = shown;
+            hiddenByShowDesktop = hiddenByShowDesktop.filter(w => w.minimized).concat(shown);
             shown.forEach(w => w.minimized = true);
             return;
         }
-        const hidden = hiddenByShowDesktop.filter(w => windows.includes(w)).sort((a, b) => a.z - b.z);
+        const hidden = hiddenByShowDesktop.filter(w => windows.includes(w) && w.minimized && !w.closing)
+            .sort((a, b) => a.z - b.z);
+        // raise() minimized'ı değiştirip listeyi kendiliğinden temizler, o yüzden önce boşalt
+        hiddenByShowDesktop = [];
         hidden.forEach(w => raise(w));
         if (hidden.length > 0)
             hidden[hidden.length - 1].takeFocus();
-        hiddenByShowDesktop = [];
+    }
+
+    function forgetHidden(window) {
+        if (hiddenByShowDesktop.includes(window))
+            hiddenByShowDesktop = hiddenByShowDesktop.filter(w => w !== window);
     }
 
     function switchWindow(backward) {
@@ -380,9 +390,23 @@ WaylandCompositor {
                 x: 160 + offset,
                 y: 60 + offset
             });
+            if (!window) {
+                // Pencere olmadan istemcinin yüzeyi çizilemez; yarım durum bırakmamak için istemciyi kapat.
+                const reason = windowComponent.errorString()
+                    || "bilinmeyen neden (bileşen durumu " + windowComponent.status + ")";
+                console.error("Pencere oluşturulamadı, istemci kapatılıyor: app_id=" + toplevel.appId
+                              + " başlık=" + toplevel.title + ":", reason);
+                toplevel.sendClose();
+                return;
+            }
             window.workArea = Qt.binding(() => desktop.workArea);
             window.screenArea = Qt.binding(() => Qt.rect(0, 0, desktop.width, desktop.height));
-            window.appName = Qt.binding(() => AppCatalog.nameForAppId(window.appId));
+            window.appName = Qt.binding(() => {
+                // nameForAppId bir özellik değil; names'i okumak katalog değişince (changed) bağlamanın
+                // yeniden çalışmasını sağlar
+                void AppCatalog.names;
+                return AppCatalog.nameForAppId(window.appId);
+            });
             window.minimizeTarget = () => desktop.taskIconCenter(window.appName);
             window.placementPoint = () => compositor.windows.some(
                 w => w !== window && !w.closing && w.appName === window.appName) ? GlobalKeys.pointerPosition() : null;
@@ -395,10 +419,13 @@ WaylandCompositor {
             window.minimizedChanged.connect(() => {
                 if (window.minimized)
                     compositor.focusNext(window);
+                else
+                    compositor.forgetHidden(window);
             });
             window.gone.connect(() => {
                 compositor.windows = compositor.windows.filter(w => w !== window);
                 compositor.focusHistory = compositor.focusHistory.filter(w => w !== window);
+                compositor.forgetHidden(window);
                 if (compositor.switcherList.includes(window))
                     compositor.finishSwitch(false);
             });

@@ -30,7 +30,9 @@ AppCatalog::AppCatalog(QObject *parent)
 void AppCatalog::reload()
 {
     const QStringList names = m_names;
+    const QStringList pinned = m_pinned;
     const QHash<QString, QString> commands = m_commands;
+    const QHash<QString, QString> namesByAppId = m_namesByAppId;
     m_names.clear();
     m_pinned.clear();
     m_commands.clear();
@@ -40,7 +42,8 @@ void AppCatalog::reload()
         load(m_userPath);
         m_watcher.addPath(m_userPath);
     }
-    if (m_names != names || m_commands != commands)
+    if (m_names != names || m_pinned != pinned || m_commands != commands ||
+        m_namesByAppId != namesByAppId)
         emit changed();
 }
 

@@ -6,6 +6,8 @@ import Ankaros.UI
 HoverButton {
     id: root
 
+    keyboardNavigation: true
+
     property string app
     property string title
     property string subtitle

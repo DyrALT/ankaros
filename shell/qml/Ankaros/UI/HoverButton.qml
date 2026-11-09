@@ -13,6 +13,18 @@ Rectangle {
     signal clicked
 
     radius: Theme.radius.md
+    // Açıksa düğmeye Tab ile odaklanılır, Enter/Boşluk tıklar (ör. başlat paneli). Kapalıyken (varsayılan)
+    // düğme Tab sırasına girmez ve tuşlar ona gitmez: başlık çubuğu düğmesine Enter'la basılıp pencere
+    // kapanmasın.
+    property bool keyboardNavigation: false
+
+    activeFocusOnTab: keyboardNavigation
+    border.width: root.activeFocus ? 2 : 0
+    border.color: Theme.color.accent
+    Keys.enabled: keyboardNavigation
+    Keys.onReturnPressed: clicked()
+    Keys.onEnterPressed: clicked()
+    Keys.onSpacePressed: clicked()
     color: pressed ? Theme.color.surfacePressed
                    : hovered || checked ? Theme.color.surfaceHover : restColor
 

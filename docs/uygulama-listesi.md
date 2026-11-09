@@ -28,7 +28,7 @@ Başka bir dosya `ANKAROS_USER_APPS` ortam değişkeniyle verilebilir.
 | `name` | Başlat panelinde ve alt çubukta görünen ad. Simgesi de bu adla seçilir (`shell/.../IconData.js`). |
 | `command` | Uygulamaya tıklanınca çalıştırılan komut. Yoksa uygulama başlat panelinde, alt çubukta ve Ayarlar › Alt çubuk'ta gösterilmez (henüz yazılmamış uygulamaların yer tutucusu, simgesi hazırdır). |
 | `appIds` | Uygulamanın pencerelerinin Wayland `app_id`'leri. Açık pencerenin hangi uygulamaya ait olduğu, alt çubukta hangi simgenin altında "çalışıyor" göstergesi yanacağı buna göre bulunur. |
-| `pinned` | `true` ise uygulama, çalışmasa da alt çubukta durur. Varsayılandır: kullanıcı Ayarlar › Alt çubuk'ta seçim yapınca onun listesi (`shell.conf`, `pinnedApps`) kullanılır. |
+| `pinned` | `true` ise uygulama, çalışmasa da alt çubukta durur. Varsayılandır: kullanıcı Ayarlar › Alt çubuk'ta seçim yapınca onun listesi (`shell.conf`, `pinnedApps`) kullanılır. Listede görünmeyen (kurulu olmayan) bir uygulamanın sabitlemesi `pinnedApps`'te saklı kalır, uygulama kurulunca alt çubukta yeniden görünür. |
 
 - Uygulamalar başlat panelinde dosyadaki sırayla, alt çubukta sabitlenmişler önce olmak üzere görünür.
   Başlat panelindeki "Tümü" bütün uygulamaları alfabetik listeler.
