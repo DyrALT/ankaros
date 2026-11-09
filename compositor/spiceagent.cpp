@@ -232,7 +232,8 @@ void SpiceAgent::announceCapabilities(bool request)
 {
     QByteArray data;
     appendU32(data, request ? 1 : 0);
-    appendU32(data, (1u << CapMouseState) | (1u << CapClipboardByDemand) | (1u << CapGuestLineEndLf));
+    appendU32(data,
+              (1u << CapMouseState) | (1u << CapClipboardByDemand) | (1u << CapGuestLineEndLf));
     sendMessage(AnnounceCapabilities, data);
 }
 

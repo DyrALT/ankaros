@@ -14,17 +14,18 @@
 namespace {
 
 // spice/vd_agent.h: VD_AGENT_LBUTTON = 1, MBUTTON, RBUTTON, UBUTTON, DBUTTON, SBUTTON, EBUTTON
-constexpr quint32 buttonMask(int button) { return 1u << button; }
+constexpr quint32 buttonMask(int button)
+{
+    return 1u << button;
+}
 
 const struct
 {
     quint32 mask;
     Qt::MouseButton button;
 } spiceButtons[] = {
-    {buttonMask(1), Qt::LeftButton},
-    {buttonMask(2), Qt::MiddleButton},
-    {buttonMask(3), Qt::RightButton},
-    {buttonMask(6), Qt::BackButton},
+    {buttonMask(1), Qt::LeftButton},    {buttonMask(2), Qt::MiddleButton},
+    {buttonMask(3), Qt::RightButton},   {buttonMask(6), Qt::BackButton},
     {buttonMask(7), Qt::ForwardButton},
 };
 constexpr quint32 wheelUp = buttonMask(4);
@@ -116,8 +117,8 @@ void AnkarosCompositor::injectMouse(int x, int y, quint32 buttons, int display)
         const bool pressed = buttons & entry.mask;
         state.setFlag(entry.button, pressed);
         QWindowSystemInterface::handleMouseEvent(
-                window, local, QPointF(global), state, entry.button,
-                pressed ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease, modifiers);
+            window, local, QPointF(global), state, entry.button,
+            pressed ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease, modifiers);
     }
     // Tekerlek: SPICE her çentik için basıp bırakır
     const quint32 newlyPressed = buttons & ~m_spiceButtons;
