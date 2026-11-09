@@ -47,6 +47,15 @@ if [ "$1" != "--login" ]; then
   else
     echo "masaustu-baslat: pipewire yok, ses kullanılamaz"
   fi
+
+  # X11 uygulamaları (docs/xwayland.md): ankaros-x11 X soketini açıp bekler, ilk X11 uygulaması
+  # bağlanınca xwayland-satellite'i ve Xwayland'i başlatır. Compositor'ın soketi henüz yok, ama
+  # satellite ancak bir uygulama bağlanınca başlar.
+  if command -v ankaros-x11 >/dev/null 2>&1 && command -v xwayland-satellite >/dev/null 2>&1; then
+    export DISPLAY=:0
+    WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}" ankaros-x11 &
+    pids="$pids $!"
+  fi
 fi
 
 # exec kullanılmaz: compositor çıkınca ses servisleri de durdurulmalı

@@ -1,0 +1,19 @@
+server: ekran adı gelmeden çökme
+
+Ekranın adı yalnızca wl_output sürüm 4'teki name olayıyla gelir. Qt 6.9'un compositor'ı
+wl_output 2 sunuyor (docs/wayland-protokolleri.md), ad hiç gelmez. Bir pencere ekrana
+girince get_output_name OutputName bileşenini unwrap ettiği için satellite çöküyordu.
+Ad yoksa None döner (ankaros, docs/xwayland.md).
+
+diff --git a/src/server/event.rs b/src/server/event.rs
+--- a/src/server/event.rs
++++ b/src/server/event.rs
+@@ -1005,7 +1005,7 @@
+ pub(super) struct OnOutput(pub Entity);
+ struct OutputName(String);
+ fn get_output_name(output: Option<&OnOutput>, world: &World) -> Option<String> {
+-    output.map(|o| world.get::<&OutputName>(o.0).unwrap().0.clone())
++    output.and_then(|o| world.get::<&OutputName>(o.0).ok().map(|name| name.0.clone()))
+ }
+ 
+ #[derive(Copy, Clone, PartialEq, Debug)]
