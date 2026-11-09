@@ -15,6 +15,8 @@ class QSocketNotifier;
 //     hostTextReceived yayılır, compositor onu kendi panosu yapar.
 //   - ankaros'ta kopyalanınca setGuestText çağrılır: istemciye GRAB gönderilir, istemci isterse
 //     metin gönderilir.
+//   - Ajan bağlıyken SPICE fareyi sanal tabletten değil bu kanaldan gönderir (MOUSE_STATE):
+//     mouseStateReceived yayılır, compositor olayı kendisi üretir.
 class SpiceAgent : public QObject
 {
     Q_OBJECT
@@ -28,6 +30,8 @@ public:
 
 signals:
     void hostTextReceived(const QString &text);
+    // x, y: ekranın (display) piksel koordinatı. buttons: vd_agent.h'deki VD_AGENT_*BUTTON_MASK
+    void mouseStateReceived(int x, int y, quint32 buttons, int display);
 
 private:
     SpiceAgent(int fd, QObject *parent);

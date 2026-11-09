@@ -20,6 +20,7 @@ constexpr int maxChunkData = 2048;    // VD_AGENT_MAX_DATA_SIZE
 
 enum MessageType : quint32
 {
+    MouseState = 1,
     Clipboard = 4,
     AnnounceCapabilities = 6,
     ClipboardGrab = 7,
@@ -29,6 +30,7 @@ enum MessageType : quint32
 
 enum Capability
 {
+    CapMouseState = 0,
     CapClipboardByDemand = 5,
     CapGuestLineEndLf = 8,
 };
@@ -147,6 +149,12 @@ void SpiceAgent::readAvailable()
 void SpiceAgent::handleMessage(quint32 type, const QByteArray &data)
 {
     switch (type) {
+    case MouseState:
+        // VDAgentMouseState: x, y, buttons (u32), display_id (u8)
+        if (data.size() >= 13)
+            emit mouseStateReceived(int(readU32(data, 0)), int(readU32(data, 4)), readU32(data, 8),
+                                    quint8(data.at(12)));
+        return;
     case AnnounceCapabilities: {
         if (data.size() < 4)
             return;
@@ -224,7 +232,7 @@ void SpiceAgent::announceCapabilities(bool request)
 {
     QByteArray data;
     appendU32(data, request ? 1 : 0);
-    appendU32(data, (1u << CapClipboardByDemand) | (1u << CapGuestLineEndLf));
+    appendU32(data, (1u << CapMouseState) | (1u << CapClipboardByDemand) | (1u << CapGuestLineEndLf));
     sendMessage(AnnounceCapabilities, data);
 }
 

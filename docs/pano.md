@@ -28,6 +28,13 @@ panosunu bilir. ankaros'ta aynı protokolün (spice-protocol, `vd_agent.h`) pano
 - Kanal yoksa (pano paylaşımı kapalı sanal makine, gerçek bilgisayar) hiçbir şey değişmez. Giriş ekranında pano
   paylaşılmaz.
 
+## Fare
+
+Kanalda bir ajan varken SPICE fareyi sanal tabletten değil bu kanaldan gönderir (`VD_AGENT_MOUSE_STATE`, "client
+mouse mode"). Klavye yine normal yoldan gelir. Compositor bu iletilerdeki konumu, tuşları ve tekerleği kendi
+fare olayı olarak üretir (`AnkarosCompositor::injectMouse`). Bunu yapmasaydı pano paylaşımı açık bir UTM'de
+fare tıklamaları hiçbir yere ulaşmazdı.
+
 ## İzinler
 
 Kanal (`/dev/virtio-ports/com.redhat.spice.0`) `users` grubuna açıktır

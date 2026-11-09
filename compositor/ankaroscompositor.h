@@ -25,7 +25,9 @@ protected:
 
 private:
     void setHostText(const QString &text);
+    void injectMouse(int x, int y, quint32 buttons, int display);
 
     SpiceAgent *m_spice = nullptr;
     bool m_overriding = false;
+    quint32 m_spiceButtons = 0;
 };
