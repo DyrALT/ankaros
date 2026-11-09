@@ -79,8 +79,9 @@ ankarosctl network set dhcp
 ![Ayarlar › Ağ, statik adres uygulandıktan sonra (QEMU)](gorseller/vm-ayarlar-ag.png)
 
 Kabuk ağa `Desktop.network` nesnesi üzerinden ulaşır. ankaros'ta bu nesne compositor'daki C++ `Network`
-sınıfıdır (Ankaros.System, `shell/qml/Ankaros/System/network.cpp`) ve `watch` ile abone olur, bağlantı koparsa yeniden bağlanır. Mac
-önizlemesinde aynı modülün sahte `Network.qml`'i kullanılır (`ankaros-settings --page network`).
+sınıfıdır (Ankaros.System, `shell/qml/Ankaros/System/network.cpp`) ve `watch` ile abone olur. Bağlantı koparsa
+eski değerleri siler (arayüz "bağlı" göstermez) ve yeniden bağlanır. Mac önizlemesinde aynı modülün sahte
+`Network.qml`'i kullanılır (`ankaros-settings --page network`).
 
 ## Geliştirme
 

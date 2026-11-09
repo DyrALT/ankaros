@@ -52,6 +52,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   yöneticisinde açık hatayla reddediliyor.
 - Kilit açılınca şifre alanı ve bekleme durumu sıfırlanıyor. Kilitliyken ağ ve pil baloncukları kilit
   ekranının üstünde görünmüyor. Büyük saat görünür olunca hemen doğru saati gösteriyor.
+- Ses düzeyi ayarlanırken eski bir okuma değeri geri sıçratmıyor. `wpctl` başlatılamazsa artan aralıklarla
+  yeniden deneniyor, takılırsa öldürülüyor.
+- Ağ servisiyle bağlantı kopunca alt çubuk "bağlı" göstermiyor. Fare ve klavye pilleri sistem pili sayılmıyor
+  ([docs/ses.md](docs/ses.md), [docs/ag.md](docs/ag.md)).
 
 ## [0.5.0] - 2026-11-07
 

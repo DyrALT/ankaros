@@ -26,18 +26,31 @@ Battery::Battery(QObject *parent)
 void Battery::read()
 {
     bool present = false;
-    int level = 0;
+    int total = 0;
+    int count = 0;
     bool charging = false;
     const QDir supplies(QStringLiteral("/sys/class/power_supply"));
     for (const QString &name : supplies.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
         const QString base = supplies.filePath(name) + QLatin1Char('/');
         if (readValue(base + QLatin1String("type")) != QLatin1String("Battery"))
             continue;
+        // scope=Device: fare, klavye gibi çevre birimlerinin pili, sistemin değil. Dosya yoksa
+        // (eski çekirdek) sistem pili sayılır.
+        if (readValue(base + QLatin1String("scope")) == QLatin1String("Device"))
+            continue;
         present = true;
-        level = qBound(0, readValue(base + QLatin1String("capacity")).toInt(), 100);
-        charging = readValue(base + QLatin1String("status")) == QLatin1String("Charging");
-        break;
+        // Okunamayan pil ortalamaya sıfır olarak girmesin
+        bool ok = false;
+        const int capacity = readValue(base + QLatin1String("capacity")).toInt(&ok);
+        if (ok) {
+            total += qBound(0, capacity, 100);
+            ++count;
+        }
+        charging =
+            charging || readValue(base + QLatin1String("status")) == QLatin1String("Charging");
     }
+    // Birden çok sistem pili varsa doluluk ortalamadır
+    const int level = count > 0 ? qRound(double(total) / count) : 0;
     if (present == m_present && level == m_level && charging == m_charging)
         return;
     m_present = present;
