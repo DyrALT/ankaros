@@ -1,0 +1,21 @@
+qtwaylandcompositor: xdg_wm_base 2 sun
+
+Qt 6.9 xdg_wm_base 1 sunuyor. xwayland-satellite en az 2 ister, yoksa açılmaz
+(docs/xwayland.md). Sürüm 2 yalnızca yeni xdg_toplevel durumları (tiled_left, tiled_right,
+tiled_top, tiled_bottom) ekler: yeni istek ya da olay yoktur, compositor bu durumları
+göndermek zorunda değildir.
+
+diff --git a/src/compositor/extensions/qwaylandxdgshell.cpp b/src/compositor/extensions/qwaylandxdgshell.cpp
+--- a/src/compositor/extensions/qwaylandxdgshell.cpp
++++ b/src/compositor/extensions/qwaylandxdgshell.cpp
+@@ -169,7 +169,9 @@
+         qWarning() << "Failed to find QWaylandCompositor when initializing QWaylandXdgShell";
+         return;
+     }
+-    d->init(compositor->display(), 1);
++    // xdg_wm_base 2 yalnızca yeni pencere durumları (tiled_*) ekler, istek eklemez. xwayland-satellite
++    // en az 2 ister (ankaros, docs/xwayland.md).
++    d->init(compositor->display(), 2);
+ 
+     handleSeatChanged(compositor->defaultSeat(), nullptr);
+ 

@@ -86,6 +86,11 @@ void prepareSystem()
     }
     mkdir("/run/lock", 0755);
     mkdir("/run/ankaros", 0755);
+    // X ekranlarının soketleri (ankaros-x11, docs/xwayland.md). Herkes kendi soketini açabilir,
+    // kimse başkasınınkini silemez (yapışkan bit). root açılışta oluşturur: bir kullanıcı önceden
+    // kendi klasörünü koyamaz.
+    if (mkdir("/tmp/.X11-unix", 01777) == 0 || errno == EEXIST)
+        chmod("/tmp/.X11-unix", 01777);
 
     std::string hostname;
     if (readFile("/etc/hostname", hostname)) {

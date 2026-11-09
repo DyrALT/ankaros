@@ -27,3 +27,4 @@ kayıt değiştirilmez. Karar değişirse yeni bir kayıt yazılır ve eskisinin
 | [0016](0016-uyumluluk-katmanlari.md) | Başka sistemlerin uygulamaları için uyumluluk katmanları | Kabul edildi |
 | [0017](0017-veri-diski.md) | Kurulan uygulamalar ve katmanlar ayrı bir veri diskinde | Kabul edildi |
 | [0018](0018-x86-64-imaji.md) | İkinci mimari olarak x86_64 | Kabul edildi |
+| [0019](0019-xwayland-satellite.md) | X11 uygulamaları için xwayland-satellite | Kabul edildi |

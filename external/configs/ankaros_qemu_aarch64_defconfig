@@ -59,6 +59,13 @@ BR2_PACKAGE_FONTCONFIG=y
 BR2_PACKAGE_DEJAVU=y
 BR2_PACKAGE_DEJAVU_MONO=y
 
+# X11 uygulamaları (docs/xwayland.md, karar 0019): Xwayland, onu ihtiyaç olunca başlatan
+# xwayland-satellite ve Xwayland'in klavye düzenini derlemek için kullandığı xkbcomp
+BR2_PACKAGE_XORG7=y
+BR2_PACKAGE_XWAYLAND=y
+BR2_PACKAGE_XAPP_XKBCOMP=y
+BR2_PACKAGE_XWAYLAND_SATELLITE=y
+
 # Ses ve D-Bus (docs/ses.md): PipeWire sesi yönetir, WirePlumber hangi aygıtın kullanılacağına karar
 # verir (Lua 5.4 ister), wpctl ses düzeyini değiştirir. alsa-utils yalnızca denemeler için.
 BR2_PACKAGE_DBUS=y
