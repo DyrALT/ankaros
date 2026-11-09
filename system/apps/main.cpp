@@ -3,11 +3,13 @@
 // çalıştığı için kurma ve kaldırma kullanıcının şifresini ister. İstekler sırayla işlenir, kurulum
 // bitene kadar yeni istek cevap almaz.
 #include "accounts.h"
+#include "appicon.h"
 #include "appstore.h"
 #include "control.h"
 #include "layer.h"
 #include "protocol.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
@@ -15,6 +17,7 @@
 #include <fcntl.h>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 #include <pwd.h>
 #include <signal.h>
 #include <sstream>
@@ -31,6 +34,8 @@ namespace {
 
 constexpr const char *registryPath = "/var/lib/ankaros/kurulu.tsv";
 constexpr const char *catalogPath = "/var/lib/ankaros/uygulamalar.json";
+constexpr const char *iconDirectory = "/var/lib/ankaros/simgeler";
+constexpr size_t maxDesktopSize = 64 * 1024;
 constexpr const char *logPath = "/var/log/ankaros-apps.log";
 constexpr const char *layerName = "debian";
 const std::string logHint = std::string(" (ayrıntı: ") + logPath + ")";
@@ -43,16 +48,22 @@ std::string readFile(const std::string &path)
     return text.str();
 }
 
-// Geçici dosyaya yazıp yerine taşır: AppCatalog dosyayı izler, yarım dosya okumamalı
+// Geçici dosyaya yazıp yerine taşır: AppCatalog dosyayı izler, yarım dosya okumamalı. O_EXCL ve
+// O_NOFOLLOW: önceden konmuş bir bağlantıya yazılmaz.
 bool writeFile(const std::string &path, const std::string &text)
 {
     const std::string temporary = path + ".yeni";
-    const int fd = open(temporary.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
+    unlink(temporary.c_str());
+    const int fd =
+        open(temporary.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0644);
     if (fd < 0)
         return false;
     const bool ok = write(fd, text.data(), text.size()) == static_cast<ssize_t>(text.size());
     close(fd);
-    return ok && rename(temporary.c_str(), path.c_str()) == 0;
+    if (ok && rename(temporary.c_str(), path.c_str()) == 0)
+        return true;
+    unlink(temporary.c_str());
+    return false;
 }
 
 // Komutu çalıştırır, çıktısı günlüğe (output verilmişse oraya) gider. Çıkış kodunu döner.
@@ -108,6 +119,48 @@ bool saveRegistry(const std::vector<InstalledApp> &apps)
            writeFile(catalogPath, formatCatalog(apps));
 }
 
+// Katmandaki simgeyi veri diskine kopyalar ve yolunu döner. Simge yoksa, güvenli değilse ya da
+// yazılamazsa boş döner (uygulama simgesiz kurulur).
+std::string storeIcon(const std::string &package, const std::string &id, const std::string &icon)
+{
+    const std::optional<IconFile> file = readIcon(layerRoot(layerName), icon);
+    if (!file)
+        return {};
+    if (mkdir(iconDirectory, 0755) != 0 && errno != EEXIST) {
+        fprintf(stderr, "simge klasörü açılamadı: %s: %s\n", iconDirectory, strerror(errno));
+        return {};
+    }
+    const std::string path =
+        std::string(iconDirectory) + '/' + iconFileName(package, id, file->extension);
+    if (!writeFile(path, file->data)) {
+        fprintf(stderr, "simge yazılamadı: %s: %s\n", path.c_str(), strerror(errno));
+        return {};
+    }
+    return path;
+}
+
+// Kaydın simge dosyasını siler. Yalnızca simge klasöründeki tek bileşenli dosya adları silinir.
+void removeIcon(const std::string &icon)
+{
+    const std::string directory = std::string(iconDirectory) + '/';
+    if (icon.starts_with(directory) &&
+        safeIconFile(std::string_view(icon).substr(directory.size())))
+        unlink(icon.c_str());
+}
+
+// Kayıtlar değişip kaydedildikten sonra, artık hiçbir kayıtta olmayan eski simgeleri siler
+void removeUnusedIcons(const std::vector<InstalledApp> &oldApps,
+                       const std::vector<InstalledApp> &newApps)
+{
+    for (const InstalledApp &old : oldApps) {
+        const bool used = std::any_of(newApps.begin(), newApps.end(), [&](const InstalledApp &app) {
+            return app.icon == old.icon;
+        });
+        if (!old.icon.empty() && !used)
+            removeIcon(old.icon);
+    }
+}
+
 // Paketin .desktop dosyalarından kayıtlar. Hiç uygulaması yoksa yine de bir kayıt döner, paket
 // listede görünsün ve kaldırılabilsin.
 std::vector<InstalledApp> readPackageApps(const std::string &package)
@@ -125,13 +178,20 @@ std::vector<InstalledApp> readPackageApps(const std::string &package)
             line.substr(directory.size(), line.size() - directory.size() - suffix.size());
         if (id.find('/') != std::string::npos)
             continue;
-        const InstalledApp app = makeInstalledApp(
-            package, layerName, id, parseDesktopEntry(readFile(layerRoot(layerName) + line)));
-        if (!app.name.empty())
-            apps.push_back(app);
+        // Katmanın dosyası: bağlantı izlenmez, boyut sınırlıdır
+        const std::optional<std::string> desktop =
+            readRootFile(layerRoot(layerName), line, maxDesktopSize);
+        if (!desktop)
+            continue;
+        const DesktopEntry entry = parseDesktopEntry(*desktop);
+        InstalledApp app = makeInstalledApp(package, layerName, id, entry);
+        if (app.name.empty())
+            continue;
+        app.icon = storeIcon(package, id, entry.icon);
+        apps.push_back(std::move(app));
     }
     if (apps.empty())
-        apps.push_back({package, layerName, "", "", {}});
+        apps.push_back({package, layerName, "", "", {}, ""});
     return apps;
 }
 
@@ -199,13 +259,18 @@ ControlServer::Reply install(const std::string &path)
             reply.error = "Paket kurulamadı" + logHint;
         } else {
             std::vector<InstalledApp> apps = loadRegistry();
+            const std::vector<InstalledApp> before = apps;
             std::erase_if(apps, [&](const InstalledApp &app) { return app.package == package; });
             for (const InstalledApp &app : readPackageApps(package)) {
                 apps.push_back(app);
                 reply.lines.push_back(package + '\t' + app.name);
             }
-            if (!saveRegistry(apps))
+            if (saveRegistry(apps)) {
+                removeUnusedIcons(before, apps);
+            } else {
+                removeUnusedIcons(apps, before);
                 reply.error = "Uygulama listesi yazılamadı";
+            }
         }
     }
     if (!directory.empty()) {
@@ -219,13 +284,15 @@ ControlServer::Reply remove(const std::string &package)
 {
     ControlServer::Reply reply;
     std::vector<InstalledApp> apps = loadRegistry();
-    const size_t before = apps.size();
+    const std::vector<InstalledApp> before = apps;
     std::erase_if(apps, [&](const InstalledApp &app) { return app.package == package; });
-    if (!validPackageName(package) || apps.size() == before) {
+    if (!validPackageName(package) || apps.size() == before.size()) {
         reply.error = "Bu paket ank ile kurulmamış: " + package;
     } else if (runInLayer({"apt-get", "purge", "--autoremove", "-y", "-q", package}) != 0) {
         reply.error = "Paket kaldırılamadı" + logHint;
-    } else if (!saveRegistry(apps)) {
+    } else if (saveRegistry(apps)) {
+        removeUnusedIcons(before, apps);
+    } else {
         reply.error = "Uygulama listesi yazılamadı";
     }
     return reply;

@@ -45,7 +45,7 @@ add_library(ankaros-network-core STATIC network/netconfig.cpp)
 target_include_directories(ankaros-network-core PUBLIC network)
 target_link_libraries(ankaros-network-core PUBLIC ankaros-common)
 
-add_library(ankaros-apps-core STATIC apps/appstore.cpp)
+add_library(ankaros-apps-core STATIC apps/appstore.cpp apps/appicon.cpp)
 target_include_directories(ankaros-apps-core PUBLIC apps)
 
 option(ANKAROS_SYSTEM_TESTS "Birim testlerini derle" ON)

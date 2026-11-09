@@ -31,6 +31,17 @@ ona `ank-paket` üzerinden bağlanır.
 - **Uygulama listesi:** Paketin `/usr/share/applications/*.desktop` dosyaları okunur. `Type=Application` olan,
   gizli olmayan ve terminalde çalışmayanlar `/var/lib/ankaros/uygulamalar.json`'a yazılır. Başlat paneli
   dosyayı izler, oturumu yeniden başlatmak gerekmez. Kayıt `kurulu.tsv`'dedir.
+- **Simgeler:** `.desktop` dosyasındaki `Icon=` katmanda aranır: değer mutlak yolsa o dosya, değilse
+  `usr/share/icons/hicolor/scalable/apps/<ad>.svg`, sonra `hicolor/<N>x<N>/apps/<ad>.png` (en büyük boyut),
+  sonra `usr/share/pixmaps/<ad>.{svg,png}`. Bulunan resim `/var/lib/ankaros/simgeler/`e kopyalanır, yolu
+  kayda ve `uygulamalar.json`'a `icon` alanı olarak yazılır, kaldırınca silinir. Katmanın içeriği güvenilmez:
+  yol katman kökünün dışına çıkamaz, sembolik bağlantılar izlenmez (bu yüzden bağlantı olan simgeler
+  bulunmaz), dosya normal, en çok 1 MiB ve gerçekten PNG ya da SVG olmalıdır. Kabukta `AppIcon`, uygulama
+  ankaros'un kendi çizdiği simgeler arasındaysa onu, değilse uygulamanın logosunu olduğu gibi (kutucuğa
+  sokmadan) gösterir. Simge yoksa genel simge görünür. Simge desteğinden önce kurulmuş paketlerin kaydında
+  `icon` yoktur, simgeleri paket yeniden kurulunca gelir. Güvenlik ayrıntıları: yolda NUL ve kontrol
+  karakteri reddedilir, `.desktop` dosyaları da aynı güvenli açıcıyla (en çok 64 KiB) okunur, SVG'de DTD,
+  varlık tanımı ve `#` ile başlamayan başvurular, PNG'de 1024x1024'ten büyük boyut reddedilir.
 - İstekler sırayla işlenir: kurulum sürerken diğer `ank` komutları bekler. Ayrıntılı çıktı
   `/var/log/ankaros-apps.log`'dadır.
 
@@ -65,7 +76,7 @@ ona `ank-paket` üzerinden bağlanır.
   `dmabuf-feedback` (sürüm 4) sunmuyor, Mesa dışındaki istemciler (Chromium, Electron) bunu isteyebilir.
 - `ankaros-katman` ortam değişkenlerini temizlemiyor. ankaros'un bash biçimindeki `PS1`'i katmandaki
   `/bin/sh`'a geçerse istem bozuk görünür.
-- Kurulan uygulamaların kendi simgeleri okunmuyor, başlat panelinde genel simge görünüyor.
+- Simgeler yalnızca `svg` ve `png` olarak okunur (`xpm` yok), hicolor'un standart boyutlarına bakılır.
 - Terminalde çalışan uygulamalar (`Terminal=true`) kurulur ama başlat paneline eklenmez.
 - Yalnızca `ank` ile kurulanlar listelenir ve kaldırılır. `ank katman calistir debian -- apt install` ile
   kurulanlar başlat paneline gelmez.

@@ -27,6 +27,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQml
 import Ankaros.Shell
 import Ankaros.System
 import Ankaros.UI
@@ -55,6 +56,13 @@ Window {
     Component.onCompleted: {
         if (args.includes("--dark"))
             Theme.dark = true;
+    }
+
+    // ank kur ile kurulan uygulamaların kendi simgeleri (Mac'te dosya olmadığı için genelde boş)
+    Binding {
+        target: AppImages
+        property: "map"
+        value: AppCatalog.icons
     }
 
     // Ekran görüntüsünün alındığı öğe: masaüstü ya da giriş ekranı

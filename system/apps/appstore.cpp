@@ -1,6 +1,7 @@
 #include "appstore.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdio>
 
 namespace ankaros {
@@ -83,6 +84,10 @@ bool validPackageName(std::string_view name)
 DesktopEntry parseDesktopEntry(std::string_view text)
 {
     DesktopEntry entry;
+    // NUL içeren dosya tümden reddedilir (hiçbir şey okunmaz): atlanan bir bölüm başlığı sonraki
+    // satırları ana girişe yazdırabilir, değer c_str() ile kesilince de anlam değişir
+    if (text.find('\0') != std::string_view::npos)
+        return entry;
     std::string localizedName;
     bool inEntry = false;
     for (std::string_view line : splitOn(text, '\n')) {
@@ -105,6 +110,8 @@ DesktopEntry parseDesktopEntry(std::string_view text)
             localizedName = value;
         else if (key == "Exec")
             entry.exec = value;
+        else if (key == "Icon")
+            entry.icon = value;
         else if (key == "StartupWMClass")
             entry.wmClass = value;
         else if (key == "Type")
@@ -157,6 +164,40 @@ InstalledApp makeInstalledApp(const std::string &package, const std::string &lay
     return app;
 }
 
+bool safeIconFile(std::string_view name)
+{
+    return !name.empty() && name.size() <= 255 && name != "." && name != ".." &&
+           std::all_of(name.begin(), name.end(), [](char c) {
+               return static_cast<unsigned char>(c) >= 0x20 && c != 0x7f && c != '/';
+           });
+}
+
+uint64_t fnv1a(std::string_view text, uint64_t hash)
+{
+    for (const char c : text)
+        hash = (hash ^ static_cast<unsigned char>(c)) * 1099511628211ull;
+    return hash;
+}
+
+std::string iconFileName(std::string_view package, std::string_view id, std::string_view extension)
+{
+    std::string name = std::string(package) + '_' + std::string(id);
+    for (char &c : name) {
+        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
+              c == '.' || c == '-' || c == '_' || c == '+'))
+            c = '_';
+    }
+    if (name.size() > 80)
+        name.resize(80);
+    // Temizlik farklı çiftleri aynı ada düşürebilir ("a b" ve "a_b"), özet bunu ayırır (FNV-1a)
+    uint64_t hash = fnv1a(package);
+    hash = fnv1a(std::string_view("\xff", 1), hash);
+    hash = fnv1a(id, hash);
+    char digest[20];
+    snprintf(digest, sizeof digest, "%012llx", static_cast<unsigned long long>(hash >> 16));
+    return name + '-' + digest + '.' + std::string(extension);
+}
+
 std::string formatInstalled(const std::vector<InstalledApp> &apps)
 {
     std::string text;
@@ -165,7 +206,7 @@ std::string formatInstalled(const std::vector<InstalledApp> &apps)
         for (const std::string &id : app.appIds)
             ids += (ids.empty() ? "" : " ") + id;
         text += app.package + '\t' + app.layer + '\t' + app.name + '\t' + app.command + '\t' + ids +
-                '\n';
+                '\t' + singleLine(app.icon) + '\n';
     }
     return text;
 }
@@ -175,7 +216,7 @@ std::vector<InstalledApp> parseInstalled(std::string_view text)
     std::vector<InstalledApp> apps;
     for (const std::string_view line : splitOn(text, '\n')) {
         const auto fields = splitOn(line, '\t');
-        if (fields.size() != 5)
+        if (fields.size() != 5 && fields.size() != 6)
             continue;
         InstalledApp app;
         app.package = fields[0];
@@ -186,6 +227,8 @@ std::vector<InstalledApp> parseInstalled(std::string_view text)
             if (!id.empty())
                 app.appIds.emplace_back(id);
         }
+        if (fields.size() == 6)
+            app.icon = fields[5];
         apps.push_back(std::move(app));
     }
     return apps;
@@ -204,7 +247,10 @@ std::string formatCatalog(const std::vector<InstalledApp> &apps)
                 ", \"command\": " + jsonString(app.command) + ", \"appIds\": [";
         for (size_t i = 0; i < app.appIds.size(); ++i)
             text += (i ? ", " : "") + jsonString(app.appIds[i]);
-        text += "] }";
+        text += "]";
+        if (!app.icon.empty())
+            text += ", \"icon\": " + jsonString(app.icon);
+        text += " }";
     }
     return text + (first ? "]\n}\n" : "\n    ]\n}\n");
 }

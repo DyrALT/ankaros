@@ -10,6 +10,10 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 - Terminal'de sekmeler sürüklenerek sıralanıyor, çubuğun dışına bırakılan sekme yeni bir pencereye taşınıyor
   (içinde çalışan program kesilmiyor). Terminal birden çok pencere açabiliyor (Ctrl+Shift+N). Bir uygulamanın
   ikinci ve sonraki pencereleri farenin olduğu yerde açılıyor ([docs/terminal.md](docs/terminal.md)).
+- `ank kur` ile kurulan uygulamaların kendi simgeleri (`.desktop`'taki `Icon=`) alt çubukta, başlat panelinde,
+  pencere değiştiricide ve başlık çubuğunda görünüyor. Üçüncü taraf logosu olduğu gibi gösteriliyor. Simge
+  katmandan güvenle okunuyor: sembolik bağlantı izlenmiyor, boyut ve içerik denetleniyor
+  ([docs/katmanlar.md](docs/katmanlar.md)).
 
 ### Değişti
 
