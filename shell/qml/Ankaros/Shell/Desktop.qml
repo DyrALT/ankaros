@@ -96,6 +96,8 @@ Item {
 
     // Panellerden birini aç ya da açıksa kapat, diğerlerini kapat
     function togglePanel(panel) {
+        if (locked)
+            return;
         const wasOpen = panel.open;
         closePanels();
         panel.open = !wasOpen;
@@ -320,6 +322,7 @@ Item {
         startMenuOpen: startMenu.open
         calendarOpen: calendar.open
         quickSettingsOpen: quickSettings.open
+        locked: root.locked
         onStartClicked: root.togglePanel(startMenu)
         onSearchClicked: {
             root.closePanels();
@@ -399,7 +402,7 @@ Item {
         id: lockScreen
 
         anchors.fill: parent
-        opacity: root.locked ? 1 : 0
+        locked: root.locked
         backdrop: Appearance.wallpaperOnLock ? scene : defaultWallpaper
         userName: root.userName
         onSubmitted: password => {

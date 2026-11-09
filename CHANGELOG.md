@@ -50,6 +50,8 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
 - `ankarosctl session passwd` şifreleri `ps`'te görünmesin diye argüman olarak değil, stdin'den (terminalde
   yankısız) okuyor. Boş, sekmeli, satır sonu ya da NUL içeren şifreler kabukta, ankarosctl'de ve oturum
   yöneticisinde açık hatayla reddediliyor.
+- Kilit açılınca şifre alanı ve bekleme durumu sıfırlanıyor. Kilitliyken ağ ve pil baloncukları kilit
+  ekranının üstünde görünmüyor. Büyük saat görünür olunca hemen doğru saati gösteriyor.
 
 ## [0.5.0] - 2026-11-07
 
