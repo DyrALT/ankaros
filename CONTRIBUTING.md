@@ -113,7 +113,9 @@ Herkese açık C++ sınıfları ve QML bileşenleri dosya başında kısa bir a�
 
 [Semantic Versioning](https://semver.org/lang/tr/) kullanıyoruz. 1.0'dan önce her faz bir ara sürümdür:
 Faz 0 → `v0.1.0`, Faz 1 → `v0.2.0` gibi. Sürümler `main` üzerinde `vX.Y.Z` etiketiyle işaretlenir ve
-CHANGELOG'daki `[Yayınlanmamış]` bölümü o sürümün başlığına dönüştürülür.
+CHANGELOG'daki `[Yayınlanmamış]` bölümü o sürümün başlığına dönüştürülür. İmajın `/etc/os-release` dosyasındaki
+sürüm depo kökündeki [VERSION](VERSION) dosyasından gelir (`external/board/qemu/post-build.sh` okur). Sürümü
+hazırlayan PR, CHANGELOG ile birlikte bu dosyayı da `X.Y.Z` olarak günceller.
 
 Etiket gönderilince `imaj.yml` iki mimarinin imajını derler. İkisi de QEMU açılış testini geçerse GitHub
 Release oluşturulur, `ankaros-vX.Y.Z-aarch64.tar.gz`, `ankaros-vX.Y.Z-x86_64.tar.gz` ve `SHA256SUMS` eklenir.

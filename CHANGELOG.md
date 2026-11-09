@@ -66,6 +66,13 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) biçimini, 
   ile açılıyor. Alt+Tab'ın arka planı tıklamayı arkadaki pencerelere geçirmiyor.
 - Ayarlar › Alt çubuk, kurulu olmayan uygulamaların sabitlemesini silmiyor. Uygulama listesi yalnızca `appIds`
   ya da sabitleme değişince de güncelleniyor.
+- Terminal: pencere büyüyünce geri kaydırma konumu geçersiz kalmıyor, kabuk çıkınca pty kapatılıp süreç
+  arayüzü bekletmeden toplanıyor, alternatif ekranda (less, vim) Shift+PageUp ana ekranın geçmişini
+  göstermiyor.
+- Sürüm tek kaynaktan geliyor: `/etc/os-release` ve Ayarlar › Hakkında depo kökündeki `VERSION` dosyasını
+  kullanıyor, sürüm etiketi bu dosyayla uyuşmazsa CI imaj derlemesini baştan durduruyor.
+- QEMU testi açılış raporu alınamazsa başarısız oluyor. `progress.sh` paket sayısı sıfırken sıfıra bölmüyor.
+  Qt Wayland yaması `wl_data_offer.finish` ve `set_actions` için protokol hatalarını denetliyor.
 
 ## [0.5.0] - 2026-11-07
 

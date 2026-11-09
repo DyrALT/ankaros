@@ -5,8 +5,8 @@
 # geçersizleşir ve her şey baştan derlenir (ccache ile bile 50-60 dakika).
 #
 # main'de imajı etkileyen her değişiklikte çalışır. PR'larda yalnızca sistem katmanı değişince çalışır
-# (Buildroot, external/, system/, derleme betikleri): kabuk ve compositor'ı CI iş akışı Qt 6.9'da derleyip
-# denetler, imajdaki bozulmayı main'deki derleme yakalar. PR'lar bunu beklemez: imaj yerelde derlenip
+# (Buildroot, external/, system/, VERSION, derleme betikleri): kabuk ve compositor'ı CI iş akışı
+# Qt 6.9'da derleyip denetler, imajdaki bozulmayı main'deki derleme yakalar. PR'lar bunu beklemez: imaj yerelde derlenip
 # denenir (docs/gelistirme-ortami.md). Elle başlatmak için: gh workflow run imaj.yml --ref <dal>
 # x86_64 PR'larda çalışmaz: main'de ve elle başlatılınca derlenir, süreyi iki katına çıkarmasın.
 #
@@ -21,6 +21,7 @@ on:
     paths:
       - buildroot
       - .gitmodules
+      - VERSION
       - external/**
       - shell/**
       - compositor/**
@@ -32,6 +33,7 @@ on:
     paths:
       - buildroot
       - .gitmodules
+      - VERSION
       - external/**
       - system/**
       - scripts/build.sh
@@ -61,6 +63,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+      - name: VERSION etikete uyuyor mu
+        # İmajın os-release sürümü VERSION'dan gelir. Yanlış etiketle saatlerce derlenmesin diye en başta.
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          surum=${GITHUB_REF_NAME#v}
+          if [ "$(tr -d '[:space:]' < VERSION)" != "$surum" ]; then
+            echo "::error::VERSION dosyası ($(cat VERSION)) etiketle ($surum) uyuşmuyor"
+            exit 1
+          fi
       - name: Bağımlılıklar
         run: |
           sudo apt-get update

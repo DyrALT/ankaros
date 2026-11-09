@@ -38,7 +38,7 @@ ankaros'un kendi terminali `ankaros-terminal`. Kodu `shell/apps/terminal/` klas�
 | Ctrl+Tab, Ctrl+PageDown / Ctrl+Shift+Tab, Ctrl+PageUp | Sonraki / önceki sekme |
 | Ctrl+Shift+C / Ctrl+Shift+V | Kopyala / yapıştır (orta tuş da yapıştırır) |
 | Ctrl+artı, Ctrl+eksi, Ctrl+0 | Yazı boyutu büyüt, küçült, varsayılana döndür |
-| Shift+PageUp / Shift+PageDown | Geçmişte yukarı / aşağı |
+| Shift+PageUp / Shift+PageDown | Geçmişte yukarı / aşağı (alternatif ekranda, yani less, vim gibi tam ekran uygulamalarda geçmiş gösterilmez, tuş uygulamaya gider) |
 
 Diğer bütün tuşlar (Ctrl+C, Ctrl+D, Ctrl+W...) kabuğa gider.
 

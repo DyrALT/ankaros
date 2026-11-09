@@ -43,16 +43,12 @@ QString size(double bytes)
 SystemInfo::SystemInfo(QObject *parent)
     : QObject(parent)
 {
-    // /etc/os-release: PRETTY_NAME="ankaros 0.3 (Faz 2)" -> "0.3 · Faz 2"
+    // /etc/os-release: VERSION_ID=0.5.0 -> "0.5.0" (sürüm depodaki VERSION dosyasından gelir)
     const QString osRelease = readFile(QStringLiteral("/etc/os-release"));
-    const auto pretty =
-        QRegularExpression(QStringLiteral("PRETTY_NAME=\"?ankaros ([^\"(]+)\\(?([^\")]*)"))
-            .match(osRelease);
-    m_version = pretty.hasMatch() ? pretty.captured(1).trimmed() +
-                                        (pretty.captured(2).isEmpty()
-                                             ? QString()
-                                             : QStringLiteral(" · ") + pretty.captured(2))
-                                  : QStringLiteral("-");
+    const auto release = QRegularExpression(QStringLiteral("^VERSION_ID=\"?([^\"\\n]+)"),
+                                            QRegularExpression::MultilineOption)
+                             .match(osRelease);
+    m_version = release.hasMatch() ? release.captured(1).trimmed() : QStringLiteral("-");
 
     utsname name{};
     if (uname(&name) == 0)

@@ -2,6 +2,7 @@
 
 #include <QFileInfo>
 #include <QSocketNotifier>
+#include <QTimer>
 
 #include <cerrno>
 #include <csignal>
@@ -26,13 +27,23 @@ PtyProcess::PtyProcess(QObject *parent)
 
 PtyProcess::~PtyProcess()
 {
-    if (m_pid > 0) {
-        // Kabuğa terminalin kapandığını bildir (sekme kapatıldı)
-        kill(m_pid, SIGHUP);
-        waitpid(m_pid, nullptr, WNOHANG);
-    }
     if (m_fd >= 0)
         close(m_fd);
+    if (m_pid > 0) {
+        // Kabuğa terminalin kapandığını bildir (sekme kapatıldı). Kısa süre çıkmasını bekle,
+        // çıkmazsa öldür: süreç zombi olarak kalmasın.
+        kill(m_pid, SIGHUP);
+        pid_t done = 0;
+        for (int i = 0; i < 20 && done == 0; ++i) {
+            done = waitpid(m_pid, nullptr, WNOHANG);
+            if (done == 0)
+                usleep(5000);
+        }
+        if (done == 0) {
+            kill(m_pid, SIGKILL);
+            waitpid(m_pid, nullptr, 0);
+        }
+    }
 }
 
 bool PtyProcess::start(int rows, int columns)
@@ -90,16 +101,41 @@ void PtyProcess::read()
         // Kabuk kapandı (Linux'ta EIO, macOS'ta 0)
         if (!data.isEmpty())
             emit received(data);
+        // Notifier ve fd kapatılır (yoksa fd sızar, EOF'ta notifier sürekli tetiklenir), alt süreç
+        // arayüzü bekletmeden toplanır (reap). Yıkıcı aynı fd'yi ikinci kez kapatmasın diye m_fd
+        // sıfırlanır.
         m_notifier->setEnabled(false);
-        if (m_pid > 0) {
-            waitpid(m_pid, nullptr, 0);
-            m_pid = -1;
+        m_notifier->deleteLater(); // kendi sinyalinin içinde silinmesin
+        m_notifier = nullptr;
+        if (m_fd >= 0) {
+            close(m_fd);
+            m_fd = -1;
         }
+        reap();
         emit finished();
         return;
     }
     if (!data.isEmpty())
         emit received(data);
+}
+
+// Alt süreci toplar. Kabuk 0/1/2'yi kapatıp yaşamaya devam edebilir, bu yüzden arayüz iş parçacığı
+// beklemez: çıkmadıysa kısa aralıklarla yeniden denenir, makul süre sonra öldürülür.
+void PtyProcess::reap()
+{
+    if (m_pid <= 0)
+        return;
+    if (waitpid(m_pid, nullptr, WNOHANG) != 0) {
+        m_pid = -1;
+        return;
+    }
+    if (++m_reapAttempts > 40) {
+        kill(m_pid, SIGKILL);
+        waitpid(m_pid, nullptr, 0);
+        m_pid = -1;
+        return;
+    }
+    QTimer::singleShot(50, this, &PtyProcess::reap);
 }
 
 void PtyProcess::write(const char *data, size_t size)

@@ -108,14 +108,15 @@ def capture(sock, needle, timeout, log):
 
 
 def print_boot_report(console, log):
-    """ankarosctl boot'un açılış raporunu yazdırır (docs/acilis-suresi.md)."""
+    """ankarosctl boot'un açılış raporunu yazdırır (docs/acilis-suresi.md). Rapor alınamazsa False."""
     console.sendall(b"ankarosctl boot\n")
     output = capture(console, b"Toplam:", 15, log).decode(errors="replace").replace("\r", "")
     start = output.find("ADIM")
     if start < 0 or "Toplam:" not in output:
         print("Açılış raporu alınamadı", file=sys.stderr)
-        return
+        return False
     print(output[start:].strip(), flush=True)
+    return True
 
 
 def qmp(path, command, arguments=None):
@@ -403,7 +404,8 @@ def main():
                     ok = looks_like_desktop(*save_screenshot(qmp_path, args.screenshot))
                 if ok:
                     print(f"Masaüstü {time.time() - started:.0f} saniyede göründü", flush=True)
-                    print_boot_report(console, log)
+                    # Rapor alınamazsa test başarısız sayılır (açılış süresi izlenemez olur)
+                    ok = print_boot_report(console, log)
                 else:
                     print(f"Masaüstü {args.wait:.0f} saniyede görünmedi", file=sys.stderr)
             else:
